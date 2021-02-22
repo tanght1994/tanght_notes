@@ -10,6 +10,8 @@ LIBRARY_PATH：gcc/g++链接时搜索动态库/静态库的路径，以：分隔
 
 LD_LIBRARY_PATH：程序运行时加载动态库的路径
 
+使用gcc编译时，export上述环境变量当当前shell中，可以保存到一个shell脚本中，然后用source命令运行这个脚本。这样的话只对本次shell生效，不会影响全局的环境变量，随用随source。环境变量设置好之后，再使用gcc最多就只用-l指定一下库名了
+
 
 
 # char与wchar_t
