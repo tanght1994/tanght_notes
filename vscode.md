@@ -99,3 +99,49 @@ list(LENGTH var2 var3) # var2是一个数组，不用${var2}
 ```
 
 ${default}是将全局setting.json的C_Cpp.default.includePath拿过来
+
+
+
+# 无法在这个大型工作区监视
+
+```json
+//当前工作区的setting.json
+{
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true,
+        "**/.hg/store/**": true,
+        "/home/tanght/cpp/**": true,
+        "/home/tanght/download/**": true,
+        "/home/tanght/python/**": true,
+        "/home/tanght/venv/**": true
+    }
+}
+```
+
+files.watcherExclude设置vscode的监视忽略。
+
+也就是说vscode会不监视这些文件夹的变化情况，除非手动刷新。
+
+里面的路径需要是绝对路径，不能是相对于工程目录的相对路径，但是可以使用**/这种来匹配。
+
+
+
+```json
+//当前工作区的setting.json
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "cpp": true
+    }
+}
+```
+
+files.exclude更狠，vscode不仅不监控，连显示都不显示了，直接当作不存在。
+
+里面的路径必须是相对于vscode工程的相对路径。
