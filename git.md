@@ -176,9 +176,41 @@ test.test  # 忽略所有目录下的test.test
 
 # GIT配置文件
 
-local配置文件(.git/config文件)优先级最高
+## 查看
+
+共有三个级别的配置文件，分别为，系统级，全局级，仓库级，优先级递增，后面的覆盖前面的
 
 ```shell
-git config --list  # 查看所有配置项
+git config --system --list  # 只查看系统级配置
+git config --global --list  # 只查看全局级配置
+git config --local --list  # 只查看仓库级配置
+
+# 查看所有配置项，系统级，全局级，仓库级，显示顺序是 系统级 全局级 仓库级
+# 同一个配置项可以出现多次(比如在这三个级别中都设置了一次)，但是以最后出现的为准
+git config --list
+
+# 查看配置项,查看user.name
+git config [--level] –-get user.name
 ```
 
+仓库级配置文件(local)位置在.git/config，它的优先级是最高的
+
+## 添加/修改
+
+```shell
+# 修改user.name为tanght1994，没有则添加
+git config [--level] user.name tanght1994
+```
+
+## 删除
+
+```shell
+# 删除user.name
+git config [--level] –-unset user.name
+```
+
+# 记住密码
+
+```shell
+git config --global credential.helper store
+```
