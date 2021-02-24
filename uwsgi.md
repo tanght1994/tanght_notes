@@ -10,6 +10,41 @@ django本质上是一个复杂的函数，接收两个参数，返回一个可�
 
 
 
+# 简单服务器
+
+前面说了，uwsgi程序只需要我们写一个application函数(名字必须为application)，接收两个参数，返回一个字符串(bytes类型，不能是str类型)，就这么简单，那么我们就写一个下面的函数，保存到haha.py中。
+
+```python
+# /home/tanght/haha.py
+def application(env, start_response):
+    start_response('200 OK', [('Content-Type','text/html')])
+    return 'Hello World'.encode('utf-8')
+```
+
+ok，给uwsgi程序准备的函数写好了，那么现在我们可以启动uwsgi了。
+
+```shell
+uwsgi --http 0.0.0.0:8000 --wsgi-file tanght.py
+```
+
+输入上述命令，回车！搞定！可以看到命令行窗口中输出了一堆乱七八糟的信息，然后阻塞住不动了。这就证明uwsgi启动成功了，uwsgi作为一个程序，占用了当前的cmd窗口。
+
+`--http 0.0.0.0:8000`是告诉uwsgi监听本机的8000端口。
+
+`--wsgi-file`是告诉uwsgi我们的application函数所在的文件。
+
+现在uwsgi就在循环监听8000端口了，只要8000端口来消息，uwsgi就会调用我们的application函数来处理，并且uwsgi会将application函数的返回值传递给对方。
+
+
+
+
+
+
+
+
+
+
+
 # 命令
 
 ```python

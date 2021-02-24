@@ -155,3 +155,26 @@ http {
 
 ```
 
+# root与alias的区别
+
+```nginx
+{
+	location /haha/ {
+                alias /home/tanght/www/;
+            }
+}
+```
+
+前端访问/haha/123.html，服务器就会将/home/tanght/www/123.html文件发送给前端
+
+```nginx
+{
+	location /haha/ {
+                root /home/tanght/www/;
+            }
+}
+```
+
+前端访问/haha/123.html，服务器就会将/home/tanght/www/haha/123.html文件发送给前端
+
+也就是说，root的话，url会被当成路径的一部分
