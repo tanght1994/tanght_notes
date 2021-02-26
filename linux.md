@@ -462,3 +462,18 @@ systemctl status/start/stop firewalld
 service iptables status/start/stop
 ```
 
+# Linux资源占用查看
+
+top命令用于打开资源占用信息窗口(类似windows的任务管理器)
+
+![image-20210226181505723](assets/image-20210226181505723.png)
+
+**退出：**在这个界面中输入q就退出了
+
+**刷新频率：**在这个界面中输入s可以条中刷新频率
+
+![image-20210226181901459](assets/image-20210226181901459.png)
+
+**查看指定进程：**`top -p 1,2,3,4`
+
+-p后面跟想要查看的进程id，如果有一个就写一个，如果有多个就写多个并用逗号隔开
