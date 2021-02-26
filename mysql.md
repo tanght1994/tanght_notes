@@ -180,9 +180,31 @@ select name, group_concat(id order by id desc separator "+") from test group by 
 
 
 
+# 允许远程访问
 
+首先要设置防火墙，开放mysql的端口
 
+## 查看各用户的允许登陆IP：
 
+```mysql
+use mysql;
+select host,user from user;
+```
 
+结果：
 
+![image-20210225175047651](assets/image-20210225175047651.png)
 
+说明：
+
+通过tanght用户登陆，可以通过任何IP地址访问此数据库
+
+通过root登陆，只能使用本机登陆
+
+## 修改mysql.user表，允许root通过所有IP地址登陆
+
+```mysql
+use mysql;
+update user set host = '%' where user = 'root';
+flush privileges;
+```

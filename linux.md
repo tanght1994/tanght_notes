@@ -448,3 +448,17 @@ export CPATH=/home/tanght/download/boost_1_75_0:${CPATH}
 
 source命令的作用是什么呢？`source export_env.sh`这个命令的意思是：别用子进程运行export_env.sh这个脚本，直接将export_env.sh这个文件中的命令读出来，直接在本窗口中运行！
 
+# 防火墙
+
+## centos7
+
+```shell
+systemctl status/start/stop firewalld
+```
+
+## centos6
+
+```
+service iptables status/start/stop
+```
+
