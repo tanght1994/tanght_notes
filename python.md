@@ -765,7 +765,6 @@ class tanght:
         print('1')
         return False
 
-
 t = tanght()
 print('a' in t)
 ```
