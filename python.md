@@ -755,3 +755,43 @@ except Exception as e:
 
 
 
+# class中的 \__contains__(self, value)
+
+使用in，会调用类中的\__contains__方法
+
+```python
+class tanght:
+    def __contains__(self, key):
+        print('1')
+        return False
+
+t = tanght()
+print('a' in t)
+```
+
+
+
+# \_\_iter\_\_(self)与\_\_next\_\_(self)
+
+迭代器\_\_iter\_\_(self)返回一个带有\_\_next\_\_(self)方法的对象，一般是一个对象同时定义这两个方法，\_\_iter\_\_(self)直接返回self就行了，因为self就有next方法啊
+
+for i in xxx时，会先调用xxx的\_\_iter\_\_方法，\_\_iter\_\_方法会返回一个对象，然后每次for就调用一次这个对象的\_\_next\_\_方法，\_\_next\_\_方法的返回值赋值给i
+
+```python
+class test():
+    def __init__(self,data=1):
+        self.data = data
+
+    def __iter__(self):
+        return self
+    def __next__(self):
+        if self.data > 5:
+            raise StopIteration
+        else:
+            self.data+=1
+            return self.data
+
+for item in test(3):
+    print(item)
+```
+
