@@ -184,6 +184,8 @@ select name, group_concat(id order by id desc separator "+") from test group by 
 
 首先要设置防火墙，开放mysql的端口
 
+其次要让mysql监听0.0.0.0这个IP，默认mysql监听的是127.0.0.1，可以在配置文件中将`bind-address = 127.0.0.1`这个配置项注释掉，然后重启mysql服务
+
 ## 查看各用户的允许登陆IP：
 
 ```mysql
@@ -208,3 +210,30 @@ use mysql;
 update user set host = '%' where user = 'root';
 flush privileges;
 ```
+
+## navicat报错
+
+Client does not support authentication protocol requested by server...
+
+两种解决办法
+
+1.升级navicat驱动，使其支持mysql最新版本
+
+不会
+
+2.将mysql的密码验证规则改为老式规则
+
+`ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'your_password';`
+
+
+
+# 安装
+
+## ubuntu在线安装
+
+`sudo apt install mysql-server`安装mysql服务，顺便装了mysql-cli
+
+`sudo mysql_secure_installation`首次配置mysql，密码什么的
+
+
+

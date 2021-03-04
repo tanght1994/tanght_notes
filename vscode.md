@@ -154,3 +154,7 @@ files.exclude更狠，vscode不仅不监控，连显示都不显示了，直接�
 2. 将windows上生成的公钥复制到linux下某用户(想要登陆哪个用户就用那个用户)的~/.ssh/authorized_keys中，authorized_keys中的多个密钥用换行分隔
 3. 如果是root用户，需要在/etc/ssh/sshd_config中添加一行代码`PermitRootLogin yes`
 4. 删除windows下的家目录下的.ssh/known_hosts，一会儿连接linux的时候会自动生成这个文件
+
+# 自定义代码片段
+
+![image-20210303120252607](assets/image-20210303120252607.png)
