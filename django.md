@@ -415,3 +415,8 @@ $.ajax({
 })
 ```
 
+
+
+# ORM源码解析
+
+django/db/models/sql/compiler.py中Class SQLCompiler的def execute_sql是ORM逻辑的最后出口，负责执行SQL语句，在这里打个断点，顺着调用栈往前看就ok了，ORM设计的相当复杂，像一坨屎！
