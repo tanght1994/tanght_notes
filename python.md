@@ -795,3 +795,12 @@ for item in test(3):
     print(item)
 ```
 
+# str.translate
+
+```python
+s = '123'
+a = b'haha...' # 假装一共256个字符
+# s中的字符，按照a中的字符转换，转换的原理是
+s1 = s.translate(a)
+```
+
