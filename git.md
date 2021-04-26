@@ -22,6 +22,7 @@ git checkout haha		#切换到haha分支
 git push --set-upstream origin test	//将当前分支与远程origin主机上的test分支建立联系
 git push #将当前分支推送到远端相联系的分支
 git pull <远程主机> <远程分支> <本地分支> #拉取远程分支到本地分支
+git clone -b 分支名 远程仓库地址 # 克隆指定分支
 ```
 
 

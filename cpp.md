@@ -679,3 +679,104 @@ set listsize count 每次list显示的行数
 list first,last 显示指定起始行到结束结束行的源文件
 
 l test2.cpp:0 显示test2.cpp文件，从第0行开始，不能是l test2.cpp，这样的话会说找不到test2.cpp函数
+
+
+
+# CMAKE
+
+变量
+
+| 变量名                                                   | 说明                                                         |
+| -------------------------------------------------------- | ------------------------------------------------------------ |
+| PROJECT_SOURCE_DIR                                       | 当前CMakeLists.txt所在的目录，前提是当前CMakeLists.txt调用了project()函数 |
+| PROJECT_NAME                                             | project(xxx)指定的名字。比如project(HELLO)，则PROJECT_NAME == "HELLO" |
+| PROJECT_BINARY_DIR                                       | cmake生成的文件的目标路径，比如生成的makefile的路径。默认为运行cmake命令时所在的目录。 |
+| SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../bin) |                                                              |
+
+
+
+函数
+
+| 函数名                                         | 说明                                                         |
+| ---------------------------------------------- | ------------------------------------------------------------ |
+| project(xxx)                                   | 设置PROJECT_NAME，只有这一个作用吗？                         |
+| aux_source_directory(路径 变量)                | 获取路径下所有的.cpp/.c/.cc文件，并赋值到变量中              |
+| set(变量 值)                                   | 设置变量，如：set(ABC_DIR ${PROJECT_SOURCE_DIR}/abc)         |
+| message(消息1 消息2 ...)                       | 打印消息，如：message(abc   def   haha)，控制台输出"abcdefhaha"。也可以打印变改良的值，如：message("${变量}"  消息1  消息2 ...) |
+| add_executable(${PROJECT_NAME} a1.cpp  a2.cpp) | 生成可执行文件                                               |
+| add_definitions(编译选项)                      | 添加编译选项，如：add_definitions("-Wall -g")                |
+| add_subdirectory(子文件夹名称)                 | 编译子文件夹的CMakeLists.txt                                 |
+| include_directories(dir1 dir2 dir3)            | 添加头文件目录                                               |
+|                                                |                                                              |
+|                                                |                                                              |
+
+
+
+
+
+```
+# 本CMakeLists.txt的project名称
+# 会自动创建两个变量，PROJECT_SOURCE_DIR和PROJECT_NAME
+# ${PROJECT_SOURCE_DIR}：本CMakeLists.txt所在的文件夹路径
+# ${PROJECT_NAME}：本CMakeLists.txt的project名称
+project(xxx)
+
+# 获取路径下所有的.cpp/.c/.cc文件，并赋值给变量中
+aux_source_directory(路径 变量)
+
+# 给文件名/路径名或其他字符串起别名，用${变量}获取变量内容
+set(变量 文件名/路径/...)
+
+# 添加编译选项
+add_definitions(编译选项)
+
+# 打印消息
+message(消息)
+
+# 编译子文件夹的CMakeLists.txt
+add_subdirectory(子文件夹名称)
+add_subdirectory(abc)
+add_subdirectory(abc/d)  可以写路径
+add_subdirectory("abc/d") 可以添加双引号
+
+# 将.cpp/.c/.cc文件生成.a静态库
+# 注意，库文件名称通常为libxxx.so，在这里只要写xxx即可
+add_library(库文件名称 STATIC 文件)
+
+# 将.cpp/.c/.cc文件生成可执行文件
+add_executable(可执行文件名称 文件)
+
+# 规定.h头文件路径
+include_directories(路径)
+
+# 规定.so/.a库文件路径
+link_directories(路径)
+
+# 对add_library或add_executable生成的文件进行链接操作
+# 注意，库文件名称通常为libxxx.so，在这里只要写xxx即可
+target_link_libraries(库文件名称/可执行文件名称 链接的库文件名称)
+```
+
+
+
+设置编译选项
+
+找到需要的源文件
+
+添加头文件目录
+
+告诉cmake是生成可执行程序还是库文件
+
+链接相关，设置链接库的目录
+
+链接相关，设置链接库的名称   PROJECT_BINARY_DIR
+
+
+
+默认情况下，在哪里运行cmake命令，就在哪里生成makefile文件，以及cmake的缓存文件，不管是`cmake .`还是`cmake ..`。makefile的生成位置与.和..无关，只与cmake的运行路径有关。可以通过cmake的变量来指定makefile的生成路径。
+
+子CMakeLists.txt中定义的变量不会传递到父CMakeLists.txt
+
+父CMakeLists.txt中定义的变量会传递到子CMakeLists.txt，子CMakeLists.txt可以覆盖父CMakeLists.txt中定义的变量，但是不影响父
+
+运行到add_subdirectory()时，立即去执行子CMakeLists.txt中的代码，注意先后顺序
