@@ -79,6 +79,23 @@ ln -s path1 path2
 du -sh
 ```
 
+
+
+## 排序
+
+```shell
+# -r 逆序，从大到小
+# -n 以数值大小进行排序，也就意味着，指定的排序列必须为数字，避免10 < 2的情况(字符顺序)
+# -k 后面跟列数，指定排序的列
+# -t 指定分隔符  如 -t :   以冒号作为分割符，不指定的话是空格
+# 将filename.txt中每行作为一个单元，以空格为分隔符，以第三列为关键列进行排序，倒序
+sort -rn -k 3 filename.txt
+```
+
+
+
+
+
 # 查看端口被谁占用
 
 ```shell
@@ -87,8 +104,6 @@ lsof -i :80
 lsof abc.txt 显示开启文件abc.txt的进程 lsof -c abc 显示abc进程现在打开的文件 lsof -c -p 1234 列出进程号为1234的进程所打开的文件 lsof -g gid 显示归属gid的进程情况 lsof +d /usr/local/ 显示目录下被进程开启的文件 lsof +D /usr/local/ 同上，但是会搜索目录下的目录，时间较长 lsof -d 4 显示使用fd为4的进程 lsof -i 用以显示符合条件的进程情况 lsof -i[46] [protocol][@hostname|hostaddr][:service|port]   46 --> IPv4 or IPv6   protocol --> TCP or UDP   hostname --> Internet host name   hostaddr --> IPv4地址   service --> /etc/service中的 service name (可以不止一个)   port --> 端口号 (可以不止一个)
 
 ```
-
-
 
 
 
@@ -264,7 +279,7 @@ systemctl list-units --failed # 列出所有加载失败的 Unit
 systemctl status mysql # 查看mysql服务的状态，详细信息中会写着管理mysql服务的service脚本在哪里
 ```
 
-## 命令1
+## 查看systemd信息的命令
 
 ```shell
 systemctl list-unit-files --type=service   # 列出所有服务（包括启用的和禁用的）
@@ -274,45 +289,37 @@ systemctl list-units --all # 列出所有Unit，包括没有找到配置文件�
 systemctl list-units --failed # 列出所有加载失败的 Unit
 ```
 
-
-
-## 命令2
+## 控制软件的命令
 
 ```shell
 systemctl status mysql # 查看mysql服务的状态，详细信息中会写着管理mysql服务的service脚本在哪里
 systemctl stop mysql # 停止
 systemctl restart mysql # 重启mysql
-systemctl enable mysql # 设置开机启动(在/etc/systemd/system/下创建一个软连接指向/lib/systemd/system/)
-systemctl disable mysql # 取消开机启动
+systemctl enable mysql # 设置开机启动(在/etc/systemd/system/xxx.target.wants下创建一个软连接)
+systemctl disable mysql # 取消开机启动(删除xxx.target.wants下对应的软链接)
 systemctl is-enabled mysql # 查看是否是开机启动
 ```
 
 
 
+```shell
+systemctl list-units --type=service -all
+systemctl list-units --type=target -all
 
+# 查看当前系统模式(multi-user.target  graphical.target)
+systemctl get-default
 
-| Unit            |                                   |                                                              |
-| --------------- | --------------------------------- | ------------------------------------------------------------ |
-| After           | 表示服务需要在***服务启动之后执行 | 无依赖                                                       |
-| Before          | 表示服务需要在***服务启动之前执行 | 无依赖                                                       |
-| Wants           | 弱依赖关系                        |                                                              |
-| Requires        | 强依赖关系                        | ***停止之后本服务也必须停止                                  |
-| Service         |                                   |                                                              |
-| EnvironmentFile | 环境参数文件                      | EnvironmentFile=/etc/sysconfig/sshd以key=value的形式保存以$key形式读取 |
-| ExecStart       | 启动进程时执行的命令              |                                                              |
-| ExecReload      | 重启服务时执行的命令              |                                                              |
-| ExecStop        | 停止服务时执行的命令              |                                                              |
-| ExecStartPre    | 启动服务之前执行的命令            |                                                              |
-| ExecStartPost   | 启动服务之后执行的命令            |                                                              |
-| ExecStopPost    | 停止服务之后执行的命令            |                                                              |
+# 将电脑切换到multi-user.target模式(命令行)
+systemctl isolate multi-user.target
+# 将电脑切换到graphical.target模式(图形界面)
+systemctl isolate graphical.target
 
+# 查看此target包含哪些服务
+systemctl list-dependencies multi-user.target
 
-
-/etc/systemd/system/这个目录好像是开机启动的，里面的文件大多是指向/lib/systemd/system/目录下的service文件
-
-/lib/systemd/system/这个目录保存了所有.service文件
-
-
+# 重新加载配置文件
+systemctl daemon-reload
+```
 
 ## service文件
 
@@ -340,8 +347,6 @@ man systemd.unit  service文件的帮助文档
 
 
 
-
-
 所有的启动设置之前，都可以加上一个连词号（-），表示"抑制错误"，即发生错误的时候，不影响其他命令的执行。比如，EnvironmentFile=-/etc/sysconfig/sshd（注意等号后面的那个连词号），就表示即使/etc/sysconfig/sshd文件不存在，也不会抛出错误。
 
 
@@ -351,6 +356,48 @@ man systemd.unit  service文件的帮助文档
 重新加载配置文件
 
 systemctl daemon-reload
+
+## 控制程序的启停
+
+步骤如下：
+
+1. 创建你的程序的.service文件
+2. 将.service文件放到`/etc/systemd/system/`或者`/lib/systemd/system/`(推荐)下
+3. 使用`systemctl start/stop/.. your_service_name.sevice `来启停程序
+
+## service文件路径
+
+systemd会去哪里查找.service文件呢？如下：
+
+- /etc/systemd/system/xxx.service(优先级高)
+- /lib/systemd/system/xxx.service(优先级低)
+- 推荐将service文件放在/lib/systemd/system/下，/etc/systemd/system/下一般只放.target.wants
+
+## 开机启动
+
+### 命令
+
+`systemctl enable xxx.service`
+
+xxx.service随便放在哪个目录，可以不是`/etc/systemd/system/`或`/lib/systemd/system/`这两个systemd的默认目录，只不过这时候需要加上文件的路径。`systemctl enable /your_path/xxx.service`。
+
+此命令只做一件事，就是在`/etc/systemd/system/xxx.target.wants`下创建一个指向你的service文件的软链接，然后重新加载systemd服务。xxx.target.wants中的xxx到底是什么呢？这个由你编写的service文件中的WantedBy决定
+
+```shell
+[Install]
+WantedBy=multi-user.target  # enable的时候将软连接创建在multi-user.target.wants目录下
+```
+
+### 原理
+
+enable（开机启动）的原理就是在`/etc/systemd/system/xxx.target.wants`目录下创建一个`.service`文件的软连接（.service文件最好在`/lib/systemd/system/`目录下），然后使systemd重新加载一次（`systemctl daemon-reload`）
+
+也就是说，只要是`xxx.target.wants`下的service，都会在开机时启动（系统默认开机时运行multi-user.target），你也可以手动去`xxx.target.wants`下创建软连接而不用systemctl enable，效果是一样的。
+
+### 总结
+
+- 将`.service`文件放在`/etc/systemd/system/`或`/lib/systemd/system/`下，此时就能用systemctl来控制你的程序了。
+- 将`.service`文件放在`/etc/systemd/system/xxx.target.wants`下，就能开机启动了。
 
 
 

@@ -780,3 +780,192 @@ target_link_libraries(库文件名称/可执行文件名称 链接的库文件�
 父CMakeLists.txt中定义的变量会传递到子CMakeLists.txt，子CMakeLists.txt可以覆盖父CMakeLists.txt中定义的变量，但是不影响父
 
 运行到add_subdirectory()时，立即去执行子CMakeLists.txt中的代码，注意先后顺序
+
+
+
+# 函数指针
+
+## 普通函数
+
+```c++
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+void fun1(const string &name)
+{
+  cout << "My name is " << name << "." << endl;
+}
+
+// 给函数指针的类型起个别名
+// My_Type 是什么类型呢？ void (*)(const string &)
+// 很明显是一个指针，而且必须指向一个函数
+typedef void (*My_Type)(const string &);
+
+int main()
+{
+  // 直接在代码中定义函数指针类型来接收函数地址
+  // void (*)(const string &) 这些都是在定义p1的类型
+  // 与 int p1 没有区别，都是在定义p1的类型
+  // 首先 (*) 代表p1是个指针，可以指向某个东西
+  // 其次 xxx (*)xxx 这个结构代表p1只能指向某个函数
+  // 再其次 void (const string &) 代表p1指向的函数必须是这样的签名
+  void (*p1)(const string &) = fun1;
+  p1("haha");
+
+  // 使用typedef定义的类型来接收函数地址
+  // p1 与 p2 完全相同
+  My_Type p2 = fun1;
+  p2("hehe");
+
+  return 0;
+}
+```
+
+`void (*p1)(const string &) = fun1`
+
+- 直接拿fun1赋值就行了，不用&fun1，因为fun1就已经代表这个函数的地址了
+
+
+
+## 类成员函数
+
+```c++
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Hi
+{
+  public:
+    Hi(const string &time): m_time(time) {}
+    void say_hi(const string &name);
+  private:
+    string m_time;
+};
+
+void Hi::say_hi(const string &name)
+{
+  cout << "Good " << this->m_time << " " << name << "." << endl;
+}
+
+int main()
+{
+  Hi a = Hi("morning");
+  a.say_hi("tanght");
+
+  // 将 p1 指向 Hi::say_hi
+  // 注意 * 的位置，与普通的函数指针声明稍有不同
+  // 注意 &Hi::say_hi ，不能直接写函数名，必须加上&
+  void (Hi::*p1)(const string &) = &Hi::say_hi;
+  // 调用成员函数指针
+  (a.*p1)("tanght");
+
+  return 0;
+}
+```
+
+`void (Hi::*p1)(const string &) = &Hi::say_hi;`
+
+- 声明时注意*的位置，紧邻p1
+- 成员函数地址要加&，&Hi::say_hi
+
+# 虚函数表
+
+```c++
+#include <iostream>
+
+using namespace std;
+
+class Base
+{
+public:
+    Base() : data(0) {}
+    ~Base() {}
+    virtual void fun1()
+    {
+        cout << "base fun1" << endl;
+    }
+    virtual void fun2()
+    {
+        cout << "base fun2" << endl;
+    }
+    virtual void fun3()
+    {
+        cout << "base fun3" << endl;
+    }
+    virtual void fun4()
+    {
+        cout << "base fun4" << endl;
+    }
+    void fun5()
+    {
+        cout << "base fun5" << endl;
+    }
+    int data;
+};
+
+class Drive : public Base
+{
+public:
+    Drive() : Base() {}
+    virtual void fun2()
+    {
+        cout << "drive fun2" << endl;
+    }
+    virtual void fun4()
+    {
+        cout << "drive fun4" << endl;
+    }
+};
+
+typedef void (*PFun)(void);
+typedef PFun *VTableItem;
+typedef VTableItem *PVTable;
+
+void test(Base *p)
+{
+    auto VTableAddr = (PVTable)(p);
+    cout << "VTableAddr:" << VTableAddr << endl;
+
+    auto VTableFirstItem = (*VTableAddr);
+    cout << "VTableFirstItem:" << VTableFirstItem << endl;
+
+    auto VTableItem0 = VTableFirstItem + 0;
+    cout << "VTableItem0:" << VTableItem0 << endl;
+    auto PFun0 = *VTableItem0;
+    cout << "Fun0Addr:" << (void *)PFun0 << endl;
+    PFun0();
+
+    auto VTableItem1 = VTableFirstItem + 1;
+    cout << "VTableItem1:" << VTableItem1 << endl;
+    auto PFun1 = *VTableItem1;
+    cout << "Fun1Addr:" << (void *)PFun1 << endl;
+    PFun1();
+
+    auto VTableItem2 = VTableFirstItem + 2;
+    cout << "VTableItem2:" << VTableItem2 << endl;
+    auto PFun2 = *VTableItem2;
+    cout << "Fun2Addr:" << (void *)PFun2 << endl;
+    PFun2();
+
+    auto VTableItem3 = VTableFirstItem + 3;
+    cout << "VTableItem3:" << VTableItem3 << endl;
+    auto PFun3 = *VTableItem3;
+    cout << "Fun3Addr:" << (void *)PFun3 << endl;
+    PFun3();
+}
+
+int main()
+{
+    Base obj1;
+    Drive obj2;
+    test(&obj1);
+    cout << endl;
+    test(&obj2);
+    return 0;
+}
+```
+
