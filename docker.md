@@ -106,8 +106,13 @@ Options:
 
 语法：`docker create [OPTIONS] IMAGE [COMMAND] [ARG...]`
 
+返回容器ID
+
 ```shell
-# 根据imageID这个镜像，创建一个容器，并命名为mytest
+# 根据imageID这个镜像，创建一个容器
+docker create imageID
+
+# 根据imageID这个镜像，创建一个容器，并命名为mytest（docker ps的时候，NAME字段显示为mytest）
 docker create --name mytest imageID
 ```
 
@@ -127,7 +132,21 @@ docker create --name mytest imageID
 
 
 
+## 查看镜像
 
+```shell
+docker images
+```
+
+
+
+## 拉取镜像
+
+```shell
+docker pull nginx # 拉取最新版本的nginx
+docker pull nginx:latest # 拉取最新版本的nginx
+docker pull nginx:1.0.0 # 拉取1.0.0版本的nginx
+```
 
 
 
@@ -141,42 +160,10 @@ docker create --name mytest imageID
 # -p 8000:80  将主机的8000端口映射到容器的80端口
 docker run --name haha -p 8000:80 -it imageID command
 
-# 运行已有的容器
-
-```
-
-
-
-
-
-
-
-```shell
-docker images #列出本机所拥有的所有镜像
-
-docker pull nginx # 拉取最新版本的nginx
-docker pull nginx:latest # 拉取最新版本的nginx
-docker pull nginx:1.0.0 # 拉取1.0.0版本的nginx
-
-docker run --name haha -p 8000:80 imageID
-
 # --name tht_nginx    docker ps的时候会显示tht_nginx这个名字用以提示
 # -p 8080:80    将主机的8080端口映射到本容器的80端口（主机的8080端口与容器的80端口绑定到一起了，成为一体了）
 # -d 容器以后台程序运行，不提供交互终端
 docker run --name tht_nginx -p 8080:80 -d f35646e83998
-
-```
-
-
-
-镜像
-
-```shell
-docker images #列出本机所拥有的所有镜像
-
-docker pull nginx # 拉取最新版本的nginx
-docker pull nginx:latest # 拉取最新版本的nginx
-docker pull nginx:1.0.0 # 拉取1.0.0版本的nginx
 ```
 
 
@@ -257,5 +244,12 @@ docker save 镜像ID > /path/xxx.tar
 
 # 加载xxx.tar这个包，还原为一个镜像，save之前这个镜像叫什么，load之后还叫什么，不能重命名
 docker load < /path/xxx.tar
+```
+
+
+
+
+
+```
 ```
 
