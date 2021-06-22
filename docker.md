@@ -1,3 +1,24 @@
+# 安装
+
+```shell
+sudo apt-get update
+sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+
+# 添加Docker官方GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+# 添加Docker稳定版仓库
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+sudo apt-get update
+sudo apt-get install docker-ce
+sudo docker run hello-world
+```
+
+
+
+
+
 加速
 
 Ubuntu/Centos相同
@@ -13,7 +34,104 @@ docker images
 
 
 
+
+
+
+
+# 帮助文档
+
+输出所有命令`docker --help`
+
+```shell
+docker --help
+# 以下是输出
+Usage:  docker [OPTIONS] COMMAND
+
+Options:
+      --config string      Location of client config files (default "/root/.docker")
+  -D, --debug              Enable debug mode
+  -v, --version            Print version information and quit
+  ...
+
+Management Commands:
+  config      Manage Docker configs
+  container   Manage containers
+  volume      Manage volumes
+  ...
+
+Commands:
+  commit      Create a new image from a container's changes
+  cp          Copy files/folders between a container and the local filesystem
+  create      Create a new container
+  exec        Run a command in a running container
+  images      List images
+  ps          List containers
+  restart     Restart one or more containers
+  ...
+```
+
+查看某个命令的使用方法`docker xxx --help`
+
+```shell
+docker create --help
+# 以下是输出
+Usage:  docker create [OPTIONS] IMAGE [COMMAND] [ARG...]
+
+Create a new container
+
+Options:
+      --add-host list                  Add a custom host-to-IP mapping (host:ip)
+  -a, --attach list                    Attach to STDIN, STDOUT or STDERR
+      --blkio-weight-device list       Block IO weight (relative device weight) (defa
+      --name string                    Assign a name to the container
+      --restart string                 Restart policy to apply when a container exits (default "no")
+      --rm                             Automatically remove the container when it exits
+  -t, --tty                            Allocate a pseudo-TTY
+      --ulimit ulimit                  Ulimit options (default [])
+  -u, --user string                    Username or UID (format: <name|uid>[:<group|gid>])
+      --userns string                  User namespace to use
+      --uts string                     UTS namespace to use
+  -v, --volume list                    Bind mount a volume
+  -w, --workdir string                 Working directory inside the container
+  ...
+```
+
+
+
+
+
 # 命令
+
+## 创建容器
+
+语法：`docker create [OPTIONS] IMAGE [COMMAND] [ARG...]`
+
+```shell
+# 根据imageID这个镜像，创建一个容器，并命名为mytest
+docker create --name mytest imageID
+```
+
+## 运行容器
+
+语法：`docker start`
+
+## 创建并运行容器
+
+语法：`docker run`
+
+其作用相当于`docker create` + `docker start`
+
+## 查看容器
+
+语法：`docker ps`
+
+
+
+
+
+
+
+
 
 ## 运行容器
 

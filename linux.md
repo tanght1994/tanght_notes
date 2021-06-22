@@ -111,9 +111,11 @@ lsof abc.txt 显示开启文件abc.txt的进程 lsof -c abc 显示abc进程现�
 
 
 
-# 更换镜像源
+# 软件仓库
 
-## Centos
+## 修改仓库源地址
+
+### Centos
 
 ```bash
 配置文件地址：/etc/yum.repos.d/CentOS-Base.repo
@@ -125,13 +127,84 @@ wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-
 
 
 
-## Ubuntu
+### Ubuntu
 
 ```shell
-pass
+配置文件地址：/etc/apt/sources.list
+
+档案类型   镜像url                 版本代号        软件包分类 
+deb       http://xx.xx.xx/xx/    bionic        main restricted universe multiverse
+ 
+————————————————
+每一个源(http://xx.xx.xx/xx/)目录下都应该至少包含dists和pool两个目录，否则就是无效的源
 ```
 
 
+
+## apt原理
+
+`/etc/apt/sources.list`列举出了所有可用仓库，用户可以根据自己的爱好随意修改，修改之后记得执行`apt update`
+
+sources.list类似下面这样：
+
+```shell
+deb http://mirrors.tencentyun.com/ubuntu/ bionic main restricted universe multiverse
+deb http://mirrors.tencentyun.com/ubuntu/ bionic-security main restricted universe multiverse
+deb http://mirrors.tencentyun.com/ubuntu/ bionic-updates main restricted universe multiverse
+# deb http://mirrors.tencentyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
+# deb http://mirrors.tencentyun.com/ubuntu/ bionic-backports main restricted universe multiverse
+deb-src http://mirrors.tencentyun.com/ubuntu/ bionic main restricted universe multiverse
+deb-src http://mirrors.tencentyun.com/ubuntu/ bionic-security main restricted universe multiverse
+deb-src http://mirrors.tencentyun.com/ubuntu/ bionic-updates main restricted universe multiverse
+# deb-src http://mirrors.tencentyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
+# deb-src http://mirrors.tencentyun.com/ubuntu/ bionic-backports main restricted universe multiverse
+deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
+# deb-src [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
+```
+
+每行代表一个仓库，每行的格式如下
+
+```shell
+[deb或者deb-src二选一] [url] [Codename] [main restricted universe multiverse 多选]
+```
+
+deb：表示本行用于二进制软件下载
+
+deb-src：表示本行用于源代码下载
+
+注：为什么deb与deb-src的url是一样的？因为这个url既提供了二进制软件，也提供了源代码。apt去下载的时候会遵循一定的规则，在特定的目录下去下载软件或源代码，虽然是同一个url，但是子路径是不一样的
+
+url：仓库地址
+
+Codename：ubuntu版本代号。这个url中可能存在多个文件夹，以Codename-xxx格式命名，apt去这个url的哪个文件夹下搜索文件呢？就是根据这一行的Codename来决定的
+
+查看本机ubuntu的版本代号：`lsb_release -a`
+
+查看所有发行版代号：https://wiki.ubuntu.com/Releases
+
+/etc/apt/sources.list是所有仓库的地址(url)，每个仓库中都保存了很多软件
+
+apt update的时候，apt会去遍历sources.list中的所有url，将每个url中所包含的软件信息保存到本地(注意不是保存软件到本地，只是将仓库中的软件信息保存到本地，例如软件名，软件版本，软件签名等等)，保存到/var/lib/apt/lists/中
+
+apt install的时候去本地的软件信息中分析依赖并找到软件的下载位置，然后去安装
+
+## 仓库结构
+
+以http://cn.archive.ubuntu.com/ubuntu/这个仓库为例
+
+![image-20210621171156487](assets/image-20210621171156487.png)
+
+dists下的结构
+
+![image-20210621171706284](assets/image-20210621171706284.png)
+
+进入bionic目录
+
+![image-20210621171948327](assets/image-20210621171948327.png)
+
+进入main/binary-i386目录下，下载Packages.gz解压后得到Packages文件，这个文件是此仓库提供的所有软件的信息
+
+![image-20210621172506597](assets/image-20210621172506597.png)
 
 
 
@@ -142,17 +215,6 @@ ln  -s   /mnt/hgfs/abc   ~/
 # 在/目录下查找名字为tanght的普通文件
 find / -name tanght -type f
 
-
-
-
-
-
-
-
-
-
-
-pass
 ```
 
 
