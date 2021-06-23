@@ -1,13 +1,4 @@
-# git登陆
 
-```shell
-以https克隆时，每次push都要输入密码，可以让git记住密码：
-git config --global credential.helper store (开启记住密码功能，输入一次密码之后git会记下来)
-```
-
-![image-20200227111408413](assets/image-20200227111408413.png)
-
-# git克隆
 
 ```shell
 git remote add origin https://github.com/***/***.git
@@ -24,6 +15,169 @@ git push #将当前分支推送到远端相联系的分支
 git pull <远程主机> <远程分支> <本地分支> #拉取远程分支到本地分支
 git clone -b 分支名 远程仓库地址 # 克隆指定分支
 ```
+
+
+
+# 登陆
+
+```shell
+以https克隆时，每次push都要输入密码，可以让git记住密码：
+git config --global credential.helper store (开启记住密码功能，输入一次密码之后git会记下来)
+```
+
+![image-20200227111408413](assets/image-20200227111408413.png)
+
+# 克隆
+
+```bash
+# 克隆这个地址的master分支
+git clone https://github.com/abc/abc.git
+
+# 克隆指定分支，-b后面指定想要的分支名
+git clone -b branch_name https://github.com/abc/abc.git
+
+# clone的时候给项目重命名
+# 本来克隆下来的时候项目的名字应该是abc
+# 现在给重命名成new_name了
+git clone https://github.com/abc/abc.git new_name
+```
+
+
+
+# 分支
+
+```shell
+# 查看本地所有分支
+git branch
+
+# 查看所有分支(包含本地和远程)
+git branch -a
+
+# 创建分支：基于当前分支创建mybranch分支，但是并不切换去过
+git branch mybranch
+
+# 切换分支：切换到your_branch分支
+git checkout your_branch
+
+# 创建并切换分支：创建your_branch分支，并立即切换过去
+git checkout -b your_branch
+
+# 修改分支名：修改当前分支的名字为main
+git branch -m main
+
+# 删除分支：删除本地名字为test的分支
+# 前提是不能删除你当前所在的分支，因为若是删了，git不知道该把你放在那里
+# 如果test分支新开发的东西还没有被合并到master上，则删除失败(防止误删除)
+git branch -d test
+
+# 强制删除：不管有没有被合并到master，直接强制删除
+git branch -D test
+
+# 删除远程分支：删除远程名字为your_branch的分支
+git push origin --delete your_branch
+```
+
+
+
+# 推送
+
+```shell
+# 这个命令的行为与config push.default的值有关
+# push.default可选的值是[nothing,current,upstream,simple,matching]
+# 设置为nothing，则禁止这个含糊的命令，若要push则必须指明远程仓库和分支
+# 默认是simple，会推送到远端的同名分支
+git push
+
+# 推送当前分支到远端指定分支：我要把当前分支路径上的所有commit上传到origin仓库的branch1分支上
+# 当前分支不必叫branch1，可以是任何名字，反正不管当前分支的名字是什么，整条命令都会将当前分支推送到origin的branch1上
+git push origin branch1
+```
+
+
+
+# 合并
+
+merge的时候git做了两个动作：
+
+1. 将指定分支上所有的commit同步到当前分支上
+2. 在当前分支上生成一个新commit
+
+所以merge的最后，会要求输入commit信息。但是如果出现冲突的时候，merge就不会自动帮我们commit了，需要我们手动处理冲突之后，再自己commit。
+
+如果有冲突出现，git会处于冲突待解决状态，需要程序员手动解决冲突然后commit或者放弃merge
+
+```shell
+# 合并分支：合并branch1分支上的所有commit到当前分支，并生成一个新的commit，新的commit使用默认的提交信息就可以了
+git merge branch1
+
+# 放弃merge：当前分支回到未merge时的状态，前提是git处于冲突待解决状态
+git merge --abort
+```
+
+
+
+# 暂存
+
+注意概念的理解，暂存的是"改动"而不是文件
+
+```shell
+# 将your_filename的改动放入暂存区
+git add your_filename
+
+# 将所有改动放入暂存区
+git add *
+
+# 将所有改动放入暂存区
+git add .
+```
+
+
+
+# git log
+
+```shell
+# 按顺序列出所有commit
+git log
+
+# 查看所有commit的详细改动
+# 按顺序列出所有commit，将每个commit的详细信息也显示出来
+# 比如再这个commit中增加了哪一行，删除了哪一行等
+git log -p
+
+# 查看commit的统计信息
+git log --stat
+
+# 查看指定commit的详细改动
+git show commitID
+
+# 查看当前commit的详细改动
+git show
+
+# 查看指定commit的指定文件的详细改动
+git show commitID filename
+```
+
+
+
+# git diff
+
+```shell
+# 对比工作目录和暂存区之间的不同
+# 换句话说，这条指令可以让你看到"如果你此时执行add *，会向暂存区添加什么"
+git diff
+
+# 对比暂存区和最近的commit之间的不同
+# 换句话说，这条指令可以让你看到"如果你此时执行commit，会提交什么"
+git diff --staged
+
+# 与--staged完全相同
+git diff --cached
+
+# 对比工作目录与HEAD
+git diff HEAD
+```
+
+
 
 
 
@@ -139,14 +293,6 @@ git remote show origin  # 查看origin详细信息
 ```shell
 git remote add origin https://github.com/tanght1994/fishwebsdk.git # 添加远程仓库地址,起别名为origin
 git remote remove origin	# 删除别名为origin的远程仓库
-```
-
-# 分支
-
-```shell
-git branch -M main		# 修改当前分支的名字为main
-git branch -D main  	# 删除main分支
-git push origin --delete your_branch  # 删除远程分支
 ```
 
 
