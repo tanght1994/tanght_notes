@@ -179,6 +179,32 @@ git diff HEAD
 
 
 
+# 远程分支
+
+```shell
+# 查看所有分支，包括本地和远程
+git branch -a
+
+# 取回所有远程分支的信息
+# 远程新建了分支，branch -a是看不见的，需要fetch一下
+git fetch
+
+# 远程分支删除了，同步到本地
+# 查看哪个远程分支被删除了，删除的分支后面带有标志stale(不新鲜)
+git remote show origin
+
+# 使用这个命令删除在远程已经被删除了的本地分支
+git remote prune origin
+```
+
+
+
+# 刚刚的commit错了想要修改
+
+```shell
+git commit --amend
+```
+
 
 
 

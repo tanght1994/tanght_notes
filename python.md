@@ -852,3 +852,14 @@ a.encode('utf-8')将字符串a的utf-8格式的字节流返回给我
 
 b.decode('utf-8')将字节流b按照utf-8规则解释成字符串
 
+
+
+```python
+class PostCleaner(DictField):
+    game_id = IntField(min=0)  # 大于等于0的整数
+    country_id = ListField(item=IntField())  # 整数列表
+    force = F_field.IntField(default=0)  # 默认值
+    version = VersionField(sname='app_version')  # 重命名
+    other = OtherCleaner()  # 嵌套结构
+```
+
