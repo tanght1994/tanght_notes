@@ -611,3 +611,135 @@ top命令用于打开资源占用信息窗口(类似windows的任务管理器)
 **查看指定进程：**`top -p 1,2,3,4`
 
 -p后面跟想要查看的进程id，如果有一个就写一个，如果有多个就写多个并用逗号隔开
+
+
+
+
+
+# makefile
+
+## 简介
+
+makefile格式如下
+
+```shell
+目标:依赖
+[Tab]cmd
+```
+
+当我们在命令行执行`make`命令的时候，自动执行第一个目标。
+
+我们也可以`make your_target`来执行指定的target。
+
+当在当前目录中可以找到目标时：
+
+检测依赖是否比目标新，如果依赖比目标新，则重新生成目标。
+
+如果如果依赖不比目标新，则什么也不做。
+
+当在当前目录中没有找到目标时：
+
+直接生成目标(执行目标下的cmd就会生成目标了)
+
+如何生成目标：
+
+首先检查依赖是否存在，如果不存在，就先生成依赖，所有依赖全部OK之后，再生成目标。
+
+## 设置依赖规则
+
+低级做法，手动设置所有规则
+
+```makefile
+a.out: a.o b.o c.o
+	gcc a.o b.o c.o -o a.out
+	
+a.o: a.c
+	gcc -c a.c -o a.o
+	
+b.o: b.c
+	gcc -c b.c -o b.o
+	
+c.o: c.c
+	gcc -c c.c -o c.o
+```
+
+高级做法，设置通用规则
+
+```makefile
+a.out: a.o b.o c.o
+	gcc a.o b.o c.o -o a.out
+
+# 通用规则，优先级低
+%.o: %.c
+	gcc -c $< -o $@
+
+# 具体规则，优先级高
+b.o: b.c aaa.c bbb.c ccc.c ddd.c
+	gcc -c b.c aaa.c bbb.c ccc.c ddd.c -o b.o
+```
+
+解释：假设我们的目录中只有.c文件，可执行文件与.o文件都还没生成。
+
+1. `a.out`需要`a.o b.o c.o`
+2. 所以make会去遍历makefile文件，寻找生成a.o的规则，b.o的规则，c.o的规则。
+3. ok，找到了b.o的规则，则执行此规则下面的命令。命令执行完毕，b.o出现。
+4. 全文都找不到`a.o c.o`的规则，make该启用B计划了，查找通用规则。
+5. ok发现了`%.o`的规则，正好适合这里的`a.o`目标，将`a.o`中的`a`提取出来，依据通用规则来生成具体规则`a.o: a.c`。
+6. `%.o`这个通用规则同样适用`c.o`目标，同上。
+7. ok，`a.o b.o c.o`生成完毕，现在来生成`a.out`。
+
+
+
+命令行中给makefile传递变量
+
+```shell
+make ABC=true DEF="haha"
+```
+
+makefile中执行linux命令，并获得命令的结果。必须是`$(shell your_cmd)`这种格式。
+
+```makefile
+UNAME := $(shell uname -s)
+```
+
+`= := ?= +=`
+
+```makefile
+# = 所有makefile展开后再决定变量的值，所以此处的y = xyz bar
+x = foo
+y = $(x) bar
+x = xyz
+
+# := 立即取值，不要所有makefile全部加载完毕再决定，所以此处的y = foo bar
+x := foo
+y := $(x) bar
+x := xyz
+
+# += 顾名思义，在变量后面追加，两个变量之间自动添加一个空格。x = a b
+x = a
+x += b
+
+# ?= 条件赋值，只有在此变量是第一次定义的时候才生效。如果此变量已经被定义过了，则此条语句无效. a=1
+a = 1
+a ?= 2
+```
+
+通配符展开
+
+```shell
+# 错误，通配符展开不能通过变量传递。
+OBJ=*.c
+test:$(OBJ)
+    gcc -o $@ $^
+    
+# wildcard帮忙展开，然后放到需要的地方
+OBJ=$(wildcard *.c)
+test:$(OBJ)
+    gcc -o $@ $^
+```
+
+
+
+
+
+# cmake
