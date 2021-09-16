@@ -131,7 +131,7 @@ from importlib import import_module
 m = import_module('tanght')
 
 # 加载[sys.path]/zhangsan/lisi/wangwu这个路径下的haha
-# 如果haha是个文件，则加载haha.py，如果没有haha,py则报错
+# 如果haha是个文件，则加载haha.py，如果没有haha.py则报错
 # 如果haha是个目录，则加载haha目录下的__init__.py文件，如果没有__init__.py文件则报错
 m = import_module('zhangsan.lisi.wangwu.haha')
 ```

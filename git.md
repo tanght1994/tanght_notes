@@ -44,7 +44,18 @@ git clone https://github.com/abc/abc.git new_name
 
 
 
-# 分支
+# 远程仓库
+
+```shell
+# 查看所有远程名字的信息，比如origin对应的地址
+git remote -v
+```
+
+
+
+# 分支（branch）
+
+## 查看
 
 ```shell
 # 查看本地所有分支
@@ -53,15 +64,42 @@ git branch
 # 查看所有分支(包含本地和远程)
 git branch -a
 
-# 创建分支：基于当前分支创建mybranch分支，但是并不切换去过
+# 有时候看不到远程分支，需要fetch同步一下
+git fetch
+```
+
+## 创建
+
+```shell
+# 基于当前分支创建mybranch分支，但是并不切换去过
 git branch mybranch
 
-# 切换分支：切换到your_branch分支
+# 基于test分支创建mybranch分支，但是并不切换去过
+git branch mybranch test
+
+# 基于远程origin/test分支创建mybranch分支，但是并不切换去过
+git branch mybranch origin/test
+```
+
+## 切换
+
+```shell
+# 切换到your_branch分支
 git checkout your_branch
 
-# 创建并切换分支：创建your_branch分支，并立即切换过去
+# 创建your_branch分支，并立即切换过去
 git checkout -b your_branch
 
+# 基于b2分支创建b1分支，并立即切换到b1
+git checkout -b b1 b2
+
+# 基于origin/b2远程分支创建b1分支，并立即切换到b1
+git checkout -b b1 origin/b2
+```
+
+## 其他
+
+```shell
 # 修改分支名：修改当前分支的名字为main
 git branch -m main
 
@@ -79,7 +117,46 @@ git push origin --delete your_branch
 
 
 
-# 推送
+# 远程分支
+
+```shell
+# 查看所有分支，包括本地和（本地远程）
+# 本地远程是什么鬼？git中不存在真正的远程仓库，所有仓库都存在本地
+# 本地远程是远程仓库的一个copy，时不时的需要fetch同步一下
+git branch -a
+
+# 取回所有远程分支的信息
+# 远程新建了分支，branch -a是看不见的，需要fetch一下
+git fetch
+
+# 远程分支删除了，同步到本地
+# 查看哪个远程分支被删除了，删除的分支后面带有标志stale(不新鲜)
+git remote show origin
+
+# 使用这个命令删除在远程已经被删除了的本地分支
+git remote prune origin
+```
+
+
+
+# 将其它人的分支获取到本地
+
+```shell
+# 同步远程仓库，不然看不到其它人新建的分支
+git fetch
+
+# 显示所有分支，包括本地分支和远程分支
+git branch -a
+
+# 基于远程分支，创建一个本地分支
+# 比如说 branch -a 的时候看到的新的分支名是 origin/zhangsan
+# 我们想要在本地创建一个test分支(基于origin/zhangsan)
+git checkout -b test origin/zhangsan
+```
+
+
+
+# 推送（push）
 
 ```shell
 # 这个命令的行为与config push.default的值有关
@@ -95,7 +172,16 @@ git push origin branch1
 
 
 
-# 合并
+# 拉取（pull）
+
+```shell
+# 将origin branch1的代码fetch下来，并与当前所在分支merge
+git pull origin branch1
+```
+
+
+
+# 合并（merge）
 
 merge的时候git做了两个动作：
 
@@ -116,7 +202,7 @@ git merge --abort
 
 
 
-# 暂存
+# 暂存（add）
 
 注意概念的理解，暂存的是"改动"而不是文件
 
@@ -129,39 +215,59 @@ git add *
 
 # 将所有改动放入暂存区
 git add .
+
+# 添加删除的文件到暂存区
+git add -A -- your_file_name
+
+# 添加删除的文件到暂存区(所有)
+git add -A
 ```
 
 
 
-# git log
+# 查看提交信息（log、show）
+
+## commit历史信息
 
 ```shell
 # 按顺序列出所有commit
 git log
 
+# 每条commit信息输出为1行
+git log --oneline
+
 # 查看所有commit的详细改动
 # 按顺序列出所有commit，将每个commit的详细信息也显示出来
 # 比如再这个commit中增加了哪一行，删除了哪一行等
+# 这是显示差异最详细的命令了
 git log -p
 
 # 查看commit的统计信息
+# 比git log -p简单，比git log详细
 git log --stat
+```
 
-# 查看指定commit的详细改动
+## 指定commit信息
+
+```shell
+# 查看指定commit的详细改动（所有文件的详细改动）
 git show commitID
-
-# 查看当前commit的详细改动
-git show
 
 # 查看指定commit的指定文件的详细改动
 git show commitID filename
+
+# 查看当前commit的详细改动
+git show
 ```
 
 
 
-# git diff
+# 对比（diff）
 
 ```shell
+# --stat，只列出文件名字，不显示具体修改内容，对下面所有命令都生效
+git diff --stat
+
 # 对比工作目录和暂存区之间的不同
 # 换句话说，这条指令可以让你看到"如果你此时执行add *，会向暂存区添加什么"
 git diff
@@ -175,26 +281,12 @@ git diff --cached
 
 # 对比工作目录与HEAD
 git diff HEAD
-```
 
+# 比较当前工作目录与commitid
+git diff commitid
 
-
-# 远程分支
-
-```shell
-# 查看所有分支，包括本地和远程
-git branch -a
-
-# 取回所有远程分支的信息
-# 远程新建了分支，branch -a是看不见的，需要fetch一下
-git fetch
-
-# 远程分支删除了，同步到本地
-# 查看哪个远程分支被删除了，删除的分支后面带有标志stale(不新鲜)
-git remote show origin
-
-# 使用这个命令删除在远程已经被删除了的本地分支
-git remote prune origin
+# 比较当前工作目录与branch_name最近的commit之间的差别
+git diff branch_name
 ```
 
 
@@ -207,63 +299,51 @@ git commit --amend
 
 
 
+# 放弃修改
 
-
-# git fetch
-
-使用`git branch -a`可以列出本地与远程的所有分支名字。但是如果远程仓库新增了一个分支，你电脑上的git是怎么知道远程仓库新增了一个分支呢？`git branch -a`可不负责联网去同步一下，那么谁负责呢？`git fetch`负责。
-
-```shell
-# 首先同步一下远程仓库
-git fetch origin
-# 然后再列出所有分支
-git branch -a
-```
-
-
-
-```shell
-git fetch origin 远程分支名:新建本地分支名
-```
-
-
-
-
-
-# git diff
-
-```shell
-# 比较当前工作目录与commitid的差别，只列出文件名字
-git diff commitid --stat
-```
-
-- `git diff commitid --stat`：大苏打似的
-- `git diff commitid --stat`：大苏打似的
-- `git diff commitid --stat`：大苏打似的
-- `git diff commitid --stat`：大苏打似的
-
-
-
-
-
-# 放弃已经add后的文件的修改
+## 放弃已经add后的文件的修改
 
 - 先将这个文件由绿色变为红色（文件离开暂存区）
 - 再对这个红色的文件checkout（对工作区中的变化进行还原）
 - 因为绿色的文件无法checkout
 
 ```bash
-git reset -q HEAD -- E:\test\2.txt    # 由绿色变为红色，仅仅是变色，文件内容并不会发生变化
-git checkout -q -- E:\test\2.txt      # 再对红色的文件checkout，本次的所有修改都被还原
+# 由绿色变为红色，仅仅是变色，文件内容并不会发生变化
+git reset HEAD -- E:\test\2.txt
 
+# 再对红色的文件checkout，这个文件的所有修改都被还原
+git checkout -- E:\test\2.txt
+
+# 将暂存区的文件全部取消暂存（不用挨个指定文件名了）
+git reset HEAD .
 ```
 
+## 放弃没有add的文件的修改
 
+前提是，这个文件已经被git跟踪了，不能是Untracked的状态
 
-# 放弃没有add的文件的修改
+也就是说，如果对新建的文件使用这个命令，是不起作用的
+
+因为新建的文件还没有被git跟踪呢
 
 ```bash
-git checkout -q -- E:\test\2.txt
+# 放弃指定文件的修改
+git checkout -- E:\test\2.txt
+
+# 放弃工作区的所有文件的修改
+git checkout .
+```
+
+## 放弃没有被跟踪的文件的修改（新建的文件，还没被add）
+
+跟手动删除没有任何区别，唯一的方便就是批量删除所有Untracked的文件
+
+```shell
+# 删除所有未跟踪的文件
+git clean -f
+
+# 删除指定文件
+git clean -f -- E:\test\2.txt
 ```
 
 

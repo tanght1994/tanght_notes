@@ -596,6 +596,31 @@ systemctl status/start/stop firewalld
 service iptables status/start/stop
 ```
 
+
+
+
+
+```shell
+# 开放防火墙
+iptables -I INPUT -p tcp --dport 27017 -j ACCEPT
+
+# --line-number 可以查看每条规则的序号
+iptables -L -n --line-number
+# 删除INPUT链的2号规则
+iptables -D INPUT 2
+
+# iptables-save是一条命令，他的作用是将当前设置保存至y文件中
+iptables-save > iptables.config
+
+# 这条命令估计是调用了iptables-save
+service iptables save
+
+# iptables配置文件的位置
+/etc/sysconfig/iptables
+```
+
+
+
 # Linux资源占用查看
 
 top命令用于打开资源占用信息窗口(类似windows的任务管理器)
@@ -736,6 +761,22 @@ test:$(OBJ)
 OBJ=$(wildcard *.c)
 test:$(OBJ)
     gcc -o $@ $^
+```
+
+字符串处理
+
+后缀替换
+
+```makefile
+# 替换.cpp为.o，如果这个元素没有.cpp，则直接输出原值
+SRC = 1.cpp 2.c 3.cpp
+OBJ = $(patsubst %.cpp, %.o, $(SRC))
+# 结果OBJ = 1.o 2.c 3.o
+
+# 同上，简化写法
+SRC = 1.cpp 2.c 3.cpp
+OBJ = $(SRC:.cpp=.o)
+# 结果OBJ = 1.o 2.c 3.o
 ```
 
 
