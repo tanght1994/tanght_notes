@@ -89,7 +89,7 @@ mysql -u root -p
 
 
 
-储存过程
+# 储存过程
 
 ```mysql
 SET @abc = 10;	# 声明+设置局部变量
@@ -105,6 +105,42 @@ SET @sql_get_mark_id = CONCAT('SELECT id INTO @mark_id FROM ', param_table_name,
 PREPARE stmt FROM @sql_get_mark_id;
 EXECUTE stmt;
 ```
+
+
+
+用procedure来创建表
+
+```mysql
+USE `testdb`;
+DROP procedure IF EXISTS `procedure_test`;
+
+DELIMITER $$
+USE `oversea`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `procedure_test`(IN t_name VARCHAR (100))
+BEGIN
+set @s1 = "`id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '自增序列',";
+set @s2 = "`gmt_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',";
+set @s3 = "`gmt_modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '修改时间',";
+set @s4 = "`ts` int unsigned NOT NULL default 0 COMMENT '此数据创建的UTC时间戳',";
+set @s5 = "`ty` varchar(50) NOT NULL DEFAULT '' COMMENT '文档类型',";
+set @s6 = "`doc` varchar(2048) NOT NULL DEFAULT '' COMMENT '内容',";
+set @s7 = "PRIMARY KEY (`id`),";
+set @s8 = "KEY `idx_ts` (`ts`),";
+set @s9 = "KEY `idx_ty` (`ty`)";
+set @s10 = concat(@s1, @s2, @s3, @s4, @s5, @s6, @s7, @s8, @s9);
+set @s11 = "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='统计-原始数据';";
+set @sqlct = concat('CREATE TABLE ', t_name, " (", @s10, ") ", @s11);
+PREPARE sqlct FROM @sqlct;
+EXECUTE sqlct;
+END$$
+
+DELIMITER ;
+
+```
+
+
+
+
 
 
 
@@ -159,17 +195,15 @@ sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_
 
 
 
-函数
+字符串连接函数
 
 ```sql
 -- 字符串连接，若str1，str2，strN中有一个为NULL，返回值则为NULL
-concat("str1","str2","str3",...)
+concat("str1","str2","str3",...);
 -- 尽管id或score不是string类型，也当作string类型进行连接
-select concat (id, name, score) as info from test1
-
+select concat (id, name, score) as info from test1;
 -- 使用 连接符 进行字符串连接
-concat_ws("连接符", str1, str2, ...)
-
+concat_ws("连接符", str1, str2, ...);
 -- 分组字符串连接
 group_concat()
 -- 使用名字分组，也就是说相同名字的记录只显示一条，这时候将相同名字的id连接到一起返回给我
@@ -177,6 +211,32 @@ select name, group_concat(id) from test group by name
 -- 还可以指定连接的时候的排序和分隔符(排序order by id desc)(分隔符separator "+")
 select name, group_concat(id order by id desc separator "+") from test group by name
 ```
+
+
+
+# 定时任务
+
+```shell
+# 查看event
+show events;
+
+# 创建event
+CREATE EVENT e_test2
+ON SCHEDULE EVERY 1 DAY
+DO TRUNCATE aaa;
+```
+
+
+
+# 删除所有表
+
+```shell
+SELECT concat('DROP TABLE IF EXISTS ', table_name, ';')
+FROM information_schema.tables
+WHERE table_schema = 'mydb';
+```
+
+
 
 
 

@@ -863,3 +863,14 @@ class PostCleaner(DictField):
     other = OtherCleaner()  # 嵌套结构
 ```
 
+# 离线安装
+
+```shell
+# 先用可以联网的电脑下载，下载下来的可能是压缩包，也可能是.whl
+pip download -d C:\Users\tanght\Desktop\tmp\package -r r.txt
+# r.txt就是依赖文件  pip freeze来的
+
+# 然后去不能联网的电脑上安装，多两个参数而已--no-index --find-links=
+pip install --no-index --find-links=/haha/hehe pymysql
+```
+

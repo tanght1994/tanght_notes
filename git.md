@@ -446,7 +446,11 @@ git config --list
 git config [--level] –-get user.name
 ```
 
-仓库级配置文件(local)位置在.git/config，它的优先级是最高的
+仓库级配置文件(local)位置在`.git/config`，它的优先级是最高的，用于控制则会个项目
+
+全局级配置文件(global)在`C:\Users\your_windows_username\.gitconfig`，用于控制这个用户
+
+系统级配置文件(system)在`windows没找到，linux中在/etc/gitconfig`，用于控制这台电脑
 
 ## 添加/修改
 
