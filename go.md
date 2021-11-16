@@ -357,7 +357,7 @@ message ContactBook {
 
 --go_out=plugins=grpc:aaaa   在./aaaa/下生成go文件
 
-
+protoc --go_out=plugins=grpc,paths=source_relative:. xxxx.proto
 
 # 反射
 

@@ -49,5 +49,130 @@ openssl ca -in other.csr
 
 CA_default段配置了ca子命令相关配置，比如说签发完的证书存放的位置，ca证书的位置，ca私钥的位置等等
 
+# 证书签发的过程
 
+1.拥有根证书(A)
+
+2.使用根证书(A)，签其它服务器的证书(B)
+
+3.使用根证书(A)，签其它服务器的证书(C)
+
+4.使用根证书(A)，签其它服务器的证书(D)
+
+。。。。。。
+
+5.将证书B配置到Nginx的证书上(同时将证书的密钥也配置上)
+
+6.客户端信任根证书A(预制在操作系统中，或者用户手动将A导入到设备的可信任的证书中)
+
+所以我要自己制作根证书A！
+
+# 制作根证书
+
+首先创建一些目录和文件(不然运行不了！不知道为什么openssl这么垃圾！巨难用！)，在一个干净的文件夹下运行此脚本
+
+```shell
+mkdir demoCA || exit
+cd demoCA || exit
+mkdir newcerts private || exit
+touch serial index.txt || exit
+echo 01 > serial || exit
+cd private || exit
+openssl rand -out .rand 1000 || exit
+openssl genrsa -out cakey.pem 2048 || exit
+cd ../..
+echo success
+```
+
+运行之后目录结构是这样的，my.sh是上面的脚本，其他的是新建的
+
+```shell
+./
+├── demoCA
+│   ├── index.txt
+│   ├── newcerts
+│   ├── private
+│   │   └── cakey.pem
+│   └── serial
+└── my.sh
+```
+
+然后创建ca.conf文件，随意一个路径就行，用完就可以删除，我就放当前目录好了
+
+```sh
+[ req ]
+default_bits       = 4096
+distinguished_name = req_distinguished_name
+
+[ req_distinguished_name ]
+countryName                 = countryName
+countryName_default         = CN
+stateOrProvinceName         = stateOrProvinceName
+stateOrProvinceName_default = BeiJing
+localityName                = localityName
+localityName_default        = BeiJing
+organizationName            = organizationName
+organizationName_default    = JJ
+commonName                  = commonName
+commonName_default          = TangHongTao
+commonName_max              = 64
+```
+
+然后执行以下3条命令生成根证书
+
+```shell
+# 生成私钥cakey.pem
+openssl genrsa -out demoCA/private/cakey.pem 4096
+# 使用上面生成的私钥和上面编写的ca.conf文件，生成证书请求文件ca.csr
+openssl req -new -key demoCA/private/cakey.pem -out ca.csr -config ca.conf
+# 通过证书请求文件ca.csr生成根证书cacert.pem
+openssl x509 -req -days 3650 -in ca.csr -signkey demoCA/private/cakey.pem -out demoCA/cacert.pem
+
+openssl genrsa -out server.key 2048
+openssl req -new -key server.key -out server.csr -config server.conf
+openssl x509 -req -days 3650 -CA demoCA/cacert.pem -CAkey demoCA/private/cakey.pem -CAcreateserial -in server.csr -out server.crt -extensions req_ext -extfile server.conf
+```
+
+# 使用根证书签服务器证书
+
+编写server.conf文件
+
+```shell
+[ req ]
+default_bits       = 2048
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+
+[ req_distinguished_name ]
+countryName                 = countryName
+countryName_default         = CN
+stateOrProvinceName         = stateOrProvinceName
+stateOrProvinceName_default = BeiJing
+localityName                = localityName
+localityName_default        = BeiJing
+organizationName            = organizationName
+organizationName_default    = JJ
+commonName                  = commonName
+commonName_default          = www.tanght.xyz
+commonName_max              = 64
+
+[ req_ext ]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = www.tanght.xyz
+DNS.2 = localhost
+IP.1 = 127.0.0.1
+```
+
+然后执行以下3条命令生成服务器证书
+
+```shell
+# 生成私钥server.key
+openssl genrsa -out server.key 2048
+# 生成证书请求文件server.csr
+openssl req -new -key server.key -out server.csr -config server.conf
+# 使用根证书签发服务器证书
+openssl x509 -req -days 3650 -CA demoCA/cacert.pem -CAkey demoCA/private/cakey.pem -CAcreateserial -in server.csr -out server.crt -extensions req_ext -extfile server.conf
+```
 
