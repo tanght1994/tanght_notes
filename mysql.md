@@ -297,3 +297,10 @@ Client does not support authentication protocol requested by server...
 
 
 
+# 重启Mysql
+
+```shell
+sudo /usr/local/mysql/mysql8000020/bin/mysqladmin -h127.0.0.1 -P3309 -uroot -p shutdown
+sudo nohup /usr/local/mysql/mysql8000020/bin/mysqld --defaults-file=/data/mysqldata/mysql3309/my.cnf >/dev/null 2>&1 &
+```
+

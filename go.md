@@ -435,7 +435,7 @@ Out(0)  	// 返回第0个返回值(从0开始)，Type类型
 
 # 好玩的
 
-byte()强制转换
+## byte()强制转换
 
 ```go
 // uint16 65280 二进制表示为 11111111 00000000
@@ -449,7 +449,7 @@ b = byte(a >> 8)
 
 ```
 
-slice切片
+## slice切片
 
 ```go
 // a的len=10, cap=10
@@ -464,7 +464,7 @@ fmt.Println(a, b)
 // 可以发现，a，b都被添加了1,2,3,4,5，这是因为a,b的底层数组是同一个东西
 ```
 
-slice切片
+## slice切片
 
 ```go
 a := make([]int, 10, 20)
@@ -474,15 +474,66 @@ b := a[:15]
 // 并且a,b依然共享同一个底层数组
 ```
 
-nil
+## nil
 
 ```go
 
 ```
 
+## slice作为函数参数
 
+```go
+package main
 
+import "fmt"
 
+func main() {
+	a := []string{"0"}
+    // abc想给a数组添加几个元素，想得美，门儿都没有
+    // 与map形成强烈对比
+	abc(a)
+	fmt.Println(a)
+}
 
+func abc(l []string) {
+	l = append(l, "1")
+	l = append(l, "2")
+	l = append(l, "3")
+	l = append(l, "4")
+	l = append(l, "5")
+	l = append(l, "6", "7", "8", "9")
+    // l已经重新分配内存了，所以这些新增的元素，反应不到外部的l
+    // 如果l不重新分配内存，那么l的变化会反应到外部的l
+}
+```
 
+## map作为函数参数
 
+```go
+package main
+
+import "fmt"
+
+func main() {
+	a := map[string]string{"0": "0"}
+    // abc函数可以改变a参数，即使使a变大也没事
+    // abc函数运行完之后，a参数真的变变了
+	abc(a)
+	fmt.Println(a)
+}
+
+func abc(m map[string]string) {
+	m["1"] = "1"
+	m["2"] = "1"
+	m["3"] = "1"
+	m["4"] = "1"
+	m["5"] = "1"
+	m["6"] = "1"
+	m["7"] = "1"
+	m["8"] = "1"
+	m["9"] = "1"
+    // 可以随意给m添加值，添加任意多个都没事，即使底层重新分配内存也不碍事
+}
+```
+
+为什么map会这样？golang的作者说了，用户创建的`map`其实是`*map`。在很早以前的golang，确实需要将`map`定义为`*map`，后来发现程序员只定义`*map`，从来不定义`map`，索性直接用`map`代替`*map`了。是的，就是这么随意！操！

@@ -602,7 +602,7 @@ service iptables status/start/stop
 
 ```shell
 # 开放防火墙
-iptables -I INPUT -p tcp --dport 27017 -j ACCEPT
+iptables -I INPUT -p tcp --dport 1 -j ACCEPT
 
 # --line-number 可以查看每条规则的序号
 iptables -L -n --line-number
