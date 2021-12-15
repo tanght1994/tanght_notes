@@ -304,3 +304,26 @@ sudo /usr/local/mysql/mysql8000020/bin/mysqladmin -h127.0.0.1 -P3309 -uroot -p s
 sudo nohup /usr/local/mysql/mysql8000020/bin/mysqld --defaults-file=/data/mysqldata/mysql3309/my.cnf >/dev/null 2>&1 &
 ```
 
+# 查看mysql状态
+
+mysql有两种变量(全局变量、会话变量)，一种状态(当前实例的状态)
+
+show global variables查看全局变量
+
+set global var_name=value设置全局变量(此session必须是root才有权限设置全局变量)
+
+set session var_name=value设置会话变量(设置自己的变量随意设置，不影响其它session)
+
+show global status查看mysql的状态
+
+```mysql
+show variables;
+show variables like "%max_prepared_stmt_count%";
+SET GLOBAL var_name
+SET SESSION var_name
+
+
+SHOW GLOBAL STATUS;
+SHOW GLOBAL STATUS LIKE 'com_stmt%';
+```
+

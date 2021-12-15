@@ -33,8 +33,6 @@ useradd tanght
 passwd tanght
 ```
 
-
-
 ## 打包/压缩/解压
 
 ```shell
@@ -62,8 +60,6 @@ tar --exclude=test1/test2 dir1.tar.gz dir1
 
 注意：f参数必须在所有参数之后
 
-
-
 ## 软连接
 
 ```shell
@@ -71,12 +67,14 @@ tar --exclude=test1/test2 dir1.tar.gz dir1
 ln -s path1 path2
 ```
 
-
-
 ## 查看目录大小
 
 ```shell
+# 查看当前目录的大小（查看.的总大小）
 du -sh
+
+# 查看当前目录下（各个目录的大小，包括.）
+du -h --max-depth=1
 ```
 
 
@@ -92,11 +90,36 @@ du -sh
 sort -rn -k 3 filename.txt
 ```
 
+## 查找find
+
+```shell
+# 在/目录下查找名字为tanght的普通文件
+find / -name tanght -type f
+# 正则表达式
+find / -name "tanght*" -type f
+```
+
+## 文本分析
+
+wc简单行数统计
+
+```shell
+wc -l
+wc -l f1
+wc -l f1 f2 f3
+```
+
+awk文本分析(没用，太复杂，已经被21世纪抛弃了)
+
+awk使用分隔符(默认是空格或tab键)来分割一条记录，将一条记录分隔成N块。$0则代表所有块，$1表示第一个块，$n表示第n块。
+
+```shell
+awk [options] 'pattern + action' filename
+```
 
 
 
-
-# 查看端口被谁占用
+# 端口占用
 
 ```shell
 lsof -i
@@ -108,6 +131,51 @@ lsof abc.txt 显示开启文件abc.txt的进程 lsof -c abc 显示abc进程现�
 
 
 # 软件包安装
+
+Ubuntu：高级apt，基本dpkg
+
+Centos：高级yum，基本rpm
+
+Ubuntu
+
+```shell
+# 更新本地软件仓库至最新(将远程软件仓库又新增了哪些软件，软件仓库中的软件版本等等这些信息同步过来)
+apt update
+# 更新已经安装的软件到最新
+apt upgrade
+# 安装软件
+apt-get install PackageName
+# 指定版本
+apt-get install PackageName=VersionName
+# 重新安装
+apt-get --reinstall install PackageName
+# 安装源码包所需要的编译环境
+apt-get build-dep PackageName
+# 下载软件包的源码
+apt-get source PackageName
+
+
+# 删除软件包, 保留配置文件
+apt-get remove PackageName
+# 删除软件包, 同时删除配置文件
+apt-get remove PackageName --purge
+# 删除软件包, 同时删除为满足依赖而自动安装且不再使用的软件包
+apt-get autoremove PackageName 
+# 删除软件包, 删除配置文件,删除不再使用的依赖包
+apt-get --purge autoremove PackageName
+# 清除 已下载的软件包 和 旧软件包
+apt-get clean && apt-get autoclean
+
+
+# 列出本地软件仓库中的所有包(包含已安装和未安装的，所有的)，已安装的软件会带有[installed]标签
+apt list
+# 指定名字
+apt list mysql*
+# 列出已经安装的软件
+apt list --installed
+# 列出可升级的软件
+apt list --upgradable
+```
 
 
 
@@ -125,8 +193,6 @@ wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-
 wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
 ```
 
-
-
 ### Ubuntu
 
 ```shell
@@ -138,8 +204,6 @@ deb       http://xx.xx.xx/xx/    bionic        main restricted universe multiver
 ————————————————
 每一个源(http://xx.xx.xx/xx/)目录下都应该至少包含dists和pool两个目录，否则就是无效的源
 ```
-
-
 
 ## apt原理
 
@@ -205,17 +269,6 @@ dists下的结构
 进入main/binary-i386目录下，下载Packages.gz解压后得到Packages文件，这个文件是此仓库提供的所有软件的信息
 
 ![image-20210621172506597](assets/image-20210621172506597.png)
-
-
-
-```shell
-# 在~/目录下生成一个/mnt/hgfs/abc的软连接，名字为abc
-ln  -s   /mnt/hgfs/abc   ~/
-
-# 在/目录下查找名字为tanght的普通文件
-find / -name tanght -type f
-
-```
 
 
 
@@ -479,35 +532,31 @@ enable（开机启动）的原理就是在`/etc/systemd/system/xxx.target.wants`
 
 在任何命令后面加上&，就会将此命令/程序放到后台运行。
 
-后台运行意味着什么呢？意味着不能从当前终端给这个程序标准输入了，所以我们能看到，后台运行的程序不会阻塞住当前终端，当前终端可以立即接受新的用户操作；意味着不能从当前终端给程序传递信号了，Ctrl+C不管用了；
+后台运行意味着什么呢？意味着不能从当前终端给这个程序标准输入了，所以我们能看到，后台运行的程序不会阻塞住当前终端，当前终端可以立即接受新的用户操作；也意味着不能从当前终端给程序传递信号了，Ctrl+C不管用了；
 
 ## nohup
 
-在一条命令/程序之前加上nohup，就会使此程序忽略SIGHUP信号
+在任何一条命令之前加上nohup，就会使此程序忽略SIGHUP信号。
 
-SIGHUP信号是什么鬼？当关闭某个终端时，这个终端会给自己下面的所有程序发送SIGHUP信号，通知自己的程序"我死了，你们看着办吧"，程序在收到这个信号时就会知道终端死了，就可以决定自己下一步该怎么办，大部分程序的行为都是跟着终端一起去死。
+SIGHUP信号是什么鬼？当关闭某个终端时，这个终端会给自己下面的所有程序发送SIGHUP信号，通知自己的程序"我死了，你们看着办吧"，程序在收到这个信号时就会知道终端死了，就可以决定自己下一步该怎么办，大部分程序的行为都是跟着终端一起去死。当父进程结束时，也会给自己的子进程发送SIGHUP信号。
 
 ## 2>&1
 
 任何命令后方加上2>&1，就会将此程序的stderr重定向到stdout
 
-stderr重定向到stdout？我没听错吧？这什么意思？意思就是，stdout去哪里，我stderr就去哪里，我跟定你了！
+stderr重定向到stdout？我没听错吧？这什么意思？意思就是，stdout去哪里，stderr就去哪里，跟定你了！
 
-`command > 123.txt`这个命令只是将stdout重定向到123.txt了，stderr依然向终端喷射东西，所以加上2>&1会将stderr也扔到123.txt，当然了，也可以直接使用2>123.txt，这样的话就需要打开两次123.txt,而且stdout与stderr的输出可能会相互覆盖
-
-
+`command > 123.txt`这个命令只是将stdout重定向到123.txt了，stderr依然向终端输出东西，所以加上2>&1会将stderr也扔到123.txt，当然了，也可以直接使用2>123.txt，这样的话就需要打开两次123.txt,而且stdout与stderr的输出可能会相互覆盖
 
 # SSH登陆
 
 电脑A通过第三方工具远程控制电脑B，电脑A每次控制电脑B时都需要输入密码，为了避免重复输入密码，可以使用SSH服务，将电脑A的公钥放入电脑B的SSH的authorized_keys中。
 
-在该用户家目录的.ssh文件夹下找到authorized_keys这个文件(没有就新建)，确认这个文件的权限是600(不是的话就改成600)，将另一台电脑生成的公钥复制到authorized_keys这个文件中，保存，重启ssh服务。
+在该用户家目录的.ssh文件夹下找到authorized_keys这个文件(没有就新建)，确认这个文件的权限是**600**(不是的话就改成600)，将另一台电脑生成的公钥复制到authorized_keys这个文件中，保存，重启ssh服务。
 
 允许root使用ssh登陆，需要修改/etc/ssh/sshd_config文件，添加一句命令`PermitRootLogin yes`
 
 出现警告`the ECDSA host key for 'xxxx' differs from the key for the IP address 'xxxxx'`，删除电脑A的known_hosts文件，这个文件在该用户家目录的.ssh文件夹中
-
-
 
 # 生成公钥私钥
 
@@ -523,8 +572,6 @@ linux下只要安装了ssh那么就可以使用ssh-keygen命令来生成公钥�
 或者任何参数都不加，直接`ssh-keygen`，利用交互式创建
 
 
-
-
 # 动态库路径
 
 `export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:your_path`
@@ -537,8 +584,6 @@ ld.so.conf中一般是`include /etc/ld.so.conf.d/*.conf`，意思是包含ld.so.
 
 所以用户可以在ld.so.conf.d中新增自己的.conf文件，将路径写到自己的文件中就行了
 
-
-
 # g++ include路径
 
 查看
@@ -550,8 +595,6 @@ CPATH环境变量影响gcc与g++的include
 CPLUS_INCLUDE_PATH影响g++
 
 C_INCLUDE_PATH影响gcc
-
-
 
 # source命令
 
@@ -598,8 +641,6 @@ service iptables status/start/stop
 
 
 
-
-
 ```shell
 # 开放防火墙
 iptables -I INPUT -p tcp --dport 1 -j ACCEPT
@@ -621,7 +662,7 @@ service iptables save
 
 
 
-# Linux资源占用查看
+# 资源占用情况(top)
 
 top命令用于打开资源占用信息窗口(类似windows的任务管理器)
 

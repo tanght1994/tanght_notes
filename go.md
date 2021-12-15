@@ -537,3 +537,84 @@ func abc(m map[string]string) {
 ```
 
 为什么map会这样？golang的作者说了，用户创建的`map`其实是`*map`。在很早以前的golang，确实需要将`map`定义为`*map`，后来发现程序员只定义`*map`，从来不定义`map`，索性直接用`map`代替`*map`了。是的，就是这么随意！操！
+
+# Redis
+
+核心，连接redis(Dial)，操作redis(Do)
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/gomodule/redigo/redis"
+)
+
+func main() {
+	// 先创建几个DialOption玩儿玩儿
+	// DialOption用于配置redis客户端
+	// 比如设置客户端名字(命令为CLIENT SETNAME haha)
+	// 使用密码登陆redis(命令为AUTH your_password)
+	// 使用用户+密码登陆redis(命令为AUTH your_name your_password)
+	// 等等...
+	ocn := redis.DialClientName("tanghttest")
+	opw := redis.DialPassword("Tht940415,./")
+	// Dial接收N个DialOption选项,上面创建的，这里给它传递进去就行了
+	c, e := redis.Dial("tcp", "www.tanght.xyz:6379", ocn, opw)
+	if e != nil {
+		fmt.Println("连接redis失败", e.Error())
+	}
+	// 然后就可以使用c了，c是redis的连接，通过c给redis发命令就行了
+	// redis返回的是interface类型，可以使用redis包提供的类型转换函数进行转换
+	// 比如redis.String()将redis的返回值转换为string类型
+	fmt.Println(redis.String(c.Do("GET", "tanght")))
+	fmt.Println(redis.String(c.Do("SET", "tanght", "100")))
+	fmt.Println(redis.String(c.Do("GET", "tanght")))
+}
+```
+
+连接池
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/gomodule/redigo/redis"
+)
+
+func main() {
+	p := redis.Pool{MaxIdle: 10, MaxActive: 100, Dial: redisDial, IdleTimeout: 10 * time.Second}
+	c := p.Get()
+	defer c.Close()
+	fmt.Println(redis.String(c.Do("GET", "tanght")))
+	fmt.Println(redis.String(c.Do("SET", "tanght", "100")))
+	fmt.Println(redis.String(c.Do("GET", "tanght")))
+	fmt.Println("haha")
+}
+
+func redisDial() (redis.Conn, error) {
+	ocn := redis.DialClientName("haha")
+	opw := redis.DialPassword("xxxx")
+	return redis.Dial("tcp", "www.abc.com:6379", ocn, opw)
+}
+```
+
+# 标准库
+
+## bytes
+
+```go
+// 按照sep为分隔符切割s，将s分割为一堆小s，分隔符直接扔掉，小s中不带分隔符
+func Split(s, sep []byte) [][]byte
+
+// 与Split功能一样，只不过分割后的小s中带有sep，也就是说每个小s都带一个sep尾巴(最后一个小s可能没有分隔符)
+func SplitAfter(s, sep []byte) [][]byte
+
+// 与Split一样，只不过[][]byte的长度最大为n
+func SplitN(s, sep []byte, n int) [][]byte
+```
+
