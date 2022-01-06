@@ -26,7 +26,7 @@ Ubuntu/Centos相同
 ```bash
 /etc/docker/daemon.json
 {
-	"registry-mirrors":["https://reg-mirror.qiniu.com/"] # 加速地址是在阿里云上申请的
+	"registry-mirrors":["http://f1361db2.m.daocloud.io"]
 }
 ```
 
@@ -248,8 +248,9 @@ docker load < /path/xxx.tar
 
 
 
-
+# 配置文件位置
 
 ```
+/etc/docker/daemon.json
 ```
 

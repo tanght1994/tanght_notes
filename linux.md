@@ -270,6 +270,10 @@ dists下的结构
 
 ![image-20210621172506597](assets/image-20210621172506597.png)
 
+apt源修改
+
+
+
 
 
 # 定时任务
@@ -655,12 +659,29 @@ iptables-save > iptables.config
 
 # 这条命令估计是调用了iptables-save
 service iptables save
-
+iptables -A INPUT -s 192.168.58.139 -p tcp -j ACCEPT
 # iptables配置文件的位置
 /etc/sysconfig/iptables
+
+# -A INPUT：向INPUT地点添加一条规则
+# -s 2.3.4.5：源地址
+# -p tcp：只对tcp协议生效
+# -j ACCEPT：动作是接受
+# 允许2.3.4.5地址访问本机的所有tcp端口
+iptables -A INPUT -s 2.3.4.5 -p tcp -j ACCEPT
+
+# 拒绝所有机器访问本机的tcp/80端口
+iptables -A INPUT -s 0.0.0.0/0 -p tcp --dport 80 -j DROP
+iptables -nvL –line-number
+# 允许192.168.58.139访问本机3306端口
+iptables -A INPUT -s 192.168.58.139 -p tcp --dport 1024:65535 -j ACCEPT
+iptables -D INPUT -s 192.168.58.139 -p tcp --dport 3306 -j ACCEPT
+iptables -A INPUT -s 192.168.58.139 -p tcp -m multiport --dports 1 -j ACCEPT
 ```
 
+## iptables
 
+![image-20220106114518953](assets/image-20220106114518953.png)
 
 # 资源占用情况(top)
 
@@ -818,6 +839,12 @@ OBJ = $(patsubst %.cpp, %.o, $(SRC))
 SRC = 1.cpp 2.c 3.cpp
 OBJ = $(SRC:.cpp=.o)
 # 结果OBJ = 1.o 2.c 3.o
+```
+
+# 查看系统版本
+
+```shell
+cat /proc/version
 ```
 
 

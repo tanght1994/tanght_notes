@@ -313,10 +313,11 @@ go get -u github.com/kataras/iris/v12@latest
 
 ```shell
 option go_package = "{path};{package_name}";
-# path：指定生成的xx.pb.go文件的位置
+# path：指定生成的xx.pb.go文件的位置(以cmd中--go_out=的路径为基路径)
 # package_name：指定xx.pb.go文件中，package的名字
 # 下面是具体的例子，生成的文件在当前目录下，文件中的package名字是hahaha
 option go_package = "./;hahaha";
+# 注意"./;hahaha"最终的路径要加上cmd中指定的--go_out的路径
 ```
 
 proto文件
@@ -358,6 +359,33 @@ message ContactBook {
 --go_out=plugins=grpc:aaaa   在./aaaa/下生成go文件
 
 protoc --go_out=plugins=grpc,paths=source_relative:. xxxx.proto
+
+protoc --go_out=plugins=grpc:. xxxx.proto
+
+```go
+import google.golang.org/protobuf/proto"
+
+// 制作一个protobuf中的结构体
+p = &pba.Person{Name: "", .......}
+// 将p编码为[]byte
+b, e := proto.Marshal(p)
+fmt.Println(b)
+
+// 创建一个空的Persion，准备接收解码的数据
+p2 := &pba.Person{}
+// 将字节流解码为p2
+e = proto.Unmarshal(b, p2)
+```
+
+# grpc
+
+111
+
+
+
+222
+
+333
 
 # 反射
 
@@ -607,6 +635,14 @@ func redisDial() (redis.Conn, error) {
 
 ## bytes
 
+提供字符串处理常用方法，比如字符串分割，字符串比较，搜索子字符串，字符串数组join，字符串替换等等。
+
+提供一个buffer，可以从里面读数据(Reader)或向里面写数据(Writer)。
+
+提供一个Reader，跟buffer有什么不同？我也不知道，感觉跟buffer类似了。
+
+### 常用函数
+
 ```go
 // 按照sep为分隔符切割s，将s分割为一堆小s，分隔符直接扔掉，小s中不带分隔符
 func Split(s, sep []byte) [][]byte
@@ -616,5 +652,24 @@ func SplitAfter(s, sep []byte) [][]byte
 
 // 与Split一样，只不过[][]byte的长度最大为n
 func SplitN(s, sep []byte, n int) [][]byte
+
+// 还有一堆常用的，自己看源码中的注释就行了
 ```
 
+### bytes.Buffer
+
+NewBuffer()创建一个Buffer，然后就可以对这个Buffer进行读写了。
+
+记住，写入的话是从内部buf的len()处开始写的，所以如果想从头开始写，那一定要创建一个len为0(cap可0可不0)的[]byte给NewBuffer进行初始化。
+
+![image-20211228153826039](assets/image-20211228153826039.png)
+
+![image-20211228153753199](assets/image-20211228153753199.png)
+
+## bufio
+
+123
+
+![image-20211228164332935](assets/image-20211228164332935.png)
+
+123
