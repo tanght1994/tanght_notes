@@ -183,5 +183,37 @@ http://www.tanght.xyz:8266/about
 
 
 
-# 源码分析
+rewrite
 
+```nginx
+server {
+    listen       8000;
+
+    location /a/ {
+        rewrite ^ /b/;
+    }
+
+    location /b/ {
+        default_type text/plain;
+        echo hello world;
+    }
+}
+```
+
+
+
+
+
+
+
+# 源码编译
+
+官网下载源码，官网地址http://nginx.org/en/download.html
+
+![image-20220113154153507](assets/image-20220113154153507.png)
+
+
+
+
+
+# 源码分析

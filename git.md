@@ -223,6 +223,12 @@ git add -A -- your_file_name
 git add -A
 ```
 
+# 回退（reset）
+
+```shell
+
+```
+
 
 
 # 查看提交信息（log、show）

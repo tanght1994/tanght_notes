@@ -327,3 +327,18 @@ SHOW GLOBAL STATUS;
 SHOW GLOBAL STATUS LIKE 'com_stmt%';
 ```
 
+
+
+# 事务隔离级别&锁
+
+show session variables like 'transaction_isolation';
+
+show global variables like 'transaction_isolation';
+
+set session transaction_isolation=READ-COMMITTED
+
+- 读未提交：READ-UNCOMMITTED
+- 读已提交：READ-COMMITTED
+- 可重复读：REPEATABLE-READ
+- 可串行化：SERIALIZABLE
+

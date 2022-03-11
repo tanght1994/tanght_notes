@@ -117,6 +117,14 @@ awk使用分隔符(默认是空格或tab键)来分割一条记录，将一条记
 awk [options] 'pattern + action' filename
 ```
 
+## 系统版本信息
+
+```shell
+uname -s  # Linux
+uname -r  # 4.15.0-159-generic
+uname -m  # x86_64
+```
+
 
 
 # 端口占用
@@ -441,6 +449,23 @@ systemctl daemon-reload
 ```
 
 ## service文件
+
+```shell
+[Unit]
+Description=tanght openresty
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=/usr/local/openresty/nginx/logs/nginx.pid
+ExecStart=/usr/local/openresty/nginx/sbin/nginx
+ExecReload=/usr/local/openresty/nginx/sbin/nginx -s reload
+ExecStop=/usr/local/openresty/nginx/sbin/nginx -s stop
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+```
 
 [Unit]
 After=network.target
@@ -852,3 +877,60 @@ cat /proc/version
 
 
 # cmake
+
+
+
+# shell
+
+```shell
+# :- 可以设置默认值
+# 如果将第1行注释掉，则THT为hello world，否则THT为tanght
+1. THT=tanght
+2. THT=${THT:-hello world}
+
+# ``中的字符串会作为shell命令立即执行，如果命令有返回值，则立即得到返回值，可以赋值给其它变量
+# dirname 命令获取目录，`dirname /usr/local`的结果为/usr
+THT = `dirname /usr/local`
+
+# case in esac
+# *)会匹配所有值哦
+case "abc$THT" in
+    abclala)
+    	echo haha
+    ;;
+
+    abcdef*)
+    	echo hehe
+    ;;
+
+    *)
+        echo xixi
+    ;;
+esac
+```
+
+
+
+if判断命令执行成功还是失败
+
+```shell
+# echo "test\c"肯定成功，所以echo "test\c" | grep c >/dev/null;这条命令的总体成功还是失败是由grep c >/dev/null控制的
+# grep命令如果成功匹配了，则返回值为0，否则返回值为1
+
+if echo "test\c" | grep c >/dev/null; then
+
+    if echo -n test | grep n >/dev/null; then
+        ngx_n=
+        ngx_c=
+
+    else
+        ngx_n=-n
+        ngx_c=
+    fi
+
+else
+    ngx_n=
+    ngx_c='\c'
+fi
+```
+
