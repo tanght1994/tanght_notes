@@ -259,7 +259,7 @@ select host,user from user;
 
 说明：
 
-通过tanght用户登陆，可以通过任何IP地址访问此数据库
+通过tht用户登陆，可以通过任何IP地址访问此数据库
 
 通过root登陆，只能使用本机登陆
 
@@ -271,7 +271,75 @@ update user set host = '%' where user = 'root';
 flush privileges;
 ```
 
-## navicat报错
+# 用户权限管理
+
+## 查看用户
+
+```mysql
+SELECT host, user FROM mysql.user;
+```
+
+## 创建用户
+
+创建用户`zhangsan`，可以从`192.168.7.45`，`192.168.7.46`，`192.168.7.47`这三个IP登陆，密码为`123456`。
+
+允许多IP的话，就是多执行几次CREATE USER命令，每次变化IP就行了。
+
+```mysql
+CREATE USER 'zhangsan'@'192.168.7.45' IDENTIFIED BY '123456';
+CREATE USER 'zhangsan'@'192.168.7.46' IDENTIFIED BY '123456';
+CREATE USER 'zhangsan'@'192.168.7.47' IDENTIFIED BY '123456';
+```
+
+创建用户，可以从任何IP登陆。
+
+```mysql
+CREATE USER 'zhangsan'@'%' IDENTIFIED BY '123456';
+```
+
+## 删除用户
+
+```mysql
+DROP USER '用户名'@'IP';
+```
+
+## 修改密码
+
+```shell
+SET PASSWORD FOR 'root'@'localhost' = PASSWORD('newpass')
+```
+
+
+
+## 查看权限
+
+```mysql
+# 查看当前用户的权限
+SHOW GRANTS;
+# 查看指定用户的权限
+SHOW GRANTS FOR 'tanght'@'%';
+```
+## 添加权限
+```mysql
+# ALL代表所有权限
+GRANT ALL PRIVILEGES ON *.* TO `tanght`@`%` WITH GRANT OPTION;
+
+# 也可以指定权限
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, RELOAD, SHUTDOWN, PROCESS, FILE, REFERENCES, INDEX, ALTER, SHOW DATABASES, SUPER, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, REPLICATION SLAVE, REPLICATION CLIENT, CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE, CREATE USER, EVENT, TRIGGER, CREATE TABLESPACE, CREATE ROLE, DROP ROLE ON *.* TO `tanght`@`%` WITH GRANT OPTION;
+
+# 刷新
+FLUSH PRIVILEGES;
+```
+
+## 删除权限
+
+```mysql
+REVOKE ALL ON *.* FROM 'user'@'IP';
+```
+
+
+
+# navicat报错
 
 Client does not support authentication protocol requested by server...
 

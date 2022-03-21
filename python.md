@@ -874,3 +874,9 @@ pip download -d C:\Users\tanght\Desktop\tmp\package -r r.txt
 pip install --no-index --find-links=/haha/hehe pymysql
 ```
 
+# 代理内网
+
+```shell
+sudo pip3 install redis -i https://pypi.tuna.tsinghua.edu.cn/simple --proxy=192.168.96.67:8888 --trusted-host pypi.tuna.tsinghua.edu.cn
+```
+
