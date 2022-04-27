@@ -399,6 +399,8 @@ SHOW GLOBAL STATUS LIKE 'com_stmt%';
 
 # 事务隔离级别&锁
 
+
+
 show session variables like 'transaction_isolation';
 
 show global variables like 'transaction_isolation';
@@ -410,3 +412,28 @@ set session transaction_isolation=READ-COMMITTED
 - 可重复读：REPEATABLE-READ
 - 可串行化：SERIALIZABLE
 
+## 不可重复读
+
+READ-UNCOMMITTED 与 READ-COMMITTED 都是不可重复读，考虑如下场景
+
+t0时刻：事物 A 查询 id=1 的记录，结果为 {id: 1, num: 10}
+
+t1时刻：事物 B 修改 id=1 的记录为 {id: 1, num: 50}，并提交
+
+t2时刻：事物 A 再次查询 id=1 的记录，得到的结果是 {id: 1, num: 50}
+
+结论：同一个事物内，不同时刻，执行相同的SQL语句，得到的结果不同，这就是不可重复读。
+
+## 可重复读
+
+事物 A 不管任何时候查询 id=1 的记录，结果都与它第一次查询的时候得到的结果相同。不管这期间是否有其它事物对id=1的记录进行修改与否，提交与否。
+
+需要利用"快照"技术实现可重复读的特性。快照技术那就涉及到MVCC，undo-log，Read view，事务链等知识了。
+
+## 行锁
+
+innodb的行锁加在了索引项上，意味着必须是通过索引定位的数据才会使用"行锁"，否则退化为"表锁"
+
+## 间隙锁
+
+例子：数据库中有5条数据0，1，2，3，4。现在执行`select * from test where id>3 for update;`，不仅会给数据4加锁，也会给不存在的5，6，7...加锁，也就是说，现在无法向表中插入id>3的数据。

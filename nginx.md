@@ -217,3 +217,276 @@ server {
 
 
 # 源码分析
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1. 执行`./configure --prefix=/some_path/nginx_study`来生成Makefile，prefix用于指定nginx的基准目录，配置文件，日志，临时文件，pid文件等等都会放到此目录下
+2. 之后会在objs目录下生成Makefile文件，此文件的前几行有个叫做CFLAGS的变量，将其修改为CFLAGS =  -pipe  -O0  -g ，-g用于调试，-O0用于禁止编译器优化，不然断点可能断不到
+3. make && make install
+4. 到我们指定的prefix下查看make && make install生成的东西吧
+5. 修改配置文件，将worker_processes这条命令删除，在文件的开头添加两行命令`daemon off;`与`master_process off;`，作用是让nginx以单进程且非守护进程的模式运行，方便调试
+6. 用调试器启动sbin/nginx，可以愉快的调试了
+
+
+
+
+
+
+
+```
+cycle->conf_ctx == conf.ctx 等于 ngx_pcalloc(pool, ngx_max_module * sizeof(void *))，是一个100多个坑的数组，每个坑里是一个指针，指向未知
+上述指针数组中，要给每个指针new一块内存，储存配置
+
+ngx_module_t  ngx_core_module
+
+struct ngx_module_s {
+    ngx_uint_t            ctx_index;  // 相同type的位置，用于配置定位
+    ngx_uint_t            index;  // 全局ngx_modules[]数组中的位置
+    char                 *name;
+    ngx_uint_t            spare0;
+    ngx_uint_t            spare1;
+    ngx_uint_t            version;
+    const char           *signature;
+    void                 *ctx;  !!!!!!!! 这里可以储存任何类型的指针，比如ngx_core_module就储存了一个结构体(ngx_core_module_ctx)，结构体中有两个函数
+    ngx_command_t        *commands;
+    ngx_uint_t            type;
+    ngx_int_t           (*init_master)(ngx_log_t *log);
+    ngx_int_t           (*init_module)(ngx_cycle_t *cycle);
+    ngx_int_t           (*init_process)(ngx_cycle_t *cycle);
+    ngx_int_t           (*init_thread)(ngx_cycle_t *cycle);
+    void                (*exit_thread)(ngx_cycle_t *cycle);
+    void                (*exit_process)(ngx_cycle_t *cycle);
+    void                (*exit_master)(ngx_cycle_t *cycle);
+    uintptr_t             spare_hook0;
+    uintptr_t             spare_hook1;
+    uintptr_t             spare_hook2;
+    uintptr_t             spare_hook3;
+    uintptr_t             spare_hook4;
+    uintptr_t             spare_hook5;
+    uintptr_t             spare_hook6;
+    uintptr_t             spare_hook7;
+};
+
+
+ngx_core_conf_t
+ngx_event_conf_t
+ngx_epoll_conf_t
+ngx_kqueue_conf_t
+ngx_http_core_main_conf_t
+ngx_http_upstream_main_conf_t
+ngx_http_uwsgi_main_conf_t
+搜索配置文件结构体正则ngx_[a-zA-Z_]*_conf_t;
+
+
+ctx_index与index，如下ngix共有51个模块，其中type为NGX_HTTP_MODULE的模块有43个
+对ngx_http_core_module模块来讲，它的index是8，ctx_index是0
+对ngx_http_upstream_module模块来讲，它的index是10，ctx_index是2
+ctx_index的设置在ngx_count_modules函数中
+在解析http大括号时，会计算所有NGX_HTTP_MODULE的模块的ctx_index，从0开始排序哦
+在解析event大括号时，会计算所有NGX_EVENT_MODULE的模块的ctx_index，也是从0开始排序哦
+
+ngx_module_t *ngx_modules[] = {
+    &ngx_core_module,
+    &ngx_errlog_module,
+    &ngx_conf_module,
+    &ngx_regex_module,
+    &ngx_events_module,
+    &ngx_event_core_module,
+    &ngx_epoll_module,
+    &ngx_http_module,
+    &ngx_http_core_module,          // type为NGX_HTTP_MODULE
+    &ngx_http_log_module,           // NGX_HTTP_MODULE
+    &ngx_http_upstream_module,      // NGX_HTTP_MODULE
+    &ngx_http_static_module,        // NGX_HTTP_MODULE
+    &ngx_http_autoindex_module,     // NGX_HTTP_MODULE
+    &ngx_http_index_module,         // NGX_HTTP_MODULE
+    &ngx_http_mirror_module,        // NGX_HTTP_MODULE
+    &ngx_http_try_files_module,     // NGX_HTTP_MODULE
+    &ngx_http_auth_basic_module,    // NGX_HTTP_MODULE
+    &ngx_http_access_module,        // NGX_HTTP_MODULE
+    &ngx_http_limit_conn_module,    // NGX_HTTP_MODULE
+    &ngx_http_limit_req_module,     // NGX_HTTP_MODULE
+    &ngx_http_geo_module,           // NGX_HTTP_MODULE
+    &ngx_http_map_module,           // NGX_HTTP_MODULE
+    &ngx_http_split_clients_module, // NGX_HTTP_MODULE
+    &ngx_http_referer_module,       // NGX_HTTP_MODULE
+    &ngx_http_rewrite_module,       // NGX_HTTP_MODULE
+    &ngx_http_proxy_module,         // NGX_HTTP_MODULE
+    &ngx_http_fastcgi_module,       // NGX_HTTP_MODULE
+    &ngx_http_uwsgi_module,         // NGX_HTTP_MODULE
+    &ngx_http_scgi_module,          // NGX_HTTP_MODULE
+    &ngx_http_memcached_module,     // NGX_HTTP_MODULE
+    &ngx_http_empty_gif_module,     // NGX_HTTP_MODULE
+    &ngx_http_browser_module,       // NGX_HTTP_MODULE
+    &ngx_http_upstream_hash_module, // NGX_HTTP_MODULE
+    &ngx_http_upstream_ip_hash_module,      // NGX_HTTP_MODULE
+    &ngx_http_upstream_least_conn_module,   // NGX_HTTP_MODULE
+    &ngx_http_upstream_random_module,       // NGX_HTTP_MODULE
+    &ngx_http_upstream_keepalive_module,    // NGX_HTTP_MODULE
+    &ngx_http_upstream_zone_module,         // NGX_HTTP_MODULE
+    &ngx_http_write_filter_module,          // NGX_HTTP_MODULE
+    &ngx_http_header_filter_module,         // NGX_HTTP_MODULE
+    &ngx_http_chunked_filter_module,        // NGX_HTTP_MODULE
+    &ngx_http_range_header_filter_module,   // NGX_HTTP_MODULE
+    &ngx_http_gzip_filter_module,           // NGX_HTTP_MODULE
+    &ngx_http_postpone_filter_module,       // NGX_HTTP_MODULE
+    &ngx_http_ssi_filter_module,            // NGX_HTTP_MODULE
+    &ngx_http_charset_filter_module,        // NGX_HTTP_MODULE
+    &ngx_http_userid_filter_module,         // NGX_HTTP_MODULE
+    &ngx_http_headers_filter_module,        // NGX_HTTP_MODULE
+    &ngx_http_copy_filter_module,           // NGX_HTTP_MODULE
+    &ngx_http_range_body_filter_module,     // NGX_HTTP_MODULE
+    &ngx_http_not_modified_filter_module,   // NGX_HTTP_MODULE
+    NULL
+};
+
+
+在解析http block时，会new一个ngx_http_conf_ctx_t，其中的每个(main_conf，srv_conf，loc_conf)数组，都有NGX_HTTP_MODULE总数的长度
+也就是说，有多少个NGX_HTTP_MODULE个模块，main_conf数组就有多大
+也就是说，有多少个NGX_HTTP_MODULE个模块，srv_conf数组就有多大
+也就是说，有多少个NGX_HTTP_MODULE个模块，loc_conf数组就有多大
+
+typedef struct {
+    void        **main_conf;
+    void        **srv_conf;
+    void        **loc_conf;
+} ngx_http_conf_ctx_t;
+
+
+
+ngx_http_core_module是NGX_HTTP_MODULE类型的模块，它会将90%的配置文件字段new出来，其余的NGX_HTTP_MODULE类型的模块就不用new了，直接设置就行了。
+static ngx_http_module_t  ngx_http_core_module_ctx = {
+    ngx_http_core_preconfiguration,        /* preconfiguration */
+    ngx_http_core_postconfiguration,       /* postconfiguration */
+
+    ngx_http_core_create_main_conf,        /* create main configuration */
+    ngx_http_core_init_main_conf,          /* init main configuration */
+
+    ngx_http_core_create_srv_conf,         /* create server configuration */
+    ngx_http_core_merge_srv_conf,          /* merge server configuration */
+
+    ngx_http_core_create_loc_conf,         /* create location configuration */
+    ngx_http_core_merge_loc_conf           /* merge location configuration */
+};
+
+
+待研究配置文件结构体
+} ngx_http_core_main_conf_t;包含下面
+} ngx_http_core_srv_conf_t;包含下面
+ngx_http_core_loc_conf_t;
+
+
+搜索nginx指令的正则表达式ngx_[^ ]*_commands\[\]
+ngx_http_core_commands
+
+
+
+ngx_http_core_run_phases  在这里打断点，可以分析http流程
+ngx_epoll_process_events会调用rev->handler(rev)，这个handler是ngx_http_wait_request_handler
+ngx_http_add_listening时将ngx_http_init_connection设置为ls->handler，就是上面的handler
+
+
+
+
+
+
+
+ngx_init_cycle中调用ngx_conf_parse来解析配置文件
+解析到http模块时，会根据http server block来创建listening并挂到cycle->listening数组中，并且设置ls->handler = ngx_http_init_connection
+
+
+
+ngx_open_listening_sockets
+ngx_init_cycle中调用ngx_open_listening_sockets
+ngx_open_listening_sockets中会给所有cycle->listening创建socket bind listen
+
+
+
+解析配置文件，创建共享内存，创建socketpair用于进程间通信，给cycle->listening(需要被监听的地址的数组)创建socket并listen，等等基础设施之后，进入ngx_single_process_cycle
+在ngx_single_process_cycle中，有以下2个最重要的逻辑
+1.调用所有模块的init_process，其中就包含event模块的ngx_event_process_init，(epoll模块只是event模块的多种选择之一，event也可以是poll，select，iocp等等)
+2.while死循环，调用ngx_process_events_and_timers
+
+
+ngx_event_process_init
+找到使用的event模块，例如epoll，执行epoll的init函数
+给连接池分配内存(cycle->connections，cycle->read_events，cycle->write_events)，并将他们三个联系到一起，让它们彼此能找到对方
+设置free_connections(指针)，free_connections用于找到空闲的connection
+给cycle->listening列表中的所有socket分配connection
+给上述分配的connection对应的read event简称rev的rev->handler设置为ngx_event_accept，ngx_event_accept回调会调用accept函数接收连接生成socket，然后给这个socket fd找一个空闲的connection，然后将connection交给listen的handler，此handler为ngx_http_init_connection
+将上述read event（简称rev）通过ngx_add_event添加到epoll中，如果是多进程，则在epoll add的时候设置NGX_EXCLUSIVE_EVENT参数，用于解决惊群问题
+
+
+
+ngx_event_accept -> ls->handler(c)就是ngx_http_init_connection -> ngx_http_wait_request_handler -> 读取connection中的socket的内容，根据内容创建request(ngx_http_create_request)
+
+
+
+http处理流程的11个阶段
+每个模块在ngx_http_module_t  ngx_http_autoindex_module_ctx中的postconfiguration处设置自己的函数，将方法注册到其中某个阶段
+ngx_http_block函数的尾部，会遍历所有http模块，调用模块的postconfiguration，postconfiguration会将自己模块的犯法注册到对应的阶段上
+
+
+
+
+
+ngx_http_static_init 将 ngx_http_static_handler 注册到 NGX_HTTP_CONTENT_PHASE
+ngx_http_static_handler
+
+
+
+
+
+
+
+
+
+NGX_HTTP_POST_READ_PHASE        0
+NGX_HTTP_SERVER_REWRITE_PHASE   1
+NGX_HTTP_FIND_CONFIG_PHASE      0
+NGX_HTTP_REWRITE_PHASE          1
+NGX_HTTP_POST_REWRITE_PHASE     0
+NGX_HTTP_PREACCESS_PHASE        2
+NGX_HTTP_ACCESS_PHASE           1
+NGX_HTTP_POST_ACCESS_PHASE      2
+NGX_HTTP_PRECONTENT_PHASE       0
+NGX_HTTP_CONTENT_PHASE          2
+NGX_HTTP_LOG_PHASE
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
