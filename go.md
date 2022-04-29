@@ -680,4 +680,65 @@ NewBuffer()创建一个Buffer，然后就可以对这个Buffer进行读写了。
 
 ![image-20211228164332935](assets/image-20211228164332935.png)
 
-123
+## json
+
+结构体Tag的规则：
+
+- 结构体字段后面用反引号包裹起来的字符串就是Tag
+- 字符串是一堆key-value对，用空格将各个key-value对分割开
+- key不能用双引号包裹，value必须用双引号包裹(因为value中可能包含空格)
+- 可以用反射功能在代码中获取结构体各字段的Tag
+- Tag的作用就是给结构体的字段增加一个辅助字符串
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+type ABC struct {
+	A int `dog:"我是一只狗" 猫:"i am cat"`
+	B int
+}
+
+func main() {
+	abc := ABC{}
+	tag1 := reflect.TypeOf(abc).Field(0).Tag.Get("dog")
+	fmt.Println(tag1)  // 我是一只狗
+	tag2 := reflect.TypeOf(abc).Field(0).Tag.Get("猫")
+	fmt.Println(tag2)  // i am cat
+}
+```
+
+既然Tag能给结构体的字段附带一些信息，那么json库就利用了Tag来定义了一些规则，来辅助json编解码
+
+```golang
+// json库只获取Tag的名字为"json"的Key
+// 对于下面的ABC.A字段,json库只会取到"A,string"这个字符串
+// "required,min=6,max=20"这个value是不会被获取到的
+type ABC struct {
+	A int `json:"A,string" validate:"required,min=6,max=20"`
+	B string
+}
+
+// A,string：A是定义json字段的名字，因为json字段的名字可能跟结构体中字段的名字不一致
+// A,string：string是定义json字段的类型
+// 在golang中ABC.A的类型为int，在json中A的类型为string
+// {"A": "1"}  {"A": 1} 的区别
+type ABC struct {
+	A int `json:"A,string" validate:"required,min=6,max=20"`
+}
+```
+
+编解码
+
+```go
+// 将字符串str按照abc结构体的格式，转换成abc结构体
+json.Unmarshal(str, &abc)
+
+// 将abc结构体变成json字符串
+json.Marshal(abc)
+```
+
