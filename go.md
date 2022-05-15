@@ -742,3 +742,43 @@ json.Unmarshal(str, &abc)
 json.Marshal(abc)
 ```
 
+## atomic
+
+```go
+// CAS(CompareAndSwap)操作的意思: 如果 A==B 则将A设置为C并返回true
+// 如果*addr == old 则 *addr=new
+// 因为要修改addr的值, 所以要将addr的指针传进去
+atomic.CompareAndSwapPointer(addr *unsafe.Pointer, old unsafe.Pointer, new unsafe.Pointer) (swapped bool)
+```
+
+
+
+
+
+
+
+## net
+
+- 多个协程同时对1个`net.Conn`执行`Write`操作是安全的
+- 多个协程同时对1个`net.Conn`执行`Read`操作是无意义的，所以我没测试
+- 数据顺序不会出错，比方说2个协程，一个写"1111"另一个写"2222"，那么对方不会收到类似"11221122"这种信息
+- 猜测Write内部是有并发考虑的，可能是内部加锁了
+- 多个协程同时对1个`net.Conn`写，不如1个协程的效率高，所以最好借助`chan`
+
+```go
+func main() {
+	l, _ := net.Listen("tcp", "127.0.0.1:8000")
+	c, _ := l.Accept()
+	for i := 0; i < 100; i++ {
+		go write(c)
+	}
+	time.Sleep(10000 * time.Second)
+}
+
+func write(c net.Conn) {
+	for {
+		c.Write([]byte("123"))
+	}
+}
+```
+
