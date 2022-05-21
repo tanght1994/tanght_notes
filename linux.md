@@ -654,6 +654,35 @@ export CPATH=/home/tanght/download/boost_1_75_0:${CPATH}
 
 source命令的作用是什么呢？`source export_env.sh`这个命令的意思是：别用子进程运行export_env.sh这个脚本，直接将export_env.sh这个文件中的命令读出来，直接在本窗口中运行！
 
+# 网路
+
+host文件的作用：解析域名（主机名）。在去DNS解析域名之前，先查询本机的hosts文件，如果本机设置了此域名对应的IP地址，就不用费劲巴拉的去DNS查询了。
+
+Linux下host文件路径是/etc/hosts
+
+Windows下host文件路径是C:\Windows\System32\drivers\etc\host
+
+```shell
+# host 文件格式
+# IP地址 别名1 别名2 ... 别名n
+182.61.200.6 sb fuck
+```
+
+上述文件的作用如下
+
+```shell
+ping sb  # 相当于ping 182.61.200.6
+curl http://sb:8888/haha  # 相当于 curl http://182.61.200.6:8888/haha
+```
+
+
+
+centos重启网络`/etc/init.d/network restart`
+
+ubuntu重启网络`/etc/init.d/networking restart`
+
+
+
 # 防火墙
 
 ## centos7

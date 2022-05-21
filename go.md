@@ -309,6 +309,52 @@ go get -u github.com/kataras/iris/v12@latest
 
 # proto
 
+## 需要的程序：
+
+protoc.exe：核心程序，负责解析proto文件，生成mete信息
+
+protoc-gen-xxx.exe：插件，负责通过mete信息，生成对应的代码
+
+一些插件
+
+protoc-gen-python.exe生成python代码，这个是protoc自带的，不需要下载
+
+protoc-gen-cpp.exe生成c++代码，这个是protoc自带的，不需要下载
+
+protoc-gen-go.exe生成golang代码，需要下载
+
+protoc-gen-gogofaster.exe生成golang代码，跟protoc-gen-go.exe功能一样，protoc-gen-gogofaster瞧不起protoc-gen-go，所以他重写了go的插件
+
+## --xxx_out的解释：
+
+- ./protoc     --cpp_out=./abc/     *.proto
+
+  使用protoc-gen-cpp插件来生成代码，protoc-gen-cpp当然是生成c++代码咯
+
+- ./protoc     --go_out=./abc/     *.proto
+
+  使用protoc-gen-go插件来生成代码，protoc-gen-go当然是生成golang代码咯
+
+- ./protoc     --fuck_out=./abc/     *.proto
+
+  使用protoc-gen-fuck插件来生成代码，protoc-gen-fuck插件你可以自己开发
+
+- --xxx_out=./abc/
+
+  生成的代码放在./abc/目录下
+
+- protoc-gen-cpp插件是protobuf自带的，不需要程序员下载，如果用到其它的插件，则需要程序员提前下载好插件
+
+## --plugin的解释：
+
+指定插件的路径，下面的命令的作用是设置protoc-gen-gogofaster插件的路径
+
+--plugin=protoc-gen-gogofaster=./protoc-gen-gogofaster.exe
+
+如果插件路径在path环境变量中，则不需手动指定
+
+## go_package
+
 编写proto文件，与C++不同的是，golang的proto文件需要在文件中设置option go_package
 
 ```shell
@@ -320,72 +366,118 @@ option go_package = "./;hahaha";
 # 注意"./;hahaha"最终的路径要加上cmd中指定的--go_out的路径
 ```
 
+## 例子
+
+目录结构
+
+```bash
+.
+├── fuckproto  # 目录
+├── main.go
+└── protofile
+    ├── first.proto  # option go_package = "./fuckproto/;fuckproto";
+    ├── protoc.exe
+    └── protoc-gen-go.exe
+```
+
+first.proto中的option go_package为`option go_package = "./fuckproto/;fuckproto";`
+
+在当前目录创建fuckproto目录，将生成的代码放到./fuckproto/目录下，包名为fuckproto
+
+在protofile目录下执行`protoc.exe --go_out=../ *.proto`
+
+cmd+option go_package的效果就是，在.././fuckproto的目录下生成go代码
+
+目录结构
+
+```shell
+.
+├── fuckproto
+│   └── first.pb.go  # 生成的文件
+├── main.go
+└── protofile
+    ├── first.proto
+    ├── protoc.exe
+    └── protoc-gen-go.exe
+```
+
+使用
+
+```go
+package main
+
+import (
+	"fmt"
+	"tanght/fuckproto"
+
+	"google.golang.org/protobuf/proto"
+)
+
+func main() {
+	// 将结构体编码为字节流
+	s1 := fuckproto.Student{
+		Name:   "tanght",
+		Male:   true,
+		Scores: []int32{1, 2, 3, 4},
+	}
+	bys, err := proto.Marshal(&s1)
+	must(err)
+
+	// 将字节流解码为结构体
+	s2 := &fuckproto.Student{}
+	err = proto.Unmarshal(bys, s2)
+	must(err)
+	fmt.Println(s2)
+
+	// 给bys添加一个字符，导致bys字节流不是有效的protobuf格式的数据
+	// 所以解析肯定会失败
+	bys = append(bys, 1)
+	s3 := &fuckproto.Student{}
+	err = proto.Unmarshal(bys, s3)
+	must(err)
+	fmt.Println(s3)
+}
+
+func must(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+```
+
+# grpc
+
+一个proto文件，会生成两个.go文件
+
 proto文件
 
 ```protobuf
 syntax = "proto3";
 
-// golang中必须指定这个玩意儿！真他妈的蠢！
-option go_package = "./;hahaha";
+option go_package = "./fuckproto/;fuckproto";
 
-// package在golang中有TMD什么用？
-package test;
-
-enum PhoneType {
-    HOME = 0;
-    WORK = 1;
+service Greeter {
+    rpc SayHello (HelloRequest) returns (HelloReply) {}
+    rpc SayHelloAgain (HelloRequest) returns (HelloReply) {}
 }
 
-message Phone {
-    PhoneType type = 1;
-    string number = 2;
+message HelloRequest {
+    string name = 1;
 }
 
-message Person {
-    int32 id = 1;
-    string name = 2;
-    repeated Phone phones = 3;
-}
-
-message ContactBook {
-    repeated Person persons = 1;
+message HelloReply {
+    string message = 1;
 }
 ```
 
-两个可执行程序：protoc，protoc-gen-go
+生成go文件
 
-执行`protoc --go_out=. *.proto`，生成xx.pb.go文件
-
---go_out=plugins=grpc:aaaa   在./aaaa/下生成go文件
-
-protoc --go_out=plugins=grpc,paths=source_relative:. xxxx.proto
-
-protoc --go_out=plugins=grpc:. xxxx.proto
-
-```go
-import google.golang.org/protobuf/proto"
-
-// 制作一个protobuf中的结构体
-p = &pba.Person{Name: "", .......}
-// 将p编码为[]byte
-b, e := proto.Marshal(p)
-fmt.Println(b)
-
-// 创建一个空的Persion，准备接收解码的数据
-p2 := &pba.Person{}
-// 将字节流解码为p2
-e = proto.Unmarshal(b, p2)
 ```
-
-# grpc
-
-111
-
-
-
-222
-
-333
+protoc.exe --go_out=../ *.proto
+protoc.exe --go-grpc_out=../ *.proto
+或者两条命令合在一起
+protoc.exe --go_out=../ --go-grpc_out=../ *.proto
+```
 
 # 反射
 
@@ -781,4 +873,83 @@ func write(c net.Conn) {
 	}
 }
 ```
+
+
+
+```go
+// net.IP 是一个[]byte(字节数组)，长度为16个字节
+// IPV4地址只占用 [12] [13] [14] [15] 这四个字节
+// 例如对 192.168.7.45 来说， [12]=192 [12]=168 [12]=7 [15]=45
+func net.ParseIP(s string) net.IP
+ip := net.ParseIP("192.169.8.8")
+
+// net.IPNet 是 net.IP 附带 掩码
+// 192.168.7.45/8 的意思是  192.*.*.*
+// 只有x.x.x.x/n 只有被n包括的字符才生效，其它的字符为*
+func net.ParseCIDR(s string) (net.IP, *net.IPNet, error)
+ip, ip_with_mask, err := net.ParseCIDR("192.168.7.45/8")
+// 192.168.7.45/8 包括 192.8.8.8
+ip_with_mask.Contains(net.ParseIP("192.8.8.8"))  // true
+```
+
+
+
+
+
+## rand
+
+```go
+// 生成随机字节流
+p := make([]byte, 16)
+io.ReadFull(rand.Reader, p)
+```
+
+
+
+# 三方库
+
+## validator
+
+校验结构体各字段是否符合预期
+
+```go
+import "github.com/go-playground/validator/v10"
+
+vali := validator.New()
+a := struct {
+    Name string `validate:"required`
+    Age  int    `validate:"required,gte=0,lte=100"`
+}{Name: "tanght", Age: 100}
+err := vali.Struct(a)
+
+// dive告诉校验器下潜到下一级别校验下一级别的每一个元素
+// 所以dive只会用于 list 和 map类型的字段哦
+// 对于Phone字段，如果不写dive
+// 那么即使下一级元素有 validate 规则，也不会进行验证
+// Phone []struct {
+//     Id    int     `json:"id" yaml:"" validate:""`
+//     Name  string  `json:"name" yaml:"" validate:""`
+//     Price float64 `json:"price" yaml:"" validate:"gte=10,lte=50"`
+// } `json:"phone" yaml:"" validate:"required"`
+b := struct {
+    Name  string `json:"name" yaml:"" validate:"required"`
+    Age   int    `json:"age" yaml:"" validate:"gte=0,lte=130"`
+    Phone []struct {
+        Id    int     `json:"id" yaml:"" validate:""`
+        Name  string  `json:"name" yaml:"" validate:""`
+        Price float64 `json:"price" yaml:"" validate:"gte=10,lte=50"`
+    } `json:"phone" yaml:"" validate:"required,dive"`
+}{}
+```
+
+# yaml
+
+```go
+import "gopkg.in/yaml.v3"
+yaml.Unmarshal && yaml.Marshal
+```
+
+
+
+
 
