@@ -477,3 +477,6 @@ git config [--level] –-unset user.name
 ```shell
 git config --global credential.helper store
 ```
+# Windows切换GIT用户
+
+![image-20220608195557720](assets/image-20220608195557720.png)

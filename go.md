@@ -666,6 +666,19 @@ func abc(m map[string]string) {
 
 为什么map会这样？golang的作者说了，用户创建的`map`其实是`*map`。在很早以前的golang，确实需要将`map`定义为`*map`，后来发现程序员只定义`*map`，从来不定义`map`，索性直接用`map`代替`*map`了。是的，就是这么随意！操！
 
+## Mutex
+
+sync.Mutex 最好通过指针进行传递：创建一个变量lock，将lock通过协程参数传递给两个协程，那么这两个协程收到的其实是两个完全不同的锁，无法对两个协程进行同步。不仅是Mutex最好用指针，sync包中的所有同步原语，最好都用指针进行传递！
+
+sync.Mutex的复制，连同锁状态一起复制
+
+```go
+lock1 := sync.Mutex{}
+lock1.Lock()
+lock2 := lock1  // lock2已经Lock()了
+lock2.Lock()  // 死锁了
+```
+
 # Redis
 
 核心，连接redis(Dial)，操作redis(Do)

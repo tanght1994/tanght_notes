@@ -249,9 +249,16 @@ docker import /path/xxx.tar test:latest
 
 # 将指定镜像打包，拿U盘拷走吧您内~
 docker save 镜像ID > /path/xxx.tar
+# 或者用 -o 代替 >
+docker save 镜像ID -o /path/xxx.tar
+
+# 设置镜像名和标签，不设置的话load的时候，这个镜像是没有名字和标签的，需要load之后再次执行tag
+docker save 镜像ID -o /path/xxx.tar
 
 # 加载xxx.tar这个包，还原为一个镜像，save之前这个镜像叫什么，load之后还叫什么，不能重命名
 docker load < /path/xxx.tar
+# 或者用 -i 代替 <
+docker load -i /path/xxx.tar
 ```
 
 
@@ -360,3 +367,14 @@ A：桥接模式下
 Q：一台电脑上面运行着2个容器A和B，A容器端口映射8888:8888，B容器端口映射9999:9999。请问容器A中的程序如何访问容器B的9999端口？
 
 A：A中的程序直接访问`localhost:9999`是不行的，因为localhost指向的A自己，容器A和B的网络环境是完全隔离的。
+
+
+
+# 常用脚本
+
+运行一个nginx
+
+```shell
+sudo docker run --name test-nginx -d -p 9876:80 nginx:latest
+```
+

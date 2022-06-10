@@ -125,8 +125,6 @@ uname -r  # 4.15.0-159-generic
 uname -m  # x86_64
 ```
 
-
-
 # 端口占用
 
 ```shell
@@ -134,6 +132,8 @@ lsof -i
 lsof -i :80
 lsof abc.txt 显示开启文件abc.txt的进程 lsof -c abc 显示abc进程现在打开的文件 lsof -c -p 1234 列出进程号为1234的进程所打开的文件 lsof -g gid 显示归属gid的进程情况 lsof +d /usr/local/ 显示目录下被进程开启的文件 lsof +D /usr/local/ 同上，但是会搜索目录下的目录，时间较长 lsof -d 4 显示使用fd为4的进程 lsof -i 用以显示符合条件的进程情况 lsof -i[46] [protocol][@hostname|hostaddr][:service|port]   46 --> IPv4 or IPv6   protocol --> TCP or UDP   hostname --> Internet host name   hostaddr --> IPv4地址   service --> /etc/service中的 service name (可以不止一个)   port --> 端口号 (可以不止一个)
 
+# 显示当前电脑所占用的所有tcp端口  t仅显示tcp l仅显示listen n不要显示别名 p显示进程名
+netstat -tlnp
 ```
 
 
@@ -961,5 +961,33 @@ else
     ngx_n=
     ngx_c='\c'
 fi
+```
+
+
+
+# 七层网络
+
+集线器：只会无脑广播，无效数据包充斥着整个局域网，什么叫无效数据包？把应该给A电脑的包发送给B电脑，就叫无效数据包。此设备工作在L1层（物理层）
+
+网桥：优化一些无效广播、局域网中少了一些无效的数据包。根据数据包的MAC地址工作，此设备工作在L2层（数据链路层）
+
+交换机：升级版的网桥。
+
+路由器：不清楚。
+
+网关：不清楚。
+
+```
+# 物理层1
+# 链路层2
+  [目标MAC][源MAC][上层协议类型][上层数据][校验串]
+# 网络层3
+  ARP协议，IP协议，ICMP协议，IGMP协议
+  IP协议：[版本号/长度/等]...[目标IP地址][源IP地址]...[控制/校验等]
+# 传输层4
+  TCP协议：[版本号/序列号/长度/等]...[目标端口号][源端口号]...[控制/等]
+# 会话层5
+# 表示层6
+# 应用层7
 ```
 
