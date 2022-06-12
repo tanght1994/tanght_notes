@@ -185,6 +185,31 @@ apt list --installed
 apt list --upgradable
 ```
 
+centos
+
+```shell
+# --showduplicates 用于显示所有版本，否则的话只显示最新版本
+yum search kubectl --showduplicates
+# 结果如下
+# kubectl-1.5.4-0.x86_64 : xxx说明.
+# kubectl-1.6.0-0.x86_64 : xxx说明.
+# ...
+# kubectl-1.20.13-0.x86_64 : xxx说明.
+# kubectl-1.20.14-0.x86_64 : xxx说明.
+# ...
+# kubectl-1.24.0-0.x86_64 : xxx说明.
+# kubectl-1.24.1-0.x86_64 : xxx说明.
+
+# 挑一个你喜欢的版本进行安装
+yum install -y kubectl-1.20.13-0.x86_64
+
+# 查看已经安装的软件
+yum list installed
+
+# 卸载软件
+yum remove package_name
+```
+
 
 
 # 软件仓库
