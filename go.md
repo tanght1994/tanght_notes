@@ -145,10 +145,6 @@ copy(dst, src)
 
 
 
-
-
-
-
 ```go
 type Request struct {
 	Method string  		//POST GET DELETE
@@ -175,8 +171,6 @@ type Request struct {
 	ctx context.Context
 }
 ```
-
-
 
 
 
@@ -964,5 +958,15 @@ yaml.Unmarshal && yaml.Marshal
 
 
 
+# pprof
 
+功能：程序详细信息分析，协程数量，内存申请情况，cpu占用等等
+
+原理：通过匿名引入`net/http/pprof(内部依赖runtime/pprof)`这个标准库，这个标准库会在代码的关键位置进行监控和统计，进而实现对程序的详细运行情况的掌控。
+
+使用方法
+
+- 通过浏览器直接访问特定的页面，在浏览器中查看
+- 通过wget直接下载页面到本地，通过记事本查看
+- 通过`go tool pprof url地址`下载二进制文件到本地，再通过`go tool pprof 文件名`来交互
 
