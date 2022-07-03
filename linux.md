@@ -201,7 +201,7 @@ yum search kubectl --showduplicates
 # kubectl-1.24.1-0.x86_64 : xxx说明.
 
 # 挑一个你喜欢的版本进行安装
-yum install -y kubectl-1.20.13-0.x86_64
+yum install -y --setopt=obsoletes=0 kubectl-1.20.13-0.x86_64
 
 # 查看已经安装的软件
 yum list installed
@@ -679,7 +679,7 @@ export CPATH=/home/tanght/download/boost_1_75_0:${CPATH}
 
 source命令的作用是什么呢？`source export_env.sh`这个命令的意思是：别用子进程运行export_env.sh这个脚本，直接将export_env.sh这个文件中的命令读出来，直接在本窗口中运行！
 
-# 网路
+# 网络
 
 host文件的作用：解析域名（主机名）。在去DNS解析域名之前，先查询本机的hosts文件，如果本机设置了此域名对应的IP地址，就不用费劲巴拉的去DNS查询了。
 
@@ -934,7 +934,141 @@ cat /proc/version
 
 
 
-# shell
+# shell脚本
+
+
+
+| 变量 | 说明                                          |
+| ---- | --------------------------------------------- |
+| $#   | 传递给脚本的参数个数                          |
+| $0   | 脚本名                                        |
+| $1   | 传递给脚本的第一个参数，以此类推              |
+| $2   | 传递给脚本的第二个参数，以此类推              |
+| $*   | 合并所有参数为1个字符串，各参数之间用空格分隔 |
+| $@   | 所有参数数组 `for i in "$@"; do`              |
+| $$   | 当前进程ID                                    |
+| $!   | 上一个进程的ID                                |
+| $?   | 返回上一条命令exit的值，0当然代表无错误了     |
+
+
+
+
+
+捕捉信号 trap
+
+```shell
+myfunc() {
+    echo "拜拜"
+    exit 0
+}
+
+# docker stop 的时候会向docker内的1号进程发送 SIGTERM 信号
+trap myfunc SIGTERM
+
+# 打印当前进程ID
+echo "当前进程ID为：$$"
+while :; do
+    sleep 1
+done
+```
+
+
+
+## 变量
+
+```shell
+# 定义一个变量，等号两边不能有空格
+myvar1=abc
+echo ${myvar1}
+
+# 值中有空格时，要用双引号或单引号包裹
+myvar2="abc  def"
+echo ${myvar2}
+
+# 双引号中可以使用其它变量
+myvar3="hello ${myvar1}"
+echo ${myvar3}
+
+# 把$给转义就不会取值了
+myvar4="hello \${myvar1}"
+echo ${myvar4}
+
+$0 是脚本名
+$1 是第一个参数
+$2 是第二个参数
+$# 是参数个数（不包括$0）
+$* 是所有参数，for i in "$*" 不管有多少参数只会循环循环一次
+$@ 是所有参数，for i in "$@" 有几个参数就循环多少次
+
+my_array=(aaa bbb ccc)
+echo "数组元素个数为: ${#my_array[*]}"
+echo "数组元素个数为: ${#my_array[@]}"
+```
+
+执行结果
+
+```shell
+# ./test.sh
+abc
+abc def
+hello abc
+hello ${myvar1}
+```
+
+
+
+## 参数
+
+```shell
+#!/bin/bash
+# $0 为执行文件名
+echo "执行的文件名：$0"
+
+# $1 为脚本的第一个参数
+echo "第一个参数为：$1"
+
+# $2 为脚本的第二个参数
+echo "第二个参数为：$2"
+
+# $# 为参数个数
+echo "参数个数为：$#"
+
+# $@ 为 所有参数拼接成的一个字符串，各单词之间用空格分隔
+# 即使参数中存在多个空格，也会将连续的空格缩短为1个
+echo '$@为：' $@
+
+# 与 $@ 一样
+echo '$*为：' $*
+```
+
+执行结果
+
+
+```shell
+# ./test.sh aaa     "bbb     ccc"
+执行的文件名：./test.sh
+第一个参数为：aaa
+第二个参数为：bbb     ccc
+参数个数为：2
+$@为： aaa bbb ccc
+$*为： aaa bbb ccc
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```shell
 # :- 可以设置默认值
@@ -987,8 +1121,6 @@ else
     ngx_c='\c'
 fi
 ```
-
-
 
 # 七层网络
 
