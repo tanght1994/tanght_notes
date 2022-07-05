@@ -229,6 +229,50 @@ CMD
 
 容器的默认启动命令，会被docker run的指定命令覆盖
 
+## CMD与ENTRYPOINT两种格式
+
+加不加[]（中括号）的区别
+
+### shell格式（无[]）
+
+```dockerfile
+CMD ping www.baidu.com
+```
+
+实际执行的命令是`/bin/sh -c 'ping www.baidu.com'`
+
+所以容器内的1号进程是`/bin/sh`，`/bin/sh`fork子进程来执行`ping`命令，给容器发送信号会发送给`/bin/sh`
+
+1. 首先找到`/bin/sh`程序，如果容器内没有`/bin/sh`程序则启动失败
+2. 然后寻找`ping`程序，如果ping不在`path`环境变量中，则启动失败
+3. 然后`sh`程序fork一个子进程来执行`ping www.baidu.com`
+
+### exec格式（有[]）
+
+```dockerfile
+CMD ["/bin/ping", "www.baidu.com"]
+```
+
+实际执行的命令是`/bin/ping www.baidu.com`
+
+所以容器内的1号进程是`/bin/ping`，，给容器发送信号会发送给`/bin/ping`
+
+1. 首先找到`/bin/ping`程序，这是绝对路径，所以不依赖`path`环境变量
+2. 然后直接执行`/bin/ping www.baidu.com`
+
+### 总结
+
+exec格式要优于shell格式，因为exec格式的依赖比较少，即使容器内没有`/bin/sh`程序也能运行
+
+请永远使用exec格式，shell格式会出现你意想不到的结果
+
+## CMD与ENTRYPOINT的区别
+
+- 正经的容器都是首先设置ENTRYPOINT，然后用CMD给ENTRYPOINT传递默认参数。
+- 如果用户在docker run的时候没有传递参数（没有覆盖cmd），则ENTRYPOINT使用dockerfile中cmd设置的参数。
+- 如果用户不满意默认的cmd参数，在docker run的时候传递了参数，则会优先使用用户传递的参数给ENTRYPOINT。
+- 如果用户在docker run的时候不满意ENTRYPOINT，则可通过----entrypoint来修改ENTRYPOINT（强烈不建议）
+
 # 容器导入/导出
 
 容器导出：将运行中的（或已经停止了的）容器，导出为压缩包
@@ -253,7 +297,7 @@ docker save 镜像ID > /path/xxx.tar
 docker save 镜像ID -o /path/xxx.tar
 
 # 设置镜像名和标签，不设置的话load的时候，这个镜像是没有名字和标签的，需要load之后再次执行tag
-docker save 镜像ID -o /path/xxx.tar
+docker save 镜像名:版本 -o /path/xxx.tar
 
 # 加载xxx.tar这个包，还原为一个镜像，save之前这个镜像叫什么，load之后还叫什么，不能重命名
 docker load < /path/xxx.tar
@@ -271,6 +315,8 @@ docker load -i /path/xxx.tar
 
 # 网络
 
+## 简介
+
 请问c1，c2，c3这三个容器之间能通信么？互相能ping通么？
 
 ```shell
@@ -286,7 +332,7 @@ docker run --name c3 imageid
 如果容器已经运行了
 
 ```shell
-# 创建一个网络环境
+# 创建一个网络环境, 名字是my_test_network
 docker network create my_test_network
 # 将c1容器添加到这个网络中
 docker network connect my_test_network c1
@@ -304,6 +350,40 @@ docker network create my_test_network
 docker run --name c1 --network=my_test_network imageid
 docker run --name c2 --network=my_test_network imageid
 docker run --name c3 --network=my_test_network imageid
+```
+
+这样c1，c2，c3之间就能互相ping通了，**直接ping容器名称**（--name后面指定的名称）就行
+
+```shell
+# 进入容器c1
+docker exec -it c1 /bin/sh
+# 在 c1 中 ping c2
+ping c2
+# 在 c1 中 ping c3
+ping c3
+```
+
+docker compose 中设置网络
+
+```yaml
+version: '3.3'
+services:
+  haha1:
+    image: nginx
+    ports:
+      - 11001:80
+    networks:
+    - tanghtnetwork1  # 加入 tanghtnetwork1 这个网络
+
+  haha2:
+    image: nginx
+    ports:
+      - 11002:80
+    networks:
+    - tanghtnetwork1  # 加入 tanghtnetwork1 这个网络
+
+networks:
+  tanghtnetwork1:  #  创建网络环境 tanghtnetwork1
 ```
 
 ## 相关命令
@@ -368,13 +448,190 @@ Q：一台电脑上面运行着2个容器A和B，A容器端口映射8888:8888，
 
 A：A中的程序直接访问`localhost:9999`是不行的，因为localhost指向的A自己，容器A和B的网络环境是完全隔离的。
 
-
-
 # 常用脚本
 
 运行一个nginx
 
 ```shell
 sudo docker run --name test-nginx -d -p 9876:80 nginx:latest
+```
+
+# docker-compose
+
+```shell
+# -f 用于指定配置文件 不指定的话 默认是当前目录下的docker-compose.yml
+# -d 让 docker-compose 后台运行，否则 docker-compose 会占用当前终端
+# -p 设置项目名, 默认是当前文件夹的名字为项目名
+docker-compose -f xxx.yml -d -p abc up
+
+# 停止并清理被此配置文件所管理的资源(停止容器、删除容器、删除网络等)
+docker-compose -f xxx.yml down
+
+# 进入容器中（也可以直接用docker命令进入）
+docker-compose -f xxx.yml exec nginx bash
+```
+
+
+
+环境变量
+
+```yaml
+  c1:
+    image: centos
+    container_name: c1
+    environment:
+      # k: v
+      # v 会去除前后空格
+      DOG: i am a dog
+      cat:       i am a cat
+      HAHA: xixixixi
+    command: sleep 1d
+
+  c2:
+    image: centos
+    container_name: c2
+    environment:
+      # k=v
+      # v 不会去除前后空格
+      - discovery.type=single-node
+      - network.host=0.0.0.0
+      - ES_JAVA_OPTS=-Xms128m -Xmx128m
+    command: sleep 1d
+```
+
+
+
+
+
+
+
+yml
+
+```yaml
+version: '3.3'
+
+# 创建网络环境
+networks:
+  tanghtnetwork1:       # 相当于docker命令行 docker network create tanghtnetwork1
+    # ipam:             # 不用写这两行, 默认值就是创建bridge的网络
+    #   driver: bridge  # 不用写这两行, 默认值就是创建bridge的网络
+  tanghtnetwork2:       # 相当于docker命令行 docker network create tanghtnetwork2
+    ipam:
+      driver: host      # 可以在 ipam.driver 处设置网络类型 可选值为 host, bridge, container, none
+
+services:
+  haha1:                    # 创建 1 个容器
+    image: centos
+    restart: always
+    privileged: true
+    networks:
+    - tanghtnetwork1
+    command: sleep 60s
+    container_name: haha1   # 相当于 docker 命令行的 --name haha1, 不指定容器名称的话则随即设置
+
+  haha2:                    # 创建 1 个容器
+    image: centos
+    restart: always
+    privileged: true
+    networks:
+    - tanghtnetwork1
+    command: sleep 60s
+    container_name: haha2
+
+  haha3:                    # 创建 1 个容器
+    image: centos
+    restart: always
+    privileged: true
+    networks:
+    - tanghtnetwork1
+    command: sleep 60s
+    container_name: haha3
+```
+
+
+
+
+
+# 装机必备
+
+```yaml
+version: '3.3'
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    privileged: true
+    ports:
+      - 6379:6379
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - /dockerstore/redis/data:/data
+      - /dockerstore/redis/logs:/logs
+    command:
+      - --requirepass "Tht940415,./"
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    restart: always
+    ports:
+      - 3306:3306
+    privileged: true
+    volumes:
+      - /dockerstore/mysql/var/lib/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=Tht940415,./
+    command:
+      - --character-set-server=utf8mb4
+
+  elasticsearch:
+    image: elasticsearch:7.5.2
+    container_name: elasticsearch
+    restart: always
+    volumes:
+      - /dockerstore/elasticsearch/usr/share/elasticsearch/data:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node  # 单节点启动
+      - network.host=0.0.0.0  # 可外部访问, 否则只能本机访问
+      - ES_JAVA_OPTS=-Xms128m -Xmx128m  # 限制es内存使用量最大128M
+      - TAKE_FILE_OWNERSHIP=true  # 赋予volumes写权限, 不然es无法向挂载的目录中写入数据, 不知道es为什么这么蠢
+    ports:
+      - 9200:9200
+      - 9300:9300
+    privileged: true
+
+  kibana:
+    image: kibana:7.5.2
+    container_name: kibana
+    restart: always
+    privileged: true
+    environment:
+      - ELASTICSEARCH_HOSTS=["http://elasticsearch:9200"]
+      - SERVER_HOST=0.0.0.0
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5601:5601
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    privileged: true
+    volumes:
+      - /dockerstore/prometheus/opt/bitnami/prometheus/data:/opt/bitnami/prometheus/data
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    privileged: true
+    ports:
+      - 3000:3000
+
 ```
 
