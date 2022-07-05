@@ -22,7 +22,7 @@ Ubuntu/Centos相同
 ```bash
 /etc/docker/daemon.json
 {
-	"registry-mirrors":["http://f1361db2.m.daocloud.io"]
+	"registry-mirrors":["https://mirror.ccs.tencentyun.com"]
 }
 ```
 
