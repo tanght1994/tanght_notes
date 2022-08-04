@@ -478,45 +478,7 @@ protoc.exe --go_out=../ --go-grpc_out=../ *.proto
 aaaaaaaaaa
 
 ```go
-// a是一个interface{}就行
-// typ是reflect.Type类型
 typ := reflect.TypeOf(a)
-
-// 这个类型有几个方法？num就是方法的个数
-num := typ.NumMethod()
-
-// 取这个类型的第8个方法(从0开始)
-method := typ.Method(8)
-
-
-NumField()
-
-
-
-// golang中必须指定这个玩意儿！真他妈的蠢！
-option go_package = "./;hahaha";
-
-// package在golang中有TMD什么用？
-package test;
-
-enum PhoneType {
-    HOME = 0;
-    WORK = 1;
-}
-
-message Phone {
-    PhoneType type = 1;
-    string number = 2;
-}
-
-message Person {
-    int32 id = 1;
-    string name = 2;
-    repeated Phone phones = 3;
-}
-
-
-
 NumMethod()	// struct的method数量
 Method(1)	// 获取第1个method，reflect.Method类型，再次获取.Type，可以获取到Type类型
 NumField()	// 返回struct的字段数
@@ -527,19 +489,50 @@ NumIn()  	// 返回参数的个数
 NumOut()  	// 返回返回值的个数
 In(1)   	// 返回第1个参数(从0开始)，Type类型
 Out(0)  	// 返回第0个返回值(从0开始)，Type类型
-
-
-
-
-
-
-
-
-
-
-
-
 ```
+
+获取里面的类型
+
+对于` Array, Chan, Map, Ptr, Slice`这些类型来说，可以通过`type.Elem()`获取“里面的”类型
+
+比如对`[]string`类型使用`reflect.TypeOf()`的话，得到的类型是slice，`reflect.TypeOf().Elem()`得到的是string
+
+| 变量类型       | TypeOf()类型 | TypeOf().Elem()类型 |
+| -------------- | ------------ | ------------------- |
+| []string       | slice        | string              |
+| map[int]string | map          | string              |
+| *int           | ptr          | int                 |
+| chan float64   | chan         | float64             |
+
+代码
+
+```golang
+func main() {
+	a := int(0)
+	fmt.Println(reflect.TypeOf(&a).Kind())
+	fmt.Println(reflect.TypeOf(&a).Elem().Kind())
+	fmt.Println("")
+
+	b := []string{}
+	fmt.Println(reflect.TypeOf(b).Kind())
+	fmt.Println(reflect.TypeOf(b).Elem().Kind())
+	fmt.Println("")
+
+	c := map[int]string{}
+	fmt.Println(reflect.TypeOf(c).Kind())
+	fmt.Println(reflect.TypeOf(c).Elem().Kind())
+	fmt.Println("")
+
+	d := make(chan float64)
+	fmt.Println(reflect.TypeOf(d).Kind())
+	fmt.Println(reflect.TypeOf(d).Elem().Kind())
+	fmt.Println("")
+}
+```
+
+
+
+
 
 # 时间
 
@@ -548,12 +541,6 @@ Out(0)  	// 返回第0个返回值(从0开始)，Type类型
 // 2006-01-02 15:04:05 -07:00
 time.Now().Format("2006-01-02 15:04:05 -07:00")
 ```
-
-
-
-
-
-
 
 # 好玩的
 
