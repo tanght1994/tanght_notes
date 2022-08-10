@@ -179,23 +179,252 @@ http {
 
 也就是说，root的话，url会被当成路径的一部分
 
-http://www.tanght.xyz:8266/about
 
 
+# rewrite
 
-rewrite
+用于web服务内部的重定向，不能重定向到其它机器的上的web服务
+
+proxy_pass用于重定向到其它机器上的web服务
+
+GET和POST都可以rewrite，GET参数和POST body不会丢失，请放心使用
+
+```nginx
+语法: rewrite 你想要重定向的URI正则表达式 你想要重定向到的URI [flag]
+位置: server, location, if
+你想要重定向到的URI中可以使用$1 $2等参数，从而可以使用前面正则捕获到的值
+flag: 空        : 内部偷偷重定向，将重定向的地址的返回值返回给浏览器，浏览器根本察觉不到有重定向的存在
+flag: last      : 不要执行此location下面的代码了，去执行重定向的location
+flag: break     : 不要执行此location下面的rewrite代码了，去执行本location下面的其它代码
+flag: redirect  : 临时重定向，将重定向的地址发送给浏览器，浏览器自己看着办
+flag: permanent : 永久重定向，将重定向的地址发送给浏览器，浏览器自己看着办
+```
+
+
 
 ```nginx
 server {
     listen       8000;
-
-    location /a/ {
-        rewrite ^ /b/;
+	
+    # server 块的重定向
+    rewrite ^/a1$ /b1;
+    rewrite ^/a2/(.*)$ /b2/($1);
+    
+    location /haha/ {
+        # location 块的重定向
+        rewrite ......;
     }
 
-    location /b/ {
+    location /b1 {
         default_type text/plain;
-        echo hello world;
+        return 200 "i am b1";
+    }
+
+    location /b2 {
+        default_type text/plain;
+        return 200 "i am b2";
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+server块的break & last是完全一样的
+
+用户访问 /a1/ 返回 i am a5
+
+用户访问 /b1/ 返回 i am b3
+
+用户访问 /c1/ 返回 i am c3
+
+```nginx
+server {
+    listen       80;
+
+    # /a1/ -> /a2/ -> /a3/ -> /a4/ -> /a5/
+    # 继续找 /a5/ 的 rewrite，找了一圈发现没有给/a5/设置 rewrite
+    # OK，rewrite 阶段结束，进入 location 阶段
+    # 找到了 /a5/ 的 location，执行
+    rewrite ^/a1/$ /a2/;
+    rewrite ^/a2/$ /a3/;
+    rewrite ^/a3/$ /a4/;
+    rewrite ^/a4/$ /a5/;
+
+    location = /a3/ {
+        default_type text/plain;
+        return 200 "i am a3";
+    }
+
+    location = /a5/ {
+        default_type text/plain;
+        return 200 "i am a5";
+    }
+
+
+    # /b1/ -> /b2/ -> /b3/ -> break
+    # 虽然 给 /b3/ 设置了 rewrite，但是在上一行break了，所以在break处 rewrite 阶段就结束了，不会继续执行下面的 rewrite
+    # ok，从 /b1/ -> /b2/ -> /b3/ 的 /b3/ 处开始进入 location 阶段
+    # 找到了 /b3/ 的 location，执行
+    rewrite ^/b1/$ /b2/;
+    rewrite ^/b2/$ /b3/ break;
+    rewrite ^/b3/$ /b4/;
+    rewrite ^/b4/$ /b5/;
+
+    location = /b3/ {
+        default_type text/plain;
+        return 200 "i am b3";
+    }
+
+    location = /b5/ {
+        default_type text/plain;
+        return 200 "i am b5";
+    }
+
+	# server 块中的 last 与 break 完全相同
+    rewrite ^/c1/$ /c2/;
+    rewrite ^/c2/$ /c3/ last;
+    rewrite ^/c3/$ /c4/;
+    rewrite ^/c4/$ /c5/;
+
+    location = /c3/ {
+        default_type text/plain;
+        return 200 "i am c3";
+    }
+
+    location = /c5/ {
+        default_type text/plain;
+        return 200 "i am c5";
+    }
+}
+```
+
+
+
+location块中的break & last可不一样哦，有些复杂，最好不要出现这样的情况。如果出现这样的情况，证明你的URL规划的有问题，重构吧，重构的难度要比理解break & last的区别还要小呢。break & last是作者为了装逼而添加的功能，主要目的是装逼，没有实用价值。
+
+
+
+
+
+
+
+
+
+
+
+
+
+# set偷偷添加参数
+
+```nginx
+# 覆盖用户传递的URL参数
+location /aaa/ {
+    set $args "env=nc&abc=def";
+    proxy_pass http://172.17.0.1:9996/;
+}
+
+# 不会覆盖用户传递的URL参数，只是在用户参数的基础上添加
+location /aaa/ {
+    set $args "env=nc&abc=def&$args";
+    proxy_pass http://172.17.0.1:9996/;
+}
+```
+
+
+
+
+
+# proxy_pass
+
+proxy_pass只有两种转发策略，nginx选择哪种策略只跟proxy_pass后面的URL带不带“/”有关，跟location中有没有“/”无关，两种类型的例子如下所示：
+
+1. proxy_pass后的URL不带“/”，就是一个单纯的IP:PORT
+   - proxy_pass http://localhost:8080
+2. proxy_pass后的URL中带有"/"
+   - proxy_pass http://localhost:8080/
+   - proxy_pass http://localhost:8080/abc  （你可能要问了，这个abc后面不是没有“/”吗？哈哈8080后面“/”也算啊！）
+   - proxy_pass http://localhost:8080/abc/
+
+两种类型的处理方式如下：
+
+第一种类型，nginx原封不动的将用户的请求转送到proxy_pass地址
+
+第二种类型，nginx将删除匹配到的前缀，将剩余的URL部分转送给proxy_pass服务
+
+示例：
+
+```nginx
+server {
+    listen       80;
+
+    # 类型1：proxy_pass后面的URL不带URI
+    # nginx原封不动的转送请求，只是将URL中的IP:PORT部分替换为proxy_pass后的服务
+    # http://localhost:80/a1                http://172.17.0.1:9996/a1
+    # http://localhost:80/a1aaa             http://172.17.0.1:9996/a1aaa
+    # http://localhost:80/a1/haha/xixi      http://172.17.0.1:9996/a1/haha/xixi
+    # http://localhost:80/a1/haha/xixi/     http://172.17.0.1:9996/a1/haha/xixi/
+    location /a1 {
+       proxy_pass http://172.17.0.1:9996;
+    }
+
+    # 类型2：proxy_pass后面的URL带URI
+    # nginx删除URL中的前缀，将剩余部分转给proxy_pass服务
+    # 用户发送的请求                          用户URI   - 匹配到的前缀 = 剩余URI         proxy_pass后的路径       + 剩余URI       = nginx将要转发的地址
+    # http://localhost:80/a2               /a2              - /a2 = 空             http://172.17.0.1:9996/ + 空           = http://172.17.0.1:9996/
+    # http://localhost:80/a2aaa            /a2aaa           - /a2 = aaa            http://172.17.0.1:9996/ + aaa         = http://172.17.0.1:9996/aaa
+    # http://localhost:80/a2/haha/xixi     /a2/haha/xixi    - /a2 = /haha/xixi     http://172.17.0.1:9996/ + /haha/xixi  = http://172.17.0.1:9996//haha/xixi
+    # http://localhost:80/a2/haha/xixi/    /a2/haha/xixi/   - /a2 = /haha/xixi/    http://172.17.0.1:9996/ + /haha/xixi/ = http://172.17.0.1:9996//haha/xixi/
+    location /a2 {
+       proxy_pass http://172.17.0.1:9996/;
+    }
+    # 类型2： 同上
+    # 剩余URI = 用户URI - /a3
+    # 最终地址 = http://172.17.0.1:9996/abc + 剩余URI
+    # http://localhost:80/a3                http://172.17.0.1:9996/abc
+    # http://localhost:80/a3aaa             http://172.17.0.1:9996/abcaaa
+    # http://localhost:80/a3/haha/xixi      http://172.17.0.1:9996/abc/haha/xixi
+    # http://localhost:80/a3/haha/xixi/     http://172.17.0.1:9996/abc/haha/xixi/
+    location /a3 {
+       proxy_pass http://172.17.0.1:9996/abc;
+    }
+    # 类型2： 同上
+    # 用户URI - /a4 = 剩余URI
+    # 最终地址 = http://172.17.0.1:9996/abc/ + 剩余URI
+    # http://localhost:80/a4                http://172.17.0.1:9996/abc/
+    # http://localhost:80/a4aaa             http://172.17.0.1:9996/abc/aaa
+    # http://localhost:80/a4/haha/xixi      http://172.17.0.1:9996/abc//haha/xixi
+    # http://localhost:80/a4/haha/xixi/     http://172.17.0.1:9996/abc//haha/xixi/
+    location /a4 {
+       proxy_pass http://172.17.0.1:9996/abc/;
+    }
+
+    # 类型1
+    location /b1/ {
+       proxy_pass http://172.17.0.1:9996;
+    }
+    # 类型2
+    # 剩余URI = 用户URI - /b2/
+    # 最终地址 = http://172.17.0.1:9996/ + 剩余URI
+    location /b2/ {
+       proxy_pass http://172.17.0.1:9996/;
+    }
+    # 类型2
+    # 剩余URI = 用户URI - /b3/
+    # 最终地址 = http://172.17.0.1:9996/abc + 剩余URI
+    location /b3/ {
+       proxy_pass http://172.17.0.1:9996/abc;
+    }
+    # 类型2
+    # 剩余URI = 用户URI - /b4/
+    # 最终地址 = http://172.17.0.1:9996/abc/ + 剩余URI
+    location /b4/ {
+       proxy_pass http://172.17.0.1:9996/abc/;
     }
 }
 ```
@@ -217,26 +446,6 @@ server {
 
 
 # 源码分析
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
