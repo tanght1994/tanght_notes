@@ -949,12 +949,42 @@ cat /proc/version
 | $$   | 当前进程ID                                    |
 | $!   | 上一个进程的ID                                |
 | $?   | 返回上一条命令exit的值，0当然代表无错误了     |
+| $$   | 当前进程ID                                    |
 
 
 
 
 
-捕捉信号 trap
+## 大括号骚操作
+
+```shell
+# 去掉var变量左边或者右边符合pattern的部分
+${var%pattern}		# %是去掉右边(在键盘上%在$之右边)，只去掉第一个符合pattern的部分
+${var%%pattern}		# 同上，不同之处是去掉所有符合pattern的部分
+${var#pattern}		# #是去掉左边(在键盘上#在$之左边)
+${var##pattern}		# 同上，不同之处是去掉所有符合pattern的部分
+
+# 大括号扩展
+ls {ex1,ex2}.sh			# 相当于 ls ex1.sh ex2.sh
+ls {ex{1..3},ex4}.sh   	# 相当于 ls ex1.sh  ex2.sh  ex3.sh  ex4.sh
+ls {ex[1-3],ex4}.sh    	# 相当于 ls ex1.sh  ex2.sh  ex3.sh  ex4.sh
+
+# var为空和不为空时，赋值行为不同
+${var:-string}
+${var:+string}
+${var:=string}
+${var:?string}
+
+# 字符串截取，类似python
+${var:num}
+${var:num1:num2}
+
+# 字符串替换
+${var/pattern1/pattern2}	# 将var字符串中符合pattern1的部分替换为pattern2，只替换1次
+${var//pattern1/pattern2}	# 将var字符串中符合pattern1的部分替换为pattern2，全部替换
+```
+
+## 捕捉信号 trap
 
 ```shell
 myfunc() {
@@ -971,8 +1001,6 @@ while :; do
     sleep 1
 done
 ```
-
-
 
 ## 变量
 
@@ -1058,18 +1086,6 @@ $*为： aaa bbb ccc
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 ```shell
 # :- 可以设置默认值
 # 如果将第1行注释掉，则THT为hello world，否则THT为tanght
@@ -1121,6 +1137,8 @@ else
     ngx_c='\c'
 fi
 ```
+
+
 
 # 七层网络
 
