@@ -69,39 +69,22 @@ CA_default段配置了ca子命令相关配置，比如说签发完的证书存�
 
 # 制作根证书
 
-首先创建一些目录和文件(不然运行不了！不知道为什么openssl这么垃圾！巨难用！)，在一个干净的文件夹下运行此脚本
+openssl超级垃圾！巨难用！
 
 ```shell
 mkdir demoCA || exit
 cd demoCA || exit
-mkdir newcerts private || exit
+mkdir newcerts private temp || exit
 touch serial index.txt || exit
 echo 01 > serial || exit
 cd private || exit
 openssl rand -out .rand 1000 || exit
-openssl genrsa -out cakey.pem 2048 || exit
-cd ../..
-echo success
-```
-
-运行之后目录结构是这样的，my.sh是上面的脚本，其他的是新建的
-
-```shell
-./
-├── demoCA
-│   ├── index.txt
-│   ├── newcerts
-│   ├── private
-│   │   └── cakey.pem
-│   └── serial
-└── my.sh
-```
-
-然后创建ca.conf文件，随意一个路径就行，用完就可以删除，我就放当前目录好了
-
-```sh
+openssl genrsa -out cakey.pem 4096 || exit
+cd ../temp
+cat <<EOF > ca.conf
 [ req ]
-default_bits       = 4096
+default_bits = 4096
+req_extensions = req_ext
 distinguished_name = req_distinguished_name
 
 [ req_distinguished_name ]
@@ -112,26 +95,23 @@ stateOrProvinceName_default = BeiJing
 localityName                = localityName
 localityName_default        = BeiJing
 organizationName            = organizationName
-organizationName_default    = JJ
+organizationName_default    = THT
 commonName                  = commonName
 commonName_default          = TangHongTao
 commonName_max              = 64
+
+[ req_ext ]
+basicConstraints = CA:true
+keyUsage = critical, keyCertSign
+EOF
+cd ..
+openssl req -new -key private/cakey.pem -out temp/ca.csr -config temp/ca.conf
+openssl x509 -req -days 3650 -in temp/ca.csr -signkey private/cakey.pem -out private/cacert.pem
+cd ..
+echo success
 ```
 
-然后执行以下3条命令生成根证书
-
-```shell
-# 生成私钥cakey.pem
-openssl genrsa -out demoCA/private/cakey.pem 4096
-# 使用上面生成的私钥和上面编写的ca.conf文件，生成证书请求文件ca.csr
-openssl req -new -key demoCA/private/cakey.pem -out ca.csr -config ca.conf
-# 通过证书请求文件ca.csr生成根证书cacert.pem
-openssl x509 -req -days 3650 -in ca.csr -signkey demoCA/private/cakey.pem -out demoCA/cacert.pem
-
-openssl genrsa -out server.key 2048
-openssl req -new -key server.key -out server.csr -config server.conf
-openssl x509 -req -days 3650 -CA demoCA/cacert.pem -CAkey demoCA/private/cakey.pem -CAcreateserial -in server.csr -out server.crt -extensions req_ext -extfile server.conf
-```
+至此，成功创建根证书，可以用根证书来给服务器签发证书了。
 
 # 使用根证书签服务器证书
 
@@ -154,7 +134,6 @@ organizationName            = organizationName
 organizationName_default    = JJ
 commonName                  = commonName
 commonName_default          = www.tanght.xyz
-commonName_max              = 64
 
 [ req_ext ]
 subjectAltName = @alt_names
@@ -173,6 +152,6 @@ openssl genrsa -out server.key 2048
 # 生成证书请求文件server.csr
 openssl req -new -key server.key -out server.csr -config server.conf
 # 使用根证书签发服务器证书
-openssl x509 -req -days 3650 -CA demoCA/cacert.pem -CAkey demoCA/private/cakey.pem -CAcreateserial -in server.csr -out server.crt -extensions req_ext -extfile server.conf
+openssl x509 -req -days 3650 -CA ../demoCA/private/cacert.pem -CAkey ../demoCA/private/cakey.pem -CAcreateserial -in server.csr -out server.crt -extensions req_ext -extfile server.conf
 ```
 
