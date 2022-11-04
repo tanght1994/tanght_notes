@@ -33,7 +33,7 @@ useradd tanght
 passwd tanght
 ```
 
-## 打包/压缩/解压
+## 打包/压缩/解压(tar)
 
 ```shell
 tar zxvf filename.tar
@@ -60,32 +60,39 @@ tar --exclude=test1/test2 dir1.tar.gz dir1
 
 注意：f参数必须在所有参数之后
 
-## 软连接
+## 软连接(ln)
 
 ```shell
 # 在path2目录中创建一个path1文件(或者目录)的软链接
 ln -s path1 path2
 ```
 
-## 查看目录大小
+## 查看目录大小(du)
 
 ```shell
 # 查看当前目录的大小（查看.的总大小）
 du -sh
 
-# 查看当前目录下（各个目录的大小，包括.）
+# 查看当前目录下所有文件和目录的大小（递归）
+du -h
+
+# 同上，递归1层
 du -h --max-depth=1
 ```
 
-## 查看磁盘空间
+## 查看磁盘空间(df)
 
 ```she
 df -h
 ```
 
+## 查看DELETE文件
 
+```shell
+sudo find /proc/*/fd -ls | grep '(deleted)'
+```
 
-## 排序
+## 排序(sort)
 
 ```shell
 # -r 逆序，从大到小
@@ -96,7 +103,15 @@ df -h
 sort -rn -k 3 filename.txt
 ```
 
-## 查找find
+## 命令别名(alias)
+
+```shell
+# 把这条语句写到 ~/.bashrc 中
+alias ll='ls -lh'
+alias lll='ls -lha'
+```
+
+## 查找(find)
 
 ```shell
 # 在/目录下查找名字为tanght的普通文件
@@ -123,26 +138,87 @@ awk使用分隔符(默认是空格或tab键)来分割一条记录，将一条记
 awk [options] 'pattern + action' filename
 ```
 
-## 系统版本信息
+## 查看端口状态
 
 ```shell
-uname -s  # Linux
-uname -r  # 4.15.0-159-generic
-uname -m  # x86_64
+lsof -i :80 查看80端口的状态
+lsof abc.txt 显示开启文件abc.txt的进程
+lsof -c abc 显示abc进程现在打开的文件
+lsof -c -p 1234 列出进程号为1234的进程所打开的文件
+lsof -g gid 显示归属gid的进程情况
+lsof +d /usr/local/ 显示目录下被进程开启的文件
+lsof +D /usr/local/ 同上，但是会搜索目录下的目录，时间较长
+lsof -d 4 显示使用fd为4的进程
 ```
 
-# 端口占用
+## 查看网络连接
 
 ```shell
-lsof -i
-lsof -i :80
-lsof abc.txt 显示开启文件abc.txt的进程 lsof -c abc 显示abc进程现在打开的文件 lsof -c -p 1234 列出进程号为1234的进程所打开的文件 lsof -g gid 显示归属gid的进程情况 lsof +d /usr/local/ 显示目录下被进程开启的文件 lsof +D /usr/local/ 同上，但是会搜索目录下的目录，时间较长 lsof -d 4 显示使用fd为4的进程 lsof -i 用以显示符合条件的进程情况 lsof -i[46] [protocol][@hostname|hostaddr][:service|port]   46 --> IPv4 or IPv6   protocol --> TCP or UDP   hostname --> Internet host name   hostaddr --> IPv4地址   service --> /etc/service中的 service name (可以不止一个)   port --> 端口号 (可以不止一个)
-
-# 显示当前电脑所占用的所有tcp端口  t仅显示tcp l仅显示listen n不要显示别名 p显示进程名
-netstat -tlnp
+# 显示当前电脑所占用的所有tcp端口
+# a 显示所有sockets， 默认只显示connected状态的sockets
+# n 不要将IP地址转换为域名
+# p 显示进程名
+# t 只显示tcp的sockets
+netstat -anpt
 ```
 
+## 查看系统版本
 
+```shell
+# 查看内核版本
+uname -a
+
+# 查看内核版本
+cat /proc/version
+
+# 查看系统版本(Centos版本或Ubuntu版本，但是这个命令可能没有)
+lsb_release -a
+
+# 查看Centos版本(Centos必有)
+cat /etc/redhat-release
+
+# 查看Ubuntu版本(Ubuntu必有)
+cat /etc/redhat-release
+
+```
+
+## source命令
+
+```shell
+source test.sh		# 将test.sh中的代码读出来，放到本窗口的命令行中执行(本shell直接运行test.sh中的命令)
+. test.sh			# . 同 source
+./test.sh			# 启动子进程，运行test.sh脚本
+sh test.sh			# sh 同 ./
+```
+
+例子：
+
+export的环境变量对本shell以及本shell的子程序起作用。如果定义了一个环境变量但是不export，则此环境变量只对本shell起作用，对它的子程序不起作用。所以如果我们编写了一个脚本如下：
+
+```shell
+# export_env.sh
+# 此脚本的作用就是定义几个环境变量给gcc使用
+export LD_LIBRARY_PATH=/home/tanght/download/boost_1_75_0/stage/lib:${LD_LIBRARY_PATH}
+export LIBRARY_PATH=/home/tanght/download/boost_1_75_0/stage/lib:${LIBRARY_PATH}
+export CPATH=/home/tanght/download/boost_1_75_0:${CPATH}
+```
+
+如果我们`./export_env.sh`这样运行这个脚本，则会发现`echo ${CPATH}`并没有按照我们的想法被设置，跟我们没有运行这个脚本之前是一样的。
+
+那是因为export_env.sh这个脚本是以一个子进程的形式运行的，子进程中设置的环境变量并不能传递给它的父进程(也就是我们的操作窗口)。
+
+所以如果想要在本窗口中设置环境变量，只能将上面的代码复制到命令行中执行一下了。。。哈哈，那样岂不是太弱了，一点逼格都没有！牛逼的方法看下面！
+
+source命令的作用是什么呢？`source export_env.sh`这个命令的意思是：别用子进程运行export_env.sh这个脚本，直接将export_env.sh这个文件中的命令读出来，直接在本窗口中运行！
+
+## 创建文件指定大小(dd)
+
+```shell
+# if 指定输入文件
+# of 指定文件写入的位置
+# bs * count 是文件的大小
+dd if=/dev/zero of=50M.file bs=1M count=50
+```
 
 # 软件包安装
 
@@ -215,8 +291,6 @@ yum list installed
 # 卸载软件
 yum remove package_name
 ```
-
-
 
 # 软件仓库
 
@@ -311,15 +385,13 @@ dists下的结构
 
 apt源修改
 
-
-
-
-
-# 定时任务
+# 定时任务(crond)
 
 简述：crond为定时任务后台服务，为Linux提供定时任务功能，基本上任何一个Linux发行版都带有crond这个服务。crontab为crond的对外接口，使用户可以配置crond。
 
-设置定时任务：在命令行中输入crond -e后，会打开一个虚拟文件，直接编辑这个文件就能实现定时任务的设置。文件中的每一行为一个定时任务，每行的的格式如下：
+## 使用crontab
+
+在命令行中输入crond -e后，会打开一个虚拟文件，直接编辑这个文件就能实现定时任务的设置。文件中的每一行为一个定时任务，每行的的格式如下：
 
 ```shell
 分  时  日  月  周  shell命令
@@ -356,15 +428,92 @@ sudo crond -e
 - 首次运行crond -e可能需要选择编辑器，选择vim就行了
 - select-editor命令用来切换编辑器
 
+## 使用crond配置文件
+
+直接修改/添加配置文件也能实现定时任务的设置，crond的配置文件在/etc/cron.d目录下（多个文件，每个定时任务单独一个文件，这样比较清晰），如果想新增定时任务，直接写个新的文件放到/etc/cron.d目录下就行了，新增或修改/etc/cron.d目录下的配置文件不需要重启crond服务，配置文件的格式如下：
+
+```shell
+# 文件路径为 /etc/cron.d/nginx
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+# HOME环境变量是设置这个任务的 当前工作目录(cwd)
+HOME=/
+# 每天的23:59分 用root用户 执行 logrotate -f /usr/local/nginx/conf/nginx.logrotate
+# 温馨提示: logrotate 是linux下做日志分割的工具
+59 23 * * * root logrotate -f /usr/local/nginx/conf/nginx.logrotate
+```
+
 ## crontab时区
 
 crontab的时区在`/etc/crontab`这个文件中设置，添加`CRON_TZ=Asia/Shanghai`这样一句配置的话，就是告诉crontab使用北京时间，修改了配置文件之后记得重启`sudo service crond restart`
 
 使用service或者systemctl控制crontab的时候注意，这个程序有时候叫做crond有时候叫做cron，有可能跟系统版本有关
 
+# 日志切割(logrotate)
 
+/etc/logrotate.d
 
-# Linux时区
+/etc/logrotate.conf
+
+```shell
+# 每周执行一次滚动
+weekly
+
+# 日志发生滚动后，指定备份日志文件保存多少个副本
+rotate 4
+
+# 是否创建一个空的新的日志文件
+create
+
+# 指定滚动文件的后缀是当前日期
+dateext
+
+# 对滚动后的日志进行压缩
+compress
+
+##### 上面是全局配置，下面是局部配置 #####
+
+# 加载子配置文件(跟nginx的conf.d类似)
+include /etc/logrotate.d
+ 
+# 指定对特定的日志文件的滚动规则
+/var/log/wtmp {
+    monthly                 # 一月滚动一次
+    create 0664 root utmp   # 指定滚动后创建的新文件的权限为0644，数组为root，属组为utmp
+    minsize 1M              # 指定文件的值小于1M不滚动   
+    rotate 1                # 指定保留几个备份副本
+ 
+}
+
+/var/log/btmp {
+    missingok   # 如果日志文件不存在发送错误消息
+    monthly
+    create 0600 root utmp
+    rotate 1
+}
+```
+
+nginx日志切割的
+
+```shell
+/data/logs/*[^0-9].log
+{
+    su root adm
+    daily
+    rotate 7
+    missingok
+    notifempty
+    compress
+    create 644 root adm
+    minsize 5M
+    sharedscripts
+    postrotate
+        /bin/kill -USR1 $(cat /run/nginx.pid 2>/dev/null) 2>/dev/null || :
+    endscript
+}
+```
+
+# Linx时区
 
 ## 查看时区
 
@@ -374,10 +523,6 @@ crontab的时区在`/etc/crontab`这个文件中设置，添加`CRON_TZ=Asia/Sha
 
 - 由`/etc/localtime`指向的文件决定，为什么说指向？因为localtime文件是个软连接，比如我的这台电脑是`/etc/localtime -> /usr/share/zoneinfo/Asia/Shanghai`，则这台电脑的时区就是北京时间。想要修改时区的话，直接改变`/etc/localtime`这个软连接的指向就好了，将它指向你想要的时区文件。时区文件在哪里？全部都在`/usr/share/zoneinfo/`这个文件夹下哦，自己去找吧
 - `tzselect`命令可以告诉你时区文件的名字，是一个交互式的程序，按照程序的提示一步步选择就好了，结束之后`tzselect`会告诉你你想要的时区的时区文件名字是什么
-
-
-
-
 
 # service命令
 
@@ -411,10 +556,6 @@ sudo service --status-all
  [ - ]  console-setup.sh
  [ + ]  cron
 ```
-
-
-
-
 
 # systemctl
 
@@ -574,8 +715,6 @@ enable（开机启动）的原理就是在`/etc/systemd/system/xxx.target.wants`
 - 将`.service`文件放在`/etc/systemd/system/`或`/lib/systemd/system/`下，此时就能用systemctl来控制你的程序了。
 - 将`.service`文件放在`/etc/systemd/system/xxx.target.wants`下，就能开机启动了。
 
-
-
 # 后台运行
 
 `command`：前台运行command。stdout与stderr都直接输出到当前窗口
@@ -656,34 +795,7 @@ CPLUS_INCLUDE_PATH影响g++
 
 C_INCLUDE_PATH影响gcc
 
-# source命令
 
-```shell
-source test.sh		# 将test.sh中的代码读出来，放到本窗口的命令行中执行(本shell直接运行test.sh中的命令)
-. test.sh			# . 同 source
-./test.sh			# 启动子进程，运行test.sh脚本
-sh test.sh			# sh 同 ./
-```
-
-例子：
-
-export的环境变量对本shell以及本shell的子程序起作用。如果定义了一个环境变量但是不export，则此环境变量只对本shell起作用，对它的子程序不起作用。所以如果我们编写了一个脚本如下：
-
-```shell
-# export_env.sh
-# 此脚本的作用就是定义几个环境变量给gcc使用
-export LD_LIBRARY_PATH=/home/tanght/download/boost_1_75_0/stage/lib:${LD_LIBRARY_PATH}
-export LIBRARY_PATH=/home/tanght/download/boost_1_75_0/stage/lib:${LIBRARY_PATH}
-export CPATH=/home/tanght/download/boost_1_75_0:${CPATH}
-```
-
-如果我们`./export_env.sh`这样运行这个脚本，则会发现`echo ${CPATH}`并没有按照我们的想法被设置，跟我们没有运行这个脚本之前是一样的。
-
-那是因为export_env.sh这个脚本是以一个子进程的形式运行的，子进程中设置的环境变量并不能传递给它的父进程(也就是我们的操作窗口)。
-
-所以如果想要在本窗口中设置环境变量，只能将上面的代码复制到命令行中执行一下了。。。哈哈，那样岂不是太弱了，一点逼格都没有！牛逼的方法看下面！
-
-source命令的作用是什么呢？`source export_env.sh`这个命令的意思是：别用子进程运行export_env.sh这个脚本，直接将export_env.sh这个文件中的命令读出来，直接在本窗口中运行！
 
 # 网络
 
@@ -793,10 +905,6 @@ top命令用于打开资源占用信息窗口(类似windows的任务管理器)
 **查看指定进程：**`top -p 1,2,3,4`
 
 -p后面跟想要查看的进程id，如果有一个就写一个，如果有多个就写多个并用逗号隔开
-
-
-
-
 
 # makefile
 
@@ -936,23 +1044,7 @@ OBJ = $(SRC:.cpp=.o)
 # 结果OBJ = 1.o 2.c 3.o
 ```
 
-# 查看系统版本
-
-```shell
-cat /proc/version
-```
-
-
-
-
-
-# cmake
-
-
-
 # shell脚本
-
-
 
 | 变量 | 说明                                          |
 | ---- | --------------------------------------------- |
@@ -966,10 +1058,6 @@ cat /proc/version
 | $!   | 上一个进程的ID                                |
 | $?   | 返回上一条命令exit的值，0当然代表无错误了     |
 | $$   | 当前进程ID                                    |
-
-
-
-
 
 ## 大括号骚操作
 
@@ -1059,8 +1147,6 @@ hello abc
 hello ${myvar1}
 ```
 
-
-
 ## 参数
 
 ```shell
@@ -1097,8 +1183,6 @@ echo '$*为：' $*
 $@为： aaa bbb ccc
 $*为： aaa bbb ccc
 ```
-
-
 
 ## cat写作文到文件中
 
@@ -1191,7 +1275,21 @@ else
 fi
 ```
 
+# 进程监控
 
+```shell
+StartProcess(){
+    ps_out=`ps -ef | grep "$1" | grep -v 'grep' | grep -v "$0"`
+    if [ ${#ps_out} -eq 0 ]
+    then
+        `$1`
+        echo "`date` $1" >> /data/webserver/monitor/log.log
+    fi
+}
+
+StartProcess "uwsgi --ini /etc/uwsgi.ini"
+StartProcess "uwsgi --ini /data/webserver/log_server/uwsgi/uwsgi.ini"
+```
 
 # 七层网络
 

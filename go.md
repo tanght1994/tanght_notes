@@ -960,3 +960,235 @@ yaml.Unmarshal && yaml.Marshal
 - 通过wget直接下载页面到本地，通过记事本查看
 - 通过`go tool pprof url地址`下载二进制文件到本地，再通过`go tool pprof 文件名`来交互
 
+# 编译
+
+```shell
+myproject/
+├── go.mod			# 工程的依赖信息(例如依赖了github上的多个golang库)
+├── go.sum
+├── program_a      	# 程序A
+│   ├── cmd
+│   │   └── a.go
+│   ├── core
+│   │   └── b.go
+│   └── main.go
+├── bprogram_b    	# 程序B
+│   └── main.go
+├── program_c		# 程序C
+│   └── main.go
+└── lib				# 程序A B C的共用函数(库)
+    ├── a.go
+    ├── b.go
+    └── c.go
+
+# myproject这个工程包含了4个部分，分别是程序A、程序B、程序C、库函数
+
+# 将go.mod中记录的依赖下载到本地
+# go mod download
+
+# 编译 A 程序
+# go build -o A ./myproject/program_a
+
+# 编译 B 程序
+# go build -o B ./myproject/program_b
+
+# 编译 C 程序
+# go build -o C ./myproject/program_c
+```
+
+
+
+# 禁用代码分析
+
+```
+//nolint:all
+
+// +build !codeanalysis
+```
+
+aaa
+
+```go
+//nolint:govet,errcheck // 对文件级别生效
+package main
+ 
+import (
+    "fmt"
+    "math/rand"
+    "time"
+)
+ 
+func main() {
+    rand.Seed(time.Now().UnixNano())
+    fmt.Println(rand.Int()) //nolint:gosec // 对行级别生效
+}
+ 
+//nolint // 对函数级别生效
+func nolintFunc() {
+ 
+}
+```
+
+
+
+.golangci.yaml文件控制go代码检查，将此文件放在项目的根目录
+
+```yaml
+# 检测基本配置
+run:
+  skip-dirs: # 设置要忽略的目录
+    - util
+    - .*~
+    - api/swagger/docs
+  skip-files: # 设置不需要检查的go源码文件，支持正则匹配
+    - ".*.my.go$"
+    - _test.go
+# 修改某个linter的设置
+linters-settings:
+  errcheck:
+    check-type-assertions: true # 这里建议设置为true，如果确实不需要检查，可以写成`num, _ := strconv.Atoi(numStr)`
+    check-blank: false
+  lll:
+    line-length: 240 # 一行的长度
+  godox:
+    keywords: # 建议设置为BUG、FIXME、OPTIMIZE、HACK
+      - BUG
+      - FIXME
+      - OPTIMIZE
+      - HACK
+# 开启某个linter，按需开启
+linters:
+  disable-all: true
+  enable:
+    - typecheck
+    - asciicheck
+    - bodyclose
+    - cyclop
+    - deadcode
+    - depguard
+    - dogsled
+    - dupl
+    - durationcheck
+    - errcheck
+    - errorlint
+    - exhaustive
+    - exhaustivestruct
+    - exportloopref
+    - forbidigo
+    - funlen
+    - gci
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocyclo
+    - godot
+    - godox
+    - gofmt
+    - gofumpt
+    - goheader
+    - goimports
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ifshort
+    - importas
+    - ineffassign
+    - lll
+    - makezero
+    - misspell
+    - nakedret
+    - nestif
+    - nilerr
+    - nlreturn
+    - noctx
+    - nolintlint
+    - paralleltest
+    - prealloc
+    - predeclared
+    - promlinter
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+    - wastedassign
+    - whitespace
+  fast: false
+
+```
+
+# GC
+
+第一个阶段 gc开始 （stw）
+
+1. stop the world 停止整个世界
+2. 启动标记工作协程（ mark worker goroutine ），用于第二阶段
+3. 启动写屏障
+4. 将root 根对象放入标记队列（放入标记队列里的就是灰色）
+5. start the world 开始整个世界，进入第二阶段
+
+第二阶段 marking（这个阶段，用户程序跟标记协程是并行的）
+
+1. 从标记队列里取出对象，标记为黑色
+2. 然后检测是否指向了另一个对象，如果有，将另一个对象放入标记队列
+3. 在扫描过程中，用户程序如果新创建了对象 或者修改了对象，就会触发写屏障，将对象放入单独的 marking队列，也就是标记为灰色
+4. 扫描完标记队列里的对象，就会进入第三阶段
+
+第三阶段 处理marking过程中修改的指针 （stw）
+
+1. stop the world 暂停程序
+2. 将marking阶段 修改的对象 触发写屏障产生的队列里的对象取出，标记为黑色
+3. 然后检测是否指向了另一个对象，如果有，将另一个对象放入标记队列
+4. 扫描完marking队列里的对象，start the world 取消暂停程序 进入第四阶段
+
+第四阶段 sweep 清楚白色的对象
+
+# gctrace
+
+```
+"env": {
+	"GODEBUG": "gctrace=1"
+}
+```
+
+
+
+```
+gc 22 @4.428s 0%: 0+11+0 ms clock, 0+0.50/4.5/8.5+0 ms cpu, 4->4->2 MB, 4 MB goal, 0 MB stacks, 0 MB globals, 4 P
+    1    2    3     4                     5                     6          7          8              9        10
+
+10部分
+1：第多少次GC
+2：此时的时间（相对于程序开始时的相对时间）
+3：本次GC所使用的CPU占比
+4：GC第一阶段时间 + GC第二阶段时间 + GC第三阶段时间
+5：同上
+6：GC开始时的内存大小（包含垃圾和活跃内存） -> 有多少M被标记为了垃圾 -> GC结束时的活跃内存大小
+7：
+8：
+9：
+10：本次GC一共用了多少协程
+
+
+
+```
+
+
+
+# VSCODE泛型报错
+
+![image-20221103163557707](assets/image-20221103163557707.png)
+
+
+
+![image-20221103163857291](assets/image-20221103163857291.png)
