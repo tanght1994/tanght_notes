@@ -1192,3 +1192,29 @@ gc 22 @4.428s 0%: 0+11+0 ms clock, 0+0.50/4.5/8.5+0 ms cpu, 4->4->2 MB, 4 MB goa
 
 
 ![image-20221103163857291](assets/image-20221103163857291.png)
+
+# 正则表达式
+
+```go
+// reg.Find[All][String|StringSubmatch][Index]
+// reg.FindString 最左匹配，返回匹配到的字符串，即使存在多个匹配结果，也只返回最左的第一个(想返回所有的话，用FindALL)
+// reg.FindStringSubmatch 
+// 加ALL 匹配所有（不只返回最左了）
+// 加Index 不返回字符串，而是返回字符串的开始和结束的索引（左开右闭）
+
+
+s = "xxx name:tanght age:18 name:wq age:10 xxx name:tom age:1 xxx name:dog age:100"
+reg, _ := regexp.Compile(`name:(?P<name1>[\S]+) age:(?P<age1>[\S]+)`)
+
+// 正则中未分组捕获
+reg.FindString(s) 返回 "name:tanght age:18"
+reg.FindStringIndex(s) 返回 [4 22]
+reg.FindAllString(s, -1) 返回 ["name:tanght age:18", "name:wq age:10", "name:tom age:1", "name:dog age:100"]
+reg.FindAllStringIndex(s, -1) 返回 [[4 22] [23 37] [42 56] [61 77]]
+
+// 正则中分组捕获
+reg.FindStringSubmatch(s) 返回 []string [0]是匹配到的字符串 [1]是第一组 [2]是第二组
+reg.FindStringSubmatchIndex(s) 返回 []int [0][1]是匹配到的字符串 [2][3]是第一组 [4][5]是第二组
+reg.FindAllStringSubmatch(s, -1) 返回 [][]string
+```
+

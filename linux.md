@@ -92,7 +92,7 @@ df -h
 sudo find /proc/*/fd -ls | grep '(deleted)'
 ```
 
-## 排序(sort)
+## sort(排序)
 
 ```shell
 # -r 逆序，从大到小
@@ -103,7 +103,7 @@ sudo find /proc/*/fd -ls | grep '(deleted)'
 sort -rn -k 3 filename.txt
 ```
 
-## 命令别名(alias)
+## alias(命令别名)
 
 ```shell
 # 把这条语句写到 ~/.bashrc 中
@@ -111,14 +111,6 @@ alias ll='ls -lh'
 alias lll='ls -lha'
 ```
 
-## 查找(find)
-
-```shell
-# 在/目录下查找名字为tanght的普通文件
-find / -name tanght -type f
-# 正则表达式
-find / -name "tanght*" -type f
-```
 
 ## 文本分析
 
@@ -138,7 +130,7 @@ awk使用分隔符(默认是空格或tab键)来分割一条记录，将一条记
 awk [options] 'pattern + action' filename
 ```
 
-## 查看端口状态
+## lsof(查看端口/文件状态)
 
 ```shell
 lsof -i :80 查看80端口的状态
@@ -151,7 +143,7 @@ lsof +D /usr/local/ 同上，但是会搜索目录下的目录，时间较长
 lsof -d 4 显示使用fd为4的进程
 ```
 
-## 查看网络连接
+## netstat(查看网络连接)
 
 ```shell
 # 显示当前电脑所占用的所有tcp端口
@@ -182,7 +174,7 @@ cat /etc/redhat-release
 
 ```
 
-## source命令
+## source(执行脚本)
 
 ```shell
 source test.sh		# 将test.sh中的代码读出来，放到本窗口的命令行中执行(本shell直接运行test.sh中的命令)
@@ -211,13 +203,66 @@ export CPATH=/home/tanght/download/boost_1_75_0:${CPATH}
 
 source命令的作用是什么呢？`source export_env.sh`这个命令的意思是：别用子进程运行export_env.sh这个脚本，直接将export_env.sh这个文件中的命令读出来，直接在本窗口中运行！
 
-## 创建文件指定大小(dd)
+## dd(创建文件指定大小)
 
 ```shell
 # if 指定输入文件
 # of 指定文件写入的位置
 # bs * count 是文件的大小
 dd if=/dev/zero of=50M.file bs=1M count=50
+```
+
+## grep(查找字符串)
+
+```shell
+grep   [控制参数]   '想要搜索的字符串'   文件名(可以带*匹配)
+
+# 读取file.txt，输出包含'ab cd'这个字符串的行
+grep 'ab cd' file.txt
+
+# 读取当前目录下所有.log结尾的文件，输出包含'ab cd'这个字符串的行
+# 只在当前目录下找.log文件，不会递归的去子目录下去找
+grep 'ab cd' *.log
+
+# 读取当前目录下所有文件，输出包含'ab cd'这个字符串的行
+grep 'ab cd' *
+
+# 读取当前目录以及子目录下所有文件，输出包含'ab cd'这个字符串的行
+# -r 遍历所有子目录
+grep -r 'ab cd' *
+
+# -n 顺便输出行号
+grep -n 'ab cd' file.txt
+
+# -i 忽略大小写
+grep -i 'ab cd' file.txt
+
+# -l 只显示文件名，不现实匹配到的具体的行
+grep -r -l 'ab cd' *
+
+# -E 使用正则表达式匹配
+grep -E 'ab.*cd' file.txt
+```
+
+## find(查找文件或目录)
+
+```shell
+# 在 / 目录下查找名字符合 *abc* 的所有文件(普通文件、目录、链接、等文件)，递归所有子目录
+find / -name "*abc*"
+
+# 在 / 目录下查找名字符合 *abc* 的普通文件(仅包括普通文件，不包含目录、链接等)
+# -type 限制文件类型 (f普通文件 d目录 c字符设备 b块设备 l链接 p管道)
+find / -name "*abc*" -type f
+
+# 在 / 目录下查找名字符合 *abc* 且大小大于1M 的普通文件
+# -size 限制大小(+1M大于1兆 -1M小于1兆)
+find / -name "*abc*" -type f -size +1M
+
+# -type f (限制文件类型 f普通文件 d目录 c字符设备 b块设备 l链接 p管道)
+# -size +1M (限制文件大小 +1M  -1M)
+# -maxdepth 2 (限制目录层数 目录最多递归2层)
+# -mtime +10 (限制文件最近修改时间 单位为天)
+# -mmin +10 (限制文件最近修改时间 单位为分钟)
 ```
 
 # 软件包安装
