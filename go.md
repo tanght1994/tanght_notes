@@ -305,7 +305,7 @@ go get -u github.com/kataras/iris/v12@latest
 
 ## 需要的程序：
 
-protoc.exe：核心程序，负责解析proto文件，生成mete信息
+protoc.exe：核心程序，负责解析proto文件，生成mete信息，下载地址（https://github.com/protocolbuffers/protobuf/releases）
 
 protoc-gen-xxx.exe：插件，负责通过mete信息，生成对应的代码
 
@@ -315,7 +315,7 @@ protoc-gen-python.exe生成python代码，这个是protoc自带的，不需要�
 
 protoc-gen-cpp.exe生成c++代码，这个是protoc自带的，不需要下载
 
-protoc-gen-go.exe生成golang代码，需要下载
+protoc-gen-go.exe生成golang代码，需要自行下载（go install github.com/golang/protobuf/protoc-gen-go@latest）
 
 protoc-gen-gogofaster.exe生成golang代码，跟protoc-gen-go.exe功能一样，protoc-gen-gogofaster瞧不起protoc-gen-go，所以他重写了go的插件
 
@@ -438,6 +438,22 @@ func must(e error) {
 	}
 }
 ```
+
+## json与pb互转
+
+```
+"github.com/golang/protobuf/jsonpb"  // json与pb互转
+"github.com/golang/protobuf/proto"   // 基础pb操作
+
+a := &pb.UserInfo{}
+jsonpb.UnmarshalString(`{"name": "tanght", "age": "100"}`, a)  // 将json字符串解析到protobuf结构体a中
+
+b := &jsonpb.Marshaler{}
+c, _ := b.MarshalToString(a)  // 将protobuf结构体a，转为json字符串
+fmt.Println(c)
+```
+
+
 
 # grpc
 
