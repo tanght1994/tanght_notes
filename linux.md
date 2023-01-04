@@ -237,11 +237,14 @@ grep -n 'ab cd' file.txt
 # -i 忽略大小写
 grep -i 'ab cd' file.txt
 
-# -l 只显示文件名，不现实匹配到的具体的行
+# -l 只显示文件名，不显示匹配到的具体的行
 grep -r -l 'ab cd' *
 
 # -E 使用正则表达式匹配
 grep -E 'ab.*cd' file.txt
+
+# -v 排除带有abc关键字的行
+grep -v abc file.txt
 ```
 
 ## find(查找文件或目录)

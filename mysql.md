@@ -320,6 +320,9 @@ SHOW GRANTS;
 SHOW GRANTS FOR 'tanght'@'%';
 ```
 ## 添加权限
+
+修改权限后必须重启mysql（貌似）
+
 ```mysql
 # ALL代表所有权限
 GRANT ALL PRIVILEGES ON *.* TO `tanght`@`%` WITH GRANT OPTION;
