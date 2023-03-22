@@ -268,13 +268,15 @@ find / -name "*abc*" -type f -size +1M
 # -mmin +10 (限制文件最近修改时间 单位为分钟)
 ```
 
-# 软件包安装
+# 软件安装与仓库
+
+## 软件包安装
 
 Ubuntu：高级apt，基本dpkg
 
 Centos：高级yum，基本rpm
 
-Ubuntu
+### Ubuntu
 
 ```shell
 # 更新本地软件仓库至最新(将远程软件仓库又新增了哪些软件，软件仓库中的软件版本等等这些信息同步过来)
@@ -315,7 +317,7 @@ apt list --installed
 apt list --upgradable
 ```
 
-centos
+### centos
 
 ```shell
 # --showduplicates 用于显示所有版本，否则的话只显示最新版本
@@ -340,11 +342,11 @@ yum list installed
 yum remove package_name
 ```
 
-# 软件仓库
+## 软件仓库
 
-## 修改仓库源地址
+### 修改仓库源地址
 
-### Centos
+#### Centos
 
 ```bash
 配置文件地址：/etc/yum.repos.d/CentOS-Base.repo
@@ -354,7 +356,7 @@ wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-
 wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
 ```
 
-### Ubuntu
+#### Ubuntu
 
 ```shell
 配置文件地址：/etc/apt/sources.list
@@ -1376,4 +1378,38 @@ StartProcess "uwsgi --ini /data/webserver/log_server/uwsgi/uwsgi.ini"
 3. 在vim的命令行执行`set nopaste`，还原第一步的设置
 
 
+
+# 进程最大打开文件数量
+
+查看当前用户的配置
+
+```
+root@VM-0-10-ubuntu:~# ulimit -a
+core file size          (blocks, -c) 0
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 7187
+max locked memory       (kbytes, -l) 65536
+max memory size         (kbytes, -m) unlimited
+open files                      (-n) 1300         // 当前的进程最大打开文件量为1300, 通过ulimit -n命令可临时修改
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) 8192
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 7187
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
+```
+
+永久生效
+
+```
+修改 /etc/security/limits.conf 这个文件, 添加如下内容
+root soft nofile 1300
+root hard nofile 1300
+
+root的意思是指, 设置root用户的ulimit
+```
 
