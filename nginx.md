@@ -694,9 +694,41 @@ NGX_HTTP_LOG_PHASE
 
 
 
+# 配置
+
+## proxy_pass是否存在路径
+
+```nginx
+# 如果proxy_pass后的url不存在路径（连/都没有），则原封不动的转发
+# http://localhost:80/a/b   		404
+# http://localhost:80/a/b/c  		http://localhost:8080/a/b/c
+# http://localhost:80/a/b/c/   		http://localhost:8080/a/b/c/
+# http://localhost:80/a/b/c/d    	http://localhost:8080/a/b/c/d
+# http://localhost:80/a/b/c/d/   	http://localhost:8080/a/b/c/d/
+server {
+    listen 80;
+    location /a/b/c {
+        proxy_pass http://127.0.0.1:8080;
+    }
+}
+
+# 如果proxy_pass后的url存在路径
+# http://localhost:80/a/b   		404
+# http://localhost:80/a/b/c  		http://localhost:8080/
+# http://localhost:80/a/b/c/   		http://localhost:8080//
+# http://localhost:80/a/b/c/d    	http://localhost:8080//d
+# http://localhost:80/a/b/c/d/   	http://localhost:8080//d/
+server {
+    listen 80;
+    location /a/b/c {
+        proxy_pass http://127.0.0.1:8080/;
+    }
+}
+```
 
 
 
+![image-20230506152419829](assets/image-20230506152419829.png)
 
 
 
