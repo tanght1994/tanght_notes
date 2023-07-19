@@ -373,7 +373,7 @@ t = test()
 只对本条pip命令生效
 
 ```shell
-pip install abc_name -i http://mirrors.aliyun.com/pypi/simple/
+pip install abc_name -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
 ```
 
 ### 永久更换

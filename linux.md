@@ -689,6 +689,23 @@ PrivateTmp=true
 WantedBy=multi-user.target
 ```
 
+
+
+```shell
+[Service]
+Type=forking
+PIDFile=/usr/local/openresty/nginx/logs/nginx.pid   # systemd会将程序的pid写到这里
+ExecStart=/usr/local/openresty/nginx/sbin/nginx		# 用这个命令来启动程序
+ExecReload=/usr/local/openresty/nginx/sbin/nginx -s reload	# 用这个命令来重载(可以不写)
+ExecStop=/usr/local/openresty/nginx/sbin/nginx -s stop	# 用这个命令来关闭(可以不写)
+Restart=always	# 不管什么原因程序被关闭了，systemd都会重新启动这个程序(通过systemd stop这个程序除外)
+RestartSec=10s  # 程序死了之后，10s后再重启
+```
+
+
+
+
+
 [Unit]
 After=network.target
 \#[Service]部分是服务的关键，是服务的一些具体运行参数的设置，这里Type=forking
