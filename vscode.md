@@ -163,9 +163,93 @@ files.exclude更狠，vscode不仅不监控，连显示都不显示了，直接�
 
 # 快捷键
 
-| 快捷键   | 功能           |
-| -------- | -------------- |
-| ctrl+k+0 | 折叠所有代码   |
-| ctrl+k+j | 展开所有代码   |
-| ctrl+k+f | 格式化所有代码 |
+
+
+| 快捷键           | 功能                          |
+| ---------------- | ----------------------------- |
+| ctrl + shift + p | 打开命令面板                  |
+| ctrl + ,         | 打开设置（settings.json文件） |
+| ctrl + `         | 打开vscode底部的cmd窗口       |
+| ctrl + /         | 注释这一行代码                |
+| ctrl + g         | 跳转到行                      |
+| ctrl + p         | 跳转到文件                    |
+| ctrl + f         | 查找                          |
+| ctrl + b         | 切换侧边栏可见性              |
+| ctrl + k + 0     | 折叠所有代码                  |
+| ctrl + k + j     | 展开所有代码                  |
+| ctrl + k + f     | 格式化所有代码                |
+| shift + alt + f  | 格式化代码                    |
+| F2               | 重命名                        |
+| ctrl + shift + U | 单词大写                      |
+| ctrl + shift +L  | 单词小写                      |
+
+# 代码格式化
+
+## WEB前端
+
+格式化vue html js ts css json yaml 等等
+
+- eslint：代码风格检查，不负责代码格式化（它的格式化功能很弱，相当于没有），只负责报错
+- prettier：代码格式化工具，格式化之后的代码未必符合eslint的胃口（所以要保证eslint和prettier的配置不冲突）
+- vetur：负责高亮vue文件（很弱，简直是脑残插件）
+
+上述三个插件，只需在vscode中安装即可，不需要在项目中使用npm安装（使用npm安装这些插件是上个世纪那些用记事本写代码的上古程序员的做法）
+
+```json
+// vscode配置文件(全局或当前工程都行)
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode", // 设置编辑器的默认格式化工具为 prettier
+  "[javascript]": { // 根据语言设置其专用的默认格式化工具
+      "editor.defaultFormatter": "esbenp.prettier-vscode", // 设置js的默认格式化工具为 prettier
+      "editor.formatOnSave": true, // 保存时自动格式化
+  },
+  // 设置esbenp.prettier-vscode的配置, 不建议在这里设置, 建议在项目的.prettierrc.json专用文件中设置
+  "prettier.semi": false, // 语句末尾添加分号
+  "prettier.singleQuote": true // 使用单引号
+}
+
+```
+
+### prettier配置
+
+在工程根目录下创建`.prettierrc.js`文件
+
+```javascript
+module.exports = {
+    printWidth: 120,
+    tabWidth: 4,
+    useTabs: false,
+    singleQuote: true,		// 是否使用单引号
+    semi: false, 			// 是否添加分号
+    trailingComma: "es5",
+    bracketSpacing: true,
+    jsxBracketSameLine: false,
+    arrowParens: "avoid",
+    endOfLine: "auto",
+}
+```
+
+### eslint配置
+
+在工程根目录下创建`.eslintrc.js`文件
+
+文档：https://eslint.org/docs/latest/use/configure/#specifying-environments
+
+```javascript
+module.exports = {
+    env: {
+    	node: true,		// 此项目为nodejs项目，不是网页项目
+    	es6: true	// 语法格式为es6
+    },
+    "rules": {
+        "indent": ["error", 4],
+        "linebreak-style": ["error", "unix"],
+        "quotes": ["error", "double"],
+        "semi": ["error", "always"],
+        "no-empty": "warn",
+        "no-cond-assign": ["error", "always"],
+         "for-direction": "off",
+    }
+}
+```
 
