@@ -18,6 +18,12 @@ npm install package_name
 
 # 全局安装(安装包的所有文件都会保存在/xxx/xxx/xxx/node_modules/xxx文件夹下)
 npm install package_name -g
+
+# 安装到dependencies
+npm install xxx -S
+
+# 安装到devDependencies
+npm install xxx -D
 ```
 
 ## 运行别人的项目
@@ -28,13 +34,14 @@ npm install package_name -g
 npm i
 ```
 
-## 其它
+# JS
 
-```shell
-# 安装到dependencies
-npm install xxx -S
+## 字符串拼接
 
-# 安装到devDependencies
-npm install xxx -D
+key：字符串拼接，字符串模板，字符串插值，字符串大括号
+
+```javascript
+const name = 'tanght'
+const haha = `Hello ${name}!`
 ```
 

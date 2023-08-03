@@ -880,3 +880,12 @@ pip install --no-index --find-links=/haha/hehe pymysql
 sudo pip3 install redis -i https://pypi.tuna.tsinghua.edu.cn/simple --proxy=192.168.96.67:8888 --trusted-host pypi.tuna.tsinghua.edu.cn
 ```
 
+# 字符串拼接
+
+key：拼接，模板，插值，大括号
+
+```python
+s1 = 'tanght'
+s2 = f'Hello {s1}'
+```
+
