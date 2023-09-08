@@ -1,3 +1,18 @@
+# 简介
+
+- gcc：
+- g++：
+- MinGW：windows平台上的一个文件夹，这个文件夹中包含gcc.exe、g++.exe、等，用于在windows平台上使用gcc，但是你依然不能在windows中包含linux头文件（如：unistd.h）。
+- cl.exe：windows平台上的c语言编译器，类似于linux平台的gcc
+- Visual Studio：windows平台c、c++开发工具，按钮按一按就编译完成了，这个IDE内部拥有cl.exe等编译器
+- Xcode：苹果平台c、c++开发工具，按钮按一按就编译完成了，这个IDE内部拥有编译器
+
+
+
+open：linux平台上的c语言函数，c语言标准库中并没有这个函数。也就是说，这个函数只能在linux中用，在windows平台根本无法编译，因为windows平台可能并没有定义open这个函数，即便是定义了open函数，参数返回值等等都不一定一样。
+
+fopen：标准c语言函数。不分平台，不管你是windows还是linux还是mac，这些平台必须实现这个函数。
+
 # gcc/g++
 
 CPATH：gcc/g++搜索头文件的路径，以:分隔

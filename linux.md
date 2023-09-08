@@ -111,25 +111,6 @@ alias ll='ls -lh'
 alias lll='ls -lha'
 ```
 
-
-## 文本分析
-
-wc简单行数统计
-
-```shell
-wc -l
-wc -l f1
-wc -l f1 f2 f3
-```
-
-awk文本分析(没用，太复杂，已经被21世纪抛弃了)
-
-awk使用分隔符(默认是空格或tab键)来分割一条记录，将一条记录分隔成N块。$0则代表所有块，$1表示第一个块，$n表示第n块。
-
-```shell
-awk [options] 'pattern + action' filename
-```
-
 ## lsof(查看端口/文件状态)
 
 ```shell
@@ -266,6 +247,48 @@ find / -name "*abc*" -type f -size +1M
 # -maxdepth 2 (限制目录层数 目录最多递归2层)
 # -mtime +10 (限制文件最近修改时间 单位为天)
 # -mmin +10 (限制文件最近修改时间 单位为分钟)
+```
+
+## awk(文本处理)
+
+不影响源文件。
+
+awk就是把文件**逐行**的读入，以空格为默认分隔符将**每行分割**，切开的部分再进行各种分析处理。
+
+`$0`表示所有域，`$1`表示第一个域，`$n`表示第n个域。
+
+```shell
+awk [-F '分隔符(默认是空格)'] '{指令}' 待处理的文件
+```
+
+例子
+
+```shell
+ps -elf | grep node | awk '{print $1" "$3}' # $1和$3之间有一个字符" "
+ps -elf | grep node | awk '{print $1   $3}' # $1和$3之间没有空格
+cat /etc/passwd | awk -F ':' '{print $1" "$7}'
+```
+
+## sed(文本处理)
+
+默认不影响源文件。-i参数直接修改源文件
+
+```shell
+sed [选项] [脚本命令] 文件名
+```
+
+例如将文件中的hello单词全部替换为world单词
+
+```shell
+
+```
+
+## wc(文本处理)
+
+统计文件中有多少行l(单词w、字符c)
+
+```shell
+wc [-clw] [filename]
 ```
 
 # 软件安装与仓库
@@ -808,11 +831,11 @@ SIGHUP信号是什么鬼？当关闭某个终端时，这个终端会给自己�
 
 ## 2>&1
 
-任何命令后方加上2>&1，就会将此程序的stderr重定向到stdout
+任何命令后方加上2>&1，就会将此程序的stderr重定向到stdout。
 
-stderr重定向到stdout？我没听错吧？这什么意思？意思就是，stdout去哪里，stderr就去哪里，跟定你了！
+stderr重定向到stdout？我没听错吧？这什么意思？意思就是，stdout去哪里，stderr就去哪里。
 
-`command > 123.txt`这个命令只是将stdout重定向到123.txt了，stderr依然向终端输出东西，所以加上2>&1会将stderr也扔到123.txt，当然了，也可以直接使用2>123.txt，这样的话就需要打开两次123.txt,而且stdout与stderr的输出可能会相互覆盖
+`command > 123.txt`这个命令只是将stdout重定向到123.txt了，stderr依然向终端输出东西，所以加上2>&1会将stderr也扔到123.txt，当然了，也可以直接使用2>123.txt，这样的话就需要打开两次123.txt,而且stdout与stderr的输出可能会相互覆盖。
 
 # SSH登陆
 
@@ -1429,4 +1452,40 @@ root hard nofile 1300
 
 root的意思是指, 设置root用户的ulimit
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

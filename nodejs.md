@@ -107,6 +107,48 @@ f();
 
 ## export & import
 
+这两个关键字是ES6新语法，与`const xxx = require('xxx')`功能一样，都是导入导出的作用。
+
+nodejs中使用ES6，文件后缀必须是.mjs
+
 ```javascript
+// 想要导出哪个变量，就把export关键字添加上
+export const a = 100
+const b = 200
+export const c = a + b
+
+// 或者可以先定义变量，然后在最后一行统一export
+const a = 100
+const b = 200
+const c = a + b
+export { a, c }
+
+// 如何引用别的文件中的内容呢？
+// 加入./a文件中导出了haha和xixi和other变量
+import {haha, xixi} from './a' // 从./a中引入haha和xixi两个变量，且只引入这两个
+import * as abc from './a'     // 从./a中引入所有内容, 并用abc.haha调用
+```
+export default
+
+当一个文件只向外导出1个东西时，可以使用export default
+
+正常情况下，import外部内容时，要`import {xxx} from 'xxx'`，大括号中的名字必须是包内已导出的名字
+
+export default之后，只需要`import haha from 'xxx'`，连大括号都不用了
+
+```javascript
+// 当一个文件只向外导出1个东西时，可以使用export default
+const tanght = 10
+export default
+
+// 别人这样导入
+import a from './a'
+log(a)  // 这里的a就是tanght
+```
+
+## require & module.exports
+
+```javascript
+module.exports = 'abc'
 ```
 

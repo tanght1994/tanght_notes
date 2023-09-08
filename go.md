@@ -1234,3 +1234,55 @@ reg.FindStringSubmatchIndex(s) 返回 []int [0][1]是匹配到的字符串 [2][3
 reg.FindAllStringSubmatch(s, -1) 返回 [][]string
 ```
 
+# 性能（原子操作&锁&无锁）
+
+- 无锁：243309/ms
+- 原子操作atomic：37503/ms
+- 普通锁Mutex：7114/ms
+
+1. 最普通的锁，每毫秒也能加解锁7千多次，每秒就是700多万次加解锁，你的程序真的接受不了这点性能损失么？10次加解锁只需要1.4us的时间。
+2. 原子操作比普通锁厉害5.27倍。
+3. 无锁比原子操作厉害6.5倍。
+
+# 通过go安装软件
+
+go install github.com/gogo/protobuf/protoc-gen-gofast
+
+# TCP
+
+## Close
+
+每个conn只能调用一次Close，再次调用Close会返回错误（注意只是返回错误而已，不是抛出异常）
+
+```go
+c = net.Conn{}
+e := c.c.Close() // e = nil
+e = c.c.Close() // e = "不能close一个已经被close了的连接"
+```
+
+对方Close了这个连接，我方也需要对这个连接Close一下。如果我方不Close，则可能会造成我方的内存泄漏。
+
+我方可以通过Read函数的返回值来判断对方是否已经Close（io.EOF）
+
+```go
+n, e := c.Read(data)
+if e == io.EOF {
+    c.Close()
+}
+```
+
+## Write
+
+可以并发调用Write
+
+```go
+// 可以多个线程并发调用Write函数, Write内部自动加锁
+// Write("0123456789") Write("abcdefgh")
+// 要么先发"0123456789", 要么先发"abcdefgh", 不会出现 "012345abcd"
+c.Write([]byte("123123"))
+```
+
+## Read
+
+并发Read没有实际意义，所以不讨论
+
