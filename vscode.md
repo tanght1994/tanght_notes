@@ -172,7 +172,7 @@ files.exclude更狠，vscode不仅不监控，连显示都不显示了，直接�
 | ctrl + `         | 打开vscode底部的cmd窗口       |
 | ctrl + /         | 注释这一行代码                |
 | ctrl + g         | 跳转到行                      |
-| ctrl + p         | 跳转到文件                    |
+| ctrl + p         | 跳转到文件，查找文件          |
 | ctrl + f         | 查找                          |
 | ctrl + b         | 切换侧边栏可见性              |
 | ctrl + k + 0     | 折叠所有代码                  |
@@ -182,6 +182,8 @@ files.exclude更狠，vscode不仅不监控，连显示都不显示了，直接�
 | F2               | 重命名                        |
 | ctrl + shift + U | 单词大写                      |
 | ctrl + shift +L  | 单词小写                      |
+| ctrl + r         | 打开历史项目                  |
+|                  |                               |
 
 # 代码格式化
 
