@@ -103,6 +103,26 @@ sudo find /proc/*/fd -ls | grep '(deleted)'
 sort -rn -k 3 filename.txt
 ```
 
+## head
+
+```shell
+// a.txt显示开头10行
+head -n 10 a.txt
+
+// a.txt显示n行，直到最后一行，不包含最后一行
+head -n -1 a.txt
+```
+
+## tail
+
+```shell
+// a.txt显示结尾10行
+tail -n 10 a.txt
+
+// a.txt显示n行，从第1行开始
+tail -n +1 a.txt
+```
+
 ## alias(命令别名)
 
 ```shell
@@ -290,6 +310,21 @@ sed [选项] [脚本命令] 文件名
 ```shell
 wc [-clw] [filename]
 ```
+
+## chattr(只读文件)
+
+```shell
+# 将文件变为只读文件, 即使是root也不能修改了
+chattr +i filename
+
+# 取消文件的只读属性
+chattr -i filename
+
+# 查看文件的属性(有i就是只读)
+lsattr filename
+```
+
+
 
 # 软件安装与仓库
 
@@ -969,6 +1004,19 @@ iptables -A INPUT -s 192.168.58.139 -p tcp -m multiport --dports 1 -j ACCEPT
 ## iptables
 
 ![image-20220106114518953](assets/image-20220106114518953.png)
+
+直接修改iptables的配置文件
+
+```shell
+# 将配置文件变为可写
+chattr -i /etc/sysconfig/iptables
+
+# 修改配置文件
+vim /etc/sysconfig/iptables
+
+# 将配置文件变为只读
+chattr +i /etc/sysconfig/iptables
+```
 
 # 资源占用情况(top)
 
