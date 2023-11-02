@@ -242,6 +242,12 @@ git log
 # 每条commit信息输出为1行
 git log --oneline
 
+# 使用图形显示"本分支"的commit历史
+git log --oneline --graph
+
+# 使用图形显示"所有分支"的commit历史
+git log --oneline --graph --all
+
 # 查看所有commit的详细改动
 # 按顺序列出所有commit，将每个commit的详细信息也显示出来
 # 比如再这个commit中增加了哪一行，删除了哪一行等
@@ -251,6 +257,8 @@ git log -p
 # 查看commit的统计信息
 # 比git log -p简单，比git log详细
 git log --stat
+
+git log --oneline --graph --decorate --all
 ```
 
 ## 指定commit信息

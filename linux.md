@@ -246,6 +246,9 @@ grep -E 'ab.*cd' file.txt
 
 # -v 排除带有abc关键字的行
 grep -v abc file.txt
+
+# -C 携带上下文
+grep -C 5 -E 'abc' file.txt
 ```
 
 ## find(查找文件或目录)
@@ -322,6 +325,18 @@ chattr -i filename
 
 # 查看文件的属性(有i就是只读)
 lsattr filename
+```
+
+## sz(从远端服务器下载)
+
+```shell
+sz filename
+```
+
+## rz(上传到远端服务器)
+
+```shell
+rz
 ```
 
 

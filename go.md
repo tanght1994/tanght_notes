@@ -1250,6 +1250,12 @@ reg.FindAllStringSubmatch(s, -1) 返回 [][]string
 
 N个线程往里放，M个线程往外读，每毫秒传递的元素数量在1W左右，且速率与M和N的大小关系不大。
 
+## 费用
+
+CDN流量：0.25元/G
+
+公网流量：0.8元/G
+
 # 通过go安装软件
 
 go install github.com/gogo/protobuf/protoc-gen-gofast
