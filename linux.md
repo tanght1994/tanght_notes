@@ -699,6 +699,8 @@ systemctl list-units --failed # 列出所有加载失败的 Unit
 
 
 systemctl status mysql # 查看mysql服务的状态，详细信息中会写着管理mysql服务的service脚本在哪里
+
+systemct
 ```
 
 ## 查看systemd信息的命令
@@ -775,7 +777,9 @@ Restart=always	# 不管什么原因程序被关闭了，systemd都会重新启�
 RestartSec=10s  # 程序死了之后，10s后再重启
 ```
 
+Type=forking   对于守护进程
 
+Type=simple 对于普通的进程
 
 
 
@@ -820,6 +824,7 @@ systemctl daemon-reload
 1. 创建你的程序的.service文件
 2. 将.service文件放到`/etc/systemd/system/`或者`/lib/systemd/system/`(推荐)下
 3. 使用`systemctl start/stop/.. your_service_name.sevice `来启停程序
+4. systemctl daemo
 
 ## service文件路径
 
