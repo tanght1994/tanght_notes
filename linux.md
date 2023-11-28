@@ -700,7 +700,7 @@ systemctl list-units --failed # 列出所有加载失败的 Unit
 
 systemctl status mysql # 查看mysql服务的状态，详细信息中会写着管理mysql服务的service脚本在哪里
 
-systemct
+systemctl daemon-reload
 ```
 
 ## 查看systemd信息的命令
