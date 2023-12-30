@@ -21,7 +21,7 @@ seq [100]
 
 发起端发送第一个TCP包（SYN），请求建立连接，并且发送一个
 
-![image-20200302030331770](C:\Users\tangh\Desktop\tanght\tanght_notes\assets\image-20200302030331770.png)
+![image-20200302030331770](.\assets\image-20200302030331770.png)
 
 # SSL
 
@@ -70,11 +70,11 @@ openssl x509 -req -in ser.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out ser.
 
 
 
-![image-20221022154504505](C:\Users\tangh\Desktop\tanght\tanght_notes\assets\image-20221022154504505.png)
+![image-20221022154504505](.\assets\image-20221022154504505.png)
 
 
 
-![image-20221022154431756](C:\Users\tangh\Desktop\tanght\tanght_notes\assets\image-20221022154431756.png)
+![image-20221022154431756](.\assets\image-20221022154431756.png)
 
 **假设客户端拥有服务器的公钥：**
 
@@ -357,7 +357,7 @@ location块中的break与last的作用可不一样哦！有些复杂！最好不
 
 官网下载源码，官网地址http://nginx.org/en/download.html
 
-![image-20220113154153507](C:\Users\tangh\Desktop\tanght\tanght_notes\assets\image-20220113154153507.png)
+![image-20220113154153507](.\assets\image-20220113154153507.png)
 
 
 
@@ -767,7 +767,7 @@ vite-plugin-vue-setup-extend，可以在setup的script段落声明组件的名�
 
 安装方式`npm i vite-plugin-vue-setup-extend -D`
 
-![image-20231225173950991](C:\Users\tangh\AppData\Roaming\Typora\typora-user-images\image-20231225173950991.png)
+![image-20231225173950991](.\assets\image-20231225173950991.png)
 
 ## 响应式
 
@@ -916,7 +916,7 @@ defineProps<{human:Persons, haha:number}>()
 defineProps<{human:Persons, haha?:number}>()
 ```
 
-![image-20231226133412993](C:\Users\tangh\AppData\Roaming\Typora\typora-user-images\image-20231226133412993.png)
+![image-20231226133412993](.\assets\image-20231226133412993.png)
 
 ## 组件的类型
 
