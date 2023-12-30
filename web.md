@@ -1062,6 +1062,9 @@ npm i package_name -g
 # 安装到dependencies
 npm i package_name -S
 
+# 同样是安装到dependencies
+npm i package_name
+
 # 安装到devDependencies
 npm i package_name -D
 ```
