@@ -1082,9 +1082,80 @@ npm i
 
 ## 包（模块）
 
-CJS(CommonJS)：js没有官方import机制的那段时间，民间自研的import机制
+CJS(CommonJS)：js没有官方import机制的那段时间，民间自研的import机制。require、module.exports
 
-ESM(ESModule)：js官方的import机制（ES6时出现的）
+ESM(ESModule)：js官方的import机制（ES6时出现的）。import、export
+
+模块的package.json中的type字段用来指定包的类型（是CJS还是ESM），不指定的话默认是CJS
+
+- type: "commonjs" // CJS
+- type: "module" // ESM
+
+### ESM
+
+#### 普通导入导出
+
+export一个或多个有名的东西（变量、对象、函数、列表、类等）
+
+import时要用花括号指定想要导入的东西的名字
+
+a.js 导出
+
+```javascript
+export const a = "aaa"
+export const b = "bbb"
+export const c = "bbb"
+```
+
+aa.js 统一导出（作用与a.js完全一样）
+
+```javascript
+const a = "aaa"
+const b = "bbb"
+const c = "bbb"
+
+// export {a: a, b: b, c: c}
+export {a, b, c} // 对象简写
+```
+
+b.js 分别导入
+
+```javascript
+import {a, b} from './a.js'
+
+console.log(a)
+console.log(b)
+```
+
+c.js 全部导入
+
+```javascript
+import * as a from './a.js'
+
+console.log(a.a)
+console.log(a.b)
+console.log(a.c)
+```
+
+#### default导入导出
+
+export一个匿名的东西（变量、对象、函数、列表、类等）
+
+import的时候不要用花括号指定名字（因为export的匿名，人家没有名字），而是直接给导入的东西起一个名字
+
+a.js default导出的必须是匿名的东西
+
+```javascript
+export default class {}
+```
+
+b.js import时不能写花括号
+
+```javascript
+import haha from 'a.js'
+
+// haha就是a.js中导出的那个匿名对象，在这里就是匿名class喽
+```
 
 ## 字符串拼接
 
