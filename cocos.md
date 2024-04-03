@@ -56,3 +56,66 @@ myvar: string = ''
 
 
 
+# 资源管理
+
+resources与assetManager在使用上的区别
+
+resources直接加载资源就行了
+
+```
+resources.load(资源)
+```
+
+assetManager需要先加载ab包，再从ab包中加载资源
+
+```
+1. assetManager.loadBundle(ab包名字或路径) 在回调函数中得到ab包
+2. ab.load(资源)
+```
+
+
+
+
+
+```typescript
+// 从resources中加载资源
+resources.load("test_assets/prefab", Prefab, (err, prefab) => {
+    const newNode = instantiate(prefab);
+    this.node.addChild(newNode);
+});
+
+resources.load("test_assets/image/spriteFrame", SpriteFrame, (err, spriteFrame) => {
+    this.node.getComponent(Sprite).spriteFrame = spriteFrame;
+});
+
+resources.load("test_assets/image/texture", Texture2D, (err: any, texture: Texture2D) => {
+    const spriteFrame = new SpriteFrame();
+    spriteFrame.texture = texture;
+    this.node.getComponent(Sprite).spriteFrame = spriteFrame;
+});
+
+
+// 加载ab包
+assetManager.loadBundle('01_graphics', (err, bundle) => {
+    bundle.load(...);
+});
+
+// 获取ab包
+let bundle = assetManager.getBundle('01_graphics');
+
+// 从ab包中加载资源
+bundle.load(`image/texture`, Texture2D, function (err, texture) {
+    console.log(texture)
+});
+
+```
+
+# 打包android
+
+cocos build之后的目录
+
+![image-20240315044054953](./assets/image-20240315044054953.png)
+
+
+
+![image-20240315044623701](./assets/image-20240315044623701.png)

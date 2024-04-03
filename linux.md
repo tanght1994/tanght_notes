@@ -175,6 +175,16 @@ cat /etc/redhat-release
 
 ```
 
+## 查看CPU架构
+
+```shell
+arch
+# x86
+# arm
+```
+
+
+
 ## source(执行脚本)
 
 ```shell

@@ -107,6 +107,22 @@ yum install certbot
 
 # 使用certbot进行证书的制作，进入certbot的交互模式
 certbot certonly
+
+
+
+
+/etc/letsencrypt/live/www.zelaai.com/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/www.zelaai.com/privkey.pem
+   Your certificate will expire on 2024-06-06. To obtain a new or
+   tweaked version of this certificate in the future, simply run
+   certbot again. To non-interactively renew *all* of your
+   certificates, run "certbot renew"
+ - If you like Certbot, please consider supporting our work by:
+
+   Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+   Donating to EFF:                    https://eff.org/donate-le
+
 ```
 
 # Nginx
@@ -360,6 +376,14 @@ location块中的break与last的作用可不一样哦！有些复杂！最好不
 ![image-20220113154153507](./assets/image-20220113154153507.png)
 
 
+
+```
+sudo yum install pcre-devel
+sudo yum install openssl openssl-devel
+./configure --with-http_ssl_module
+make
+make install
+```
 
 
 
@@ -706,6 +730,13 @@ django异常时(404，权限，用户view函数异常等)，默认返回一个ht
 
 # Vue3
 
+## 创建项目
+
+```shell
+npm create vite@latest
+npm install element-plus
+```
+
 ## setup
 
 ### setup简介
@@ -906,7 +937,27 @@ export default function() {
 </script>
 ```
 
-## 父->子传值
+## v-bind
+
+```vue
+<template>
+  <HaHa :a="ok" :b="fuck" :c="you"/>
+</template>
+```
+
+相当于
+
+```vue
+<template>
+  <HaHa v-bind="{a: 'ok', b: 'fuck'}" :c="you"/>
+</template>
+```
+
+## 父子传值
+
+### defineProps
+
+![image-20240403005042223](./assets/image-20240403005042223.png)
 
 ```vue
 // 接收两个参数
@@ -917,6 +968,32 @@ defineProps<{human:Persons, haha?:number}>()
 ```
 
 ![image-20231226133412993](./assets/image-20231226133412993.png)
+
+### 自定义事件
+
+浏览器事件对象
+
+![image-20240403005527849](./assets/image-20240403005527849.png)
+
+自定义事件，emit('haha', 666)触发haha事件，并携带666参数
+
+![image-20240403010007587](./assets/image-20240403010007587.png)
+
+事件名称要用a-b-c，不要用驼峰
+
+![image-20240403010220767](./assets/image-20240403010220767.png)
+
+### mitt事件系统
+
+npm install mitt
+
+任何时间&地点都可以emitter.on('x', ()=>{})绑定事件
+
+任何时间&地点都可以emitter.emit('x')触发事件
+
+### provide inject
+
+![image-20240403015012388](./assets/image-20240403015012388.png)
 
 ## 组件的类型
 
@@ -970,6 +1047,10 @@ const router = createRouter({
 
 ## 路由
 
+npm install vue-router
+
+import xxx from 'vue-router'
+
 路由的原理就是一个path对应一个vue组件，如下
 
 路径1  ---> vue组件1
@@ -988,15 +1069,15 @@ const router = createRouter({
 /src/router/index.ts	// 这里放路由配置
 ```
 
-A.vue  使用路由
+/src/components/Home.vue  使用路由
 
 ```vue
 <template>
 	<!-- 导航区 -->
 	<div>
         <RouterLink to="/home">首页</RouterLink>
-        <RouterLink to="/news">新闻</RouterLink>
-        <RouterLink to="/about">关于</RouterLink>
+        <RouterLink to="{path:'/news'}">新闻</RouterLink>
+        <RouterLink to="{name:'/guanyu'}">关于</RouterLink>
     </div>
 	
 	<!-- 显示区 -->
@@ -1008,9 +1089,12 @@ A.vue  使用路由
 <script lang="ts" setup>
     import {RouterLink, RouterView} from 'vue-router'
 </script>
+
+// to="/home" 等于 to="{path:'/home'}"
+// to后面跟对象时，对象可以有path字段或name字段，可以根据path跳转也可以根据name跳转
 ```
 
-index.ts
+/src/router/index.ts
 
 ```typescript
 import {createRouter, createWebHashHistory} from 'vue-router'
@@ -1022,9 +1106,9 @@ import About from '@/components/About.vue'
 const router = createRouter({
     history: createWebHashHistory(),  // createWebHashHistory createWebHistory
     routes: [
-        { path: '/home', component: Home },
-        { path: '/news', component: News },
-        { path: '/about', component: About }
+        { path: '/home', name: 'zhuye', component: Home },
+        { path: '/news', name: 'xinwen', component: News },
+        { path: '/about', name: 'guanyu', component: About }
     ]
 })
 
@@ -1032,11 +1116,312 @@ const router = createRouter({
 export default router
 ```
 
-通过Props给路由组件传值
+/src/main.ts
+
+```typescript
+import { createApp } from 'vue'
+import { App } from './App.vue'
+import { router } from './router/index.ts'
+
+const app = createApp(App)
+app.use(router)
+app.mount('#app')
+```
+
+### 哈希模式和普通模式
+
+createWebHashHistory：URL路径后带有井号#，如/a/b/c#d/e
+
+createWebHistory：URL路径后不带井号#，如/a/b/c/d/e，需要nginx配合try_files
+
+```
+location / {
+    root /data/nginx/html;
+    try_files $uri $uri/ /index.html;
+}
+```
+
+### 命名路由
+
+给路由起个名字，跳转路由的时候可以to:{name: 'xxx'}来跳转
+
+因为多级路由的时候path太长，可能是{path:a/b/c/d/e/f/g/h}
+
+此事使用name进行跳转会方便些
+
+```typescript
+const router = createRouter({
+    history: createWebHashHistory(),
+    routes: [
+        { path: '/home', name: 'zhuye', component: Home },
+        { path: '/news', name: 'xinwen', component: News },
+        { path: '/about', name: 'guanyu', component: About }
+    ]
+})
+```
+
+### 通过query给路由组件传值
+
+谁传值？RouterLink传值，`<RouterLink :to="xxx">`
+
+谁收值？xxx.vue组件收值，`route = useRoute()`
+
+```vue
+// 将query后面的对象给路由组件传过去
+<RouterLink :to="{path: 'xxx', query: {对象}}">xxx</RouterLink>
+
+import { useRoute } from 'vue-router'
+let route = useRoute()
+// 可以在此文件的template块使用route了
+// route中的query字段就是RouterLink传过来的对象
+```
+
+### 通过params给路由组件传值
+
+params传值只能使用name跳转，不能用path跳转
+
+```vue
+<RouterLink :to="{name: 'xxx', params: {对象}}">xxx</RouterLink>
+```
+
+### 通过Props给路由组件传值
+
+1.将路由收到的所有params参数作为props传递给路由组件
+
+![image-20240310003315698](./assets/image-20240310003315698.png)
+
+2.自己传任何值作为props传递给路由组件
+
+![image-20240310004158101](./assets/image-20240310004158101.png)
+
+### 嵌套路由
+
+嵌套路由就是多级路由(子级路由)
+
+```typescript
+const router = createRouter({
+    history: createWebHashHistory(),
+    routes: [
+        {
+            path: '/home',
+            name: 'zhuye',
+            component: Home,
+            children: [
+                {
+                    path: 'info', // 子级路由前面不带/！！！！
+                    name: 'homeinfo',
+                    component: xxx
+                }
+            ]
+        },
+        ...
+    ]
+})
+```
+
+### 编程式路由
+
+在html中写RouterLink可以实现路由跳转
+
+在代码中也可以实现路由跳转router.push()
+
+![image-20240402234537439](./assets/image-20240402234537439.png)
+
+## attrs和refs和parent
+
+**$attrs**
+
+attrs：父组件给我的属性，如果我没有通过defineProps取出来，那么这些没有被取出来的属性会被放到$attrs这个变量中。
+
+下面的代码的意思是，将父组件给的属性原封不动的传递给GrandSon组件。
+
+```vue
+<template>
+  <GrandSon v-bind="$attrs"/>
+</template>
+```
+
+**$refs**
+
+组件通过defineExpose将数据暴露给父组件
+
+父组件通过给子组件打标签(ref=xx)
+
+父组件通过$refs得到子组件的数据
+
+$refs的格式为{'ref设置的名字': {组件暴露的数据}}
+
+![image-20240403014223212](./assets/image-20240403014223212.png)
+
+![image-20240403013625368](./assets/image-20240403013625368.png)
+
+**$parent**
+
+![image-20240403014503272](./assets/image-20240403014503272.png)
+
+## pinia
+
+### 安装与使用
+
+npm i pinia
+
+main.js中引入
+
+![image-20240402235441293](./assets/image-20240402235441293.png)
+
+### 定义全局数据
+
+![image-20240403002422723](./assets/image-20240403002422723.png)
+
+### 外部使用
+
+![image-20240403001321761](./assets/image-20240403001321761.png)
+
+![image-20240403001454719](./assets/image-20240403001454719.png)
+
+### 从pinia的store对象中解构需要的字段，并且继续保持响应式
+
+![image-20240403003219360](./assets/image-20240403003219360.png)
+
+### 订阅数据变动
+
+![image-20240403004030264](./assets/image-20240403004030264.png)
+
+### 组合式
+
+只在pinia的定义中有区别，在外部使用的时候与选项式无任何区别
+
+![image-20240403004601521](./assets/image-20240403004601521.png)
+
+### 动态组件
+
+keep-alive用于组件切换时保留上一个组件的缓存(数据不丢失)，如果不需要保留数据，可以不用keep-alive
+
+```vue
+<keep-alive>
+  <component v-bind:is="currentTabComponent"></component>
+</keep-alive>
+```
+
+例子
+
+```vue
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import Home from './components/Home.vue';
+import News from './components/News.vue';
+import About from './components/About.vue';
+
+const x = ref(0);
+
+const myComponent = computed(()=>{
+  if (x.value === 0){
+    return Home;
+  }
+  if (x.value === 1){
+    return News;
+  }
+  return About;
+})
+
+function changeComponent(){
+  x.value++;
+  if (x.value === 3){
+    x.value = 0;
+  }
+}
+</script>
+
+<template>
+  <button @click="changeComponent">Change</button>
+  <component :is="myComponent"/>
+</template>
+
+<style scoped>
+</style>
 
 ```
 
+# Element-Plus
+
+安装
+
+```shell
+npm install element-plus
 ```
+
+vue3中引入（全部引入）
+
+```typescript
+import { createApp } from 'vue'
+import ElementPlus from 'element-plus' // 1
+import 'element-plus/dist/index.css'   // 2
+import App from './App.vue'
+
+const app = createApp(App)
+app.use(ElementPlus)                   // 3
+app.mount('#app')
+```
+
+
+
+# CSS
+
+123123
+
+# Tailwind CSS
+
+```shell
+# 安装几个包，开发依赖
+npm install -D tailwindcss@latest postcss@latest autoprefixer@latest
+```
+
+- tailwindcss是一个css库，提前写好了**一堆css的class**。
+- PostCSS 是一个用JavaScript 编写的工具，用于**对CSS 进行转换和处理**。 它可以通过插件机制对CSS 进行各种自定义的转换操作，从而扩展CSS 的功能和语法。
+- autoprefixer自动补全**浏览器css前缀**如-moz-border-radius: 10px;  -webkit-border-radius: 10px;
+
+在根目录（package.json同级目录）创建tailwind.config.cjs和postcss.config.cjs这两个文件。
+
+- .js：传统的JavaScript文件
+- .mjs：ES Modules文件
+- .cjs：CommonJS模块
+
+tailwind.config.cjs文件
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./index.html",
+    "./src/**/*.{vue,js,ts,jsx,tsx}",
+  ],
+  important: true,
+  theme: {
+    extend: {
+      backgroundColor: {
+        "main": "#F5F5F5",
+      }
+    },
+  },
+  plugins: [],
+  corePlugins: {
+    preflight: false
+  }
+}
+```
+
+postcss.config.cjs文件
+
+```javascript
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+```
+
+
 
 # npm
 
@@ -1272,5 +1657,264 @@ module.exports = 'abc'
 
 # TypeScript
 
+## declare
 
+声明全局变量、函数、类等等
 
+typescript中可以直接调用javascript代码。但是js代码是弱类型的，一切类型都是object，任何类型都拥有无限个任意属性。ts代码是强类型的，所有类型必须有明确的属性。所以ts中使用js代码会出现无法自动补全的情况。甚至无法顺利编译。比如说我们使用了微信的js库中的wx.xxxx()函数，ts发现wx这个变量是未定义的，所以直接报错了。所以我们只能提前用declare告诉ts我们有wx这个全局变量。
+
+## 联合类型|交叉类型&
+
+```typescript
+interface A {
+    a: string;
+}
+
+interface B {
+    b: string;
+}
+
+// C要同时满足A和B的条件
+type C = A & B;
+// D只需要满足A或B其中一个条件
+type D = A | B;
+
+var c: C = { a: '1', b: '1' };
+var d: D = { a: 'a' };
+```
+
+## Record
+
+定义字典，限定key-value的类型
+
+```typescript
+type status = "a" | "b" | "c";
+
+const statuinfo: Record<status, string> = {
+    a: "未知错误",
+    b: "请登录",
+    c: "金币不够"
+};
+
+// 追加额外的值
+const aaaainfo: Record<status | 'd', string> = {
+    a: "未知错误",
+    b: "请登录",
+    c: "金币不够",
+    d: "fuck you!"
+};
+```
+
+## Pick
+
+从已有类型中挑选1个或多个属性
+
+```typescript
+interface IA {
+    a: number;
+    b: number;
+    c: number;
+    d: string;
+}
+
+// IB从IA中挑选了a和d两个属性, 相当于下列代码
+// interface IB {
+//     a: number;
+//     d: string;
+// }
+type IB = Pick<IA,'a' | 'd'>
+```
+
+## Omit
+
+从现有类型中排除1个或多个属性
+
+```typescript
+interface IA {
+    a: number;
+    b: number;
+    c: number;
+    d: string;
+}
+
+// IC从IA中排除了a和d两个属性, 相当于下列代码
+// interface IC {
+//     b: number;
+//     c: number;
+// }
+type IC = Omit<IA,'a' | 'd'>
+```
+
+## Required & Partial & Readonly
+
+```typescript
+interface IA {
+    a: number;
+    b: number;
+    c: number;
+    d: string;
+}
+
+// ID将IA中所有属性变为可选, 相当于下列代码
+// interface ID {
+//     a?: number;
+//     b?: number;
+//     c?: number;
+//     d?: string;
+// }
+type ID = Partial<IA>
+
+// IE将ID中所有属性变为必选, 相当于下列代码
+// interface IE {
+//     a: number;
+//     b: number;
+//     c: number;
+//     d: string;
+// }
+type IE = Required<ID>
+
+// IF将IA中所有属性变为只读, 相当于下列代码
+// interface IF {
+//     readonly a: number;
+//     readonly b: number;
+//     readonly c: number;
+//     readonly d: string;
+// }
+type IF = Readonly<IA>
+```
+
+## 泛型
+
+尖括号中定义泛型T和U，T和U可以是任意类型
+
+友情提示：[T, U]这是元组的定义哦
+
+```typescript
+function swap<T, U>(tuple: [T, U]): [U, T] {
+    return [tuple[1], tuple[0]];
+}
+
+swap([7, 'seven']); // ['seven', 7]
+```
+
+泛型约束
+
+```typescript
+interface IWithLength {
+    length: number;
+}
+
+// 泛型T必须满足IWithLength接口的约束
+function abc<T extends IWithLength>(arg: T) {
+    console.log(arg.length);
+}
+
+abc('123');
+abc(10); // 报错
+```
+
+## ReturnType
+
+```typescript
+function abc(): number {
+    return 1;
+}
+
+// type A = () => number
+type A = typeof abc;
+
+// type B = number
+type B = ReturnType<A>;
+
+type C = ReturnType<abc> // 错误！！！尖括号中必须是类型，不能是变量(函数也是变量啊)
+```
+
+如果将typeof直接写在尖括号中会是另一个意思
+
+```typescript
+type TimeoutHandle = ReturnType<typeof setTimeout>
+```
+
+typeof setTimeout这个表达式的返回值是什么？是一个函数签名
+
+所以TimeoutHandle的类型是一个函数
+
+## keyof
+
+```typescript
+interface A {
+    name: string;
+    age: number;
+    address: string;
+}
+
+// type B = "name" | "age" | "address";
+type B = keyof A;
+
+var b1: B = "name";
+var b2: B = "age";
+var b3: B = "address";
+var b4: B = "phone"; // 错误！
+```
+
+## in
+
+```typescript
+type AnimalName = 'pig' | 'cat' | 'dog'
+
+// [x in y] 相当于 for 循环
+// interface AnimalInfo {
+//     pig: number
+//     cat: number
+//     dog: number
+// }
+type AnimalInfo = {
+    [x in AnimalName]: number
+}
+
+var info: AnimalInfo = {
+    pig: 1,
+    cat: 2,
+    dog: 3
+}
+```
+
+T[P]的作用是取T.P这个属性的类型
+
+```typescript
+type RemoveReadonly<T> = {
+    -readonly [P in keyof T]: T[P]
+}
+
+interface A {
+    readonly a: number;
+    b: string;
+}
+
+// type B = {
+//     a: number;
+//     b: string;
+// }
+type B = RemoveReadonly<A>
+```
+
+# nodejs
+
+process是一个全局变量，随时可以访问
+
+```javascript
+var process = {
+    env: {}, // 电脑的环境变量
+    kill: function,
+    exit: function,
+    ...
+}
+```
+
+## @types/node
+
+nodejs运行js脚本时，会自带一些初始化环境，函数、全局变量等。js代码可以直接访问这些全局变量or函数。但是typescript是强类型的，它不知道存在哪些变量以及变量的类型等。
+
+@types/node这个玩意就是一个声明文件，将nodejs的环境声明一下，这样typescript就不会报错了。
+
+npm i @types/node

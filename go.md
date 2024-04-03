@@ -1298,3 +1298,19 @@ c.Write([]byte("123123"))
 
 并发Read没有实际意义，所以不讨论
 
+# 安装
+
+https://go.dev/dl/go1.21.6.linux-arm64.tar.gz
+
+tar -zxvf xxxxx
+
+mv go /usr/local/
+
+~/.bashrc
+
+```
+export GOROOT=/usr/local/go/1.21.5
+export GOPATH=$GOROOT/gopath
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+```
+
