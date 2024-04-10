@@ -1367,7 +1367,20 @@ app.mount('#app')
 
 # CSS
 
-123123
+基础选择器
+
+- *：选择所有元素
+- h1：标签选择器，选择所有h1标签
+- .xxx：class选择器，选择所有xxx类
+- #xxx：id选择器，选择id为xxx的这个元素
+
+组合选择器
+
+A,B,C：选择A或B或C的所有元素（ABC可以是class也可以是标签）
+
+A B C：选择一部分C元素，那些C元素属于A B的后代。A B如何解释呢？选择一部分B元素，那些B元素属于A的后代（ABC可以是class也可以是标签）
+
+A > B：选择一部分B元素，那些B元素是A的子元素（ABC可以是class也可以是标签）
 
 # Tailwind CSS
 

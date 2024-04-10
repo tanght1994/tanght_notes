@@ -12,10 +12,6 @@ mongodb无需创建数据库，也无需创建表，插入数据的时候如果�
 
 https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-red-hat/
 
-![image-20240122164339965](./assets/image-20240122164339965.png)
-
-
-
 /etc/yum.repos.d/mongodb-org-7.0.repo
 
 ```
@@ -206,5 +202,16 @@ db.nextid.insertOne({ type: "roomid", next: NumberLong("1") });
 db.domino_process.createIndex({ roomid: 1 }, { unique: true });
 db.domino_process.createIndex({ userid: 1 });
 db.domino_process.createIndex({ game_start: 1 });
+```
+
+
+
+## 导入导出
+
+```shell
+# 导出数据
+mongodump --authenticationDatabase=admin -u root -p kaka123.. -d yourdbname -o mongodb_data
+# 导入数据
+mongorestore --authenticationDatabase=admin -u root -p kaka123.. -d yourdbname --drop ./mongodb_data
 ```
 
