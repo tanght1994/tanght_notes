@@ -829,6 +829,8 @@ let {a, b, c} = obj1 // a, b, c 失去了响应式
 let {a, b, c} = toRefs(obj1) // a, b, c 继续保持响应式 a.value = "xxx"  --->  obj1.a = "xxx"
 ```
 
+![image-20240520152004835](./assets/image-20240520152004835.png)
+
 ### 泛型响应式
 
 ```ts
@@ -843,9 +845,17 @@ type Persons = IPerson[]
 let a = reactive<Persons>([])
 ```
 
+## ref打标签
+
+给普通的html标签打上ref，则可以在代码中方便的获取到此dom元素
+
+![image-20240520181547862](./assets/image-20240520181547862.png)
+
 ## 计算属性
 
 ```vue
+import { computed } from 'vue'
+
 // 只读的计算属性
 let fullname = computed(()=>{ return firstname + lastname })
 
@@ -864,6 +874,16 @@ let fullname = computed({
 
 ## watch
 
+![image-20240520150104000](./assets/image-20240520150104000.png)
+
+监视ref的数据
+
+![image-20240520151233271](./assets/image-20240520151233271.png)
+
+只监听object的指定字段
+
+![image-20240520150529726](./assets/image-20240520150529726.png)
+
 watch ref的时候，默认不开启深度监视，可以通过{deep: true}来开启深度监视
 
 watch reactive的时候，默认开启深度监视，且无法关闭深度监视
@@ -873,6 +893,8 @@ watch一个对象的字段的时候，必须用getter，不管这个字段是基
 ## watchEffect
 
 watchEffect自动分析需要监控哪些变量，不需要提前指明
+
+![image-20240520180533849](./assets/image-20240520180533849.png)
 
 ## hooks
 
@@ -953,11 +975,27 @@ export default function() {
 </template>
 ```
 
+## v-model
+
+vue2和vue3中除了变量名和事件名不一样，其它原理全部一样
+
+vue2的原理
+
+![image-20240520190235349](./assets/image-20240520190235349.png)
+
+vue3的原理
+
+![image-20240520191212427](./assets/image-20240520191212427.png)
+
+![image-20240520191345520](./assets/image-20240520191345520.png)
+
 ## 父子传值
 
 ### defineProps
 
-![image-20240403005042223](./assets/image-20240403005042223.png)
+![image-20240520182324160](./assets/image-20240520182324160.png)
+
+![image-20240520182547009](./assets/image-20240520182547009.png)
 
 ```vue
 // 接收两个参数
@@ -969,19 +1007,23 @@ defineProps<{human:Persons, haha?:number}>()
 
 ![image-20231226133412993](./assets/image-20231226133412993.png)
 
+### defineEmits
+
+![image-20240520191031820](./assets/image-20240520191031820.png)
+
 ### 自定义事件
 
 浏览器事件对象
 
-![image-20240403005527849](./assets/image-20240403005527849.png)
+![image-20240520183347083](./assets/image-20240520183347083.png)
 
 自定义事件，emit('haha', 666)触发haha事件，并携带666参数
 
-![image-20240403010007587](./assets/image-20240403010007587.png)
+![image-20240520183934657](./assets/image-20240520183934657.png)
 
 事件名称要用a-b-c，不要用驼峰
 
-![image-20240403010220767](./assets/image-20240403010220767.png)
+![image-20240520184058161](./assets/image-20240520184058161.png)
 
 ### mitt事件系统
 
@@ -990,6 +1032,8 @@ npm install mitt
 任何时间&地点都可以emitter.on('x', ()=>{})绑定事件
 
 任何时间&地点都可以emitter.emit('x')触发事件
+
+![image-20240520184906075](./assets/image-20240520184906075.png)
 
 ### provide inject
 
