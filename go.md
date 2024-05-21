@@ -1314,3 +1314,8 @@ export GOPATH=$GOROOT/gopath
 export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 ```
 
+# 有用的库
+
+验证码，base64图片，data:image/png;base64,iVBORXXX...
+
+github.com/mojocn/base64Captcha
