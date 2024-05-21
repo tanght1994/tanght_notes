@@ -1623,7 +1623,7 @@ import haha from 'a.js'
 // haha就是a.js中导出的那个匿名对象，在这里就是匿名class喽
 ```
 
-## 字符串拼接
+## 模板字符串
 
 ```javascript
 b = 'lalala'
@@ -1735,6 +1735,16 @@ log(a)  // 这里的a就是tanght
 ```javascript
 module.exports = 'abc'
 ```
+
+## 解构赋值
+
+数组和对象都可以解构赋值
+
+![image-20240521120714024](./assets/image-20240521120714024.png)
+
+## 对象obj简化
+
+![image-20240521121620054](./assets/image-20240521121620054.png)
 
 # TypeScript
 
