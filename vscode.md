@@ -18,10 +18,6 @@ ${lineNumber}:当前文件光标所在的行号。
 
 ${env:PATH}:系统中的环境变量。
 
-
-
-
-
 ```cmake
 ${VAR} # 取VAR变量的值
 aux_source_directory(path, VAR) #将path目录下的所有源文件名字放到VAR变量中
@@ -48,8 +44,6 @@ list(LENGTH var2 var3) # var2是一个数组，不用${var2}
 当前工作目录的setting.json可以覆盖全局的setting.json
 
 也就是说将通用的配置写到全局的配置中，如果全局配置不适合当前项目，可以在当前项目中新建.vscode文件夹，在其中创建setting.json文件，用来局部覆盖全局配置
-
-
 
 # C++配置文件
 
@@ -78,7 +72,7 @@ list(LENGTH var2 var3) # var2是一个数组，不用${var2}
 }
 ```
 
-在当前项目的c_cpp_properties.json中设置特殊的配置
+在当前项目的c_cpp_properties.json中设置特殊的配置，这个配置文件也仅与代码补全有关，与编译无关
 
 ```json
 // 当前项目的.vscode/c_cpp_properties.json文件
@@ -99,8 +93,6 @@ list(LENGTH var2 var3) # var2是一个数组，不用${var2}
 ```
 
 ${default}是将全局setting.json的C_Cpp.default.includePath拿过来
-
-
 
 # 无法在这个大型工作区监视
 
@@ -125,8 +117,6 @@ files.watcherExclude设置vscode的监视忽略。
 也就是说vscode会不监视这些文件夹的变化情况，除非手动刷新。
 
 里面的路径需要是绝对路径，不能是相对于工程目录的相对路径，但是可以使用**/这种来匹配。
-
-
 
 ```json
 //当前工作区的setting.json
@@ -155,23 +145,7 @@ files.exclude更狠，vscode不仅不监控，连显示都不显示了，直接�
 3. 如果是root用户，需要在/etc/ssh/sshd_config中添加一行代码`PermitRootLogin yes`
 4. 删除windows下的家目录下的.ssh/known_hosts，一会儿连接linux的时候会自动生成这个文件
 
-# 自定义代码片段
-
-![image-20240330160356856](./assets/image-20240330160356856.png)
-
-![image-20240330160632446](./assets/image-20240330160632446.png)
-
-![image-20240330160731236](./assets/image-20240330160731236.png)
-
-![image-20240330161227230](./assets/image-20240330161227230.png)
-
-![image-20240330161338412](./assets/image-20240330161338412.png)
-
-![image-20240330161504762](./assets/image-20240330161504762.png)
-
 # 快捷键
-
-
 
 | 快捷键           | 功能                          |
 | ---------------- | ----------------------------- |
@@ -458,4 +432,47 @@ TabWidth: 4
 
 
 # protobuf
+
+# launch.json
+
+```
+node：用于 Node.js 应用程序的调试。
+python：用于 Python 应用程序的调试。
+cppdbg：用于 C++ 应用程序的调试。
+java：用于 Java 应用程序的调试。
+chrome：用于在 Chrome 浏览器中调试 JavaScript 代码。
+firefox：用于在 Firefox 浏览器中调试 JavaScript 代码
+```
+
+
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "python",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "c++",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/out.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "C:/mingw64/bin/gdb.exe",
+      "preLaunchTask": "cppbuild"
+    }
+  ]
+}
+
+```
 

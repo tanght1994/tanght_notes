@@ -798,6 +798,54 @@ target_link_libraries(库文件名称/可执行文件名称 链接的库文件�
 
 
 
+cmake -G generator_name
+
+https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
+
+#### [Makefile Generators](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#id11)
+
+- [Borland Makefiles](https://cmake.org/cmake/help/latest/generator/Borland Makefiles.html)
+- [MSYS Makefiles](https://cmake.org/cmake/help/latest/generator/MSYS Makefiles.html)
+- [MinGW Makefiles](https://cmake.org/cmake/help/latest/generator/MinGW Makefiles.html)
+- [NMake Makefiles](https://cmake.org/cmake/help/latest/generator/NMake Makefiles.html)
+- [NMake Makefiles JOM](https://cmake.org/cmake/help/latest/generator/NMake Makefiles JOM.html)
+- [Unix Makefiles](https://cmake.org/cmake/help/latest/generator/Unix Makefiles.html)
+- [Watcom WMake](https://cmake.org/cmake/help/latest/generator/Watcom WMake.html)
+
+
+
+#### [Ninja Generators](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#id12)
+
+- [Ninja](https://cmake.org/cmake/help/latest/generator/Ninja.html)
+- [Ninja Multi-Config](https://cmake.org/cmake/help/latest/generator/Ninja Multi-Config.html)
+
+
+
+### [IDE Build Tool Generators](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#id13)
+
+These generators support Integrated Development Environment (IDE) project files. Since the IDEs configure their own environment one may launch CMake from any environment.
+
+
+
+#### [Visual Studio Generators](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#id14)
+
+- [Visual Studio 6](https://cmake.org/cmake/help/latest/generator/Visual Studio 6.html)
+- [Visual Studio 7](https://cmake.org/cmake/help/latest/generator/Visual Studio 7.html)
+- [Visual Studio 7 .NET 2003](https://cmake.org/cmake/help/latest/generator/Visual Studio 7 .NET 2003.html)
+- [Visual Studio 8 2005](https://cmake.org/cmake/help/latest/generator/Visual Studio 8 2005.html)
+- [Visual Studio 9 2008](https://cmake.org/cmake/help/latest/generator/Visual Studio 9 2008.html)
+- [Visual Studio 10 2010](https://cmake.org/cmake/help/latest/generator/Visual Studio 10 2010.html)
+- [Visual Studio 11 2012](https://cmake.org/cmake/help/latest/generator/Visual Studio 11 2012.html)
+- [Visual Studio 12 2013](https://cmake.org/cmake/help/latest/generator/Visual Studio 12 2013.html)
+- [Visual Studio 14 2015](https://cmake.org/cmake/help/latest/generator/Visual Studio 14 2015.html)
+- [Visual Studio 15 2017](https://cmake.org/cmake/help/latest/generator/Visual Studio 15 2017.html)
+- [Visual Studio 16 2019](https://cmake.org/cmake/help/latest/generator/Visual Studio 16 2019.html)
+- [Visual Studio 17 2022
+
+
+
+
+
 # 函数指针
 
 ## 普通函数

@@ -1095,6 +1095,8 @@ const router = createRouter({
 
 ## 路由
 
+根据path或name找到对应的vue组件，将此组件放到RouterView处显示。
+
 npm install vue-router
 
 import xxx from 'vue-router'
@@ -1337,7 +1339,7 @@ main.js中引入
 
 只在pinia的定义中有区别，在外部使用的时候与选项式无任何区别
 
-![image-20240403004601521](./assets/image-20240403004601521.png)
+![image-20240522172501588](./assets/image-20240522172501588.png)
 
 ## 动态组件
 
@@ -1410,6 +1412,12 @@ v-slot:s2 等同于 #s2
 
 ![image-20240521011439491](./assets/image-20240521011439491.png)
 
+## @位置
+
+vite.config.ts和tsconfig.json
+
+![image-20240522174202894](./assets/image-20240522174202894.png)
+
 # Element-Plus
 
 安装
@@ -1449,6 +1457,13 @@ A,B,C：选择A或B或C的所有元素（ABC可以是class也可以是标签）
 A B C：选择一部分C元素，那些C元素属于A B的后代。A B如何解释呢？选择一部分B元素，那些B元素属于A的后代（ABC可以是class也可以是标签）
 
 A > B：选择一部分B元素，那些B元素是A的子元素（ABC可以是class也可以是标签）
+
+## 单位
+
+- px：像素
+- em：相对于当前对象内字体尺寸（font-size）。如果当前对象的font-size=10px，那么1em=10px，1.5em=15px。如当前对象的font-size未被人为设置，则使用浏览器的默认字体尺寸（16px）
+- rem：em的大小与当前对象的font-size相关，造成页面中各个地方的em尺寸不一样。为了解决这个问题，rem只与html根元素的font-size相关
+- vh、vw、vm：vw 就是根据窗口的宽度分成100等份，100vw就表示满宽，50vw就表示一半宽。（vw 始终是针对窗口的宽，不是父元素的宽），同理，`vh`则为窗口的高度。vm=min(vh,vw)
 
 # Tailwind CSS
 
@@ -1545,6 +1560,28 @@ npm i
 ```
 
 # JavaScript
+
+## asm.js
+
+- Emscripten是一个编译器，它可以将C和C++代码编译为JS代码。
+- 并且这个JS代码是高度优化的，不用垃圾回收，不用可变类型。
+- Emscripten生成的这个文件就叫asm.js，然后浏览器直接运行asm.js。且浏览器知道asm.js文件是高度优化的（不是愚蠢的人类手写的js，不需要烦人的垃圾回收等机制），所以浏览器会用更快的方法来运行asm.js
+- 所以说asm.js是编译器生成的，你不要傻吧啦叽的去手写asm.js，虽然你可以去写，但是没有意义。
+- 用于提升浏览器的性能（借助C语言的性能）。
+
+## WebAssembly
+
+- Emscripten是一个编译器，它可以将C和C++代码编译为WebAssembly格式的字节码，此文件的名字叫做xxx.wasm。
+- WebAssembly格式的字节码可以运行在浏览器的虚拟CPU上，性能直逼可执行文件。
+- 浏览器可以直接读取wasm文件，然后直接用js调用wasm中的函数。
+- WebAssembly字节码是一种抹平了不同CPU架构的机器码，WebAssembly字节码不能直接在任何一种`CPU`架构上运行，它只能运行在浏览器的虚拟CPU上，但由于非常接近机器码，可以非常快的被翻译为对应架构的机器码，因此WebAssembly运行速度和机器码接近，这听上去非常像Java字节码和Python字节码。
+- 用于提升浏览器的性能（借助C语言的性能）。
+
+## JIT
+
+- JIT是just in time的缩写，意思为即时编译。
+- 第一次运行到此行代码时，将此行代码编译为机器码，然后CPU直接执行机器码。且这行机器码会被缓存起来。
+- 这样性能就会提升很多。
 
 ## 包（模块）
 
