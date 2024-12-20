@@ -103,31 +103,32 @@ sudo find /proc/*/fd -ls | grep '(deleted)'
 sort -rn -k 3 filename.txt
 ```
 
+## head
+
+```shell
+// a.txt显示开头10行
+head -n 10 a.txt
+
+// a.txt显示n行，直到最后一行，不包含最后一行
+head -n -1 a.txt
+```
+
+## tail
+
+```shell
+// a.txt显示结尾10行
+tail -n 10 a.txt
+
+// a.txt显示n行，从第1行开始
+tail -n +1 a.txt
+```
+
 ## alias(命令别名)
 
 ```shell
 # 把这条语句写到 ~/.bashrc 中
 alias ll='ls -lh'
 alias lll='ls -lha'
-```
-
-
-## 文本分析
-
-wc简单行数统计
-
-```shell
-wc -l
-wc -l f1
-wc -l f1 f2 f3
-```
-
-awk文本分析(没用，太复杂，已经被21世纪抛弃了)
-
-awk使用分隔符(默认是空格或tab键)来分割一条记录，将一条记录分隔成N块。$0则代表所有块，$1表示第一个块，$n表示第n块。
-
-```shell
-awk [options] 'pattern + action' filename
 ```
 
 ## lsof(查看端口/文件状态)
@@ -173,6 +174,16 @@ cat /etc/redhat-release
 cat /etc/redhat-release
 
 ```
+
+## 查看CPU架构
+
+```shell
+arch
+# x86
+# arm
+```
+
+
 
 ## source(执行脚本)
 
@@ -245,6 +256,9 @@ grep -E 'ab.*cd' file.txt
 
 # -v 排除带有abc关键字的行
 grep -v abc file.txt
+
+# -C 携带上下文
+grep -C 5 -E 'abc' file.txt
 ```
 
 ## find(查找文件或目录)
@@ -268,13 +282,84 @@ find / -name "*abc*" -type f -size +1M
 # -mmin +10 (限制文件最近修改时间 单位为分钟)
 ```
 
-# 软件包安装
+## awk(文本处理)
+
+不影响源文件。
+
+awk就是把文件**逐行**的读入，以空格为默认分隔符将**每行分割**，切开的部分再进行各种分析处理。
+
+`$0`表示所有域，`$1`表示第一个域，`$n`表示第n个域。
+
+```shell
+awk [-F '分隔符(默认是空格)'] '{指令}' 待处理的文件
+```
+
+例子
+
+```shell
+ps -elf | grep node | awk '{print $1" "$3}' # $1和$3之间有一个字符" "
+ps -elf | grep node | awk '{print $1   $3}' # $1和$3之间没有空格
+cat /etc/passwd | awk -F ':' '{print $1" "$7}'
+```
+
+## sed(文本处理)
+
+默认不影响源文件。-i参数直接修改源文件
+
+```shell
+sed [选项] [脚本命令] 文件名
+```
+
+例如将文件中的hello单词全部替换为world单词
+
+```shell
+
+```
+
+## wc(文本处理)
+
+统计文件中有多少行l(单词w、字符c)
+
+```shell
+wc [-clw] [filename]
+```
+
+## chattr(只读文件)
+
+```shell
+# 将文件变为只读文件, 即使是root也不能修改了
+chattr +i filename
+
+# 取消文件的只读属性
+chattr -i filename
+
+# 查看文件的属性(有i就是只读)
+lsattr filename
+```
+
+## sz(从远端服务器下载)
+
+```shell
+sz filename
+```
+
+## rz(上传到远端服务器)
+
+```shell
+rz
+```
+
+
+
+# 软件安装与仓库
+
+## 软件包安装
 
 Ubuntu：高级apt，基本dpkg
 
 Centos：高级yum，基本rpm
 
-Ubuntu
+### Ubuntu
 
 ```shell
 # 更新本地软件仓库至最新(将远程软件仓库又新增了哪些软件，软件仓库中的软件版本等等这些信息同步过来)
@@ -315,7 +400,7 @@ apt list --installed
 apt list --upgradable
 ```
 
-centos
+### centos
 
 ```shell
 # --showduplicates 用于显示所有版本，否则的话只显示最新版本
@@ -340,11 +425,11 @@ yum list installed
 yum remove package_name
 ```
 
-# 软件仓库
+## 软件仓库
 
-## 修改仓库源地址
+### 修改仓库源地址
 
-### Centos
+#### Centos
 
 ```bash
 配置文件地址：/etc/yum.repos.d/CentOS-Base.repo
@@ -354,7 +439,7 @@ wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-
 wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
 ```
 
-### Ubuntu
+#### Ubuntu
 
 ```shell
 配置文件地址：/etc/apt/sources.list
@@ -624,6 +709,8 @@ systemctl list-units --failed # 列出所有加载失败的 Unit
 
 
 systemctl status mysql # 查看mysql服务的状态，详细信息中会写着管理mysql服务的service脚本在哪里
+
+systemctl daemon-reload
 ```
 
 ## 查看systemd信息的命令
@@ -687,6 +774,25 @@ PrivateTmp=true
 WantedBy=multi-user.target
 ```
 
+
+
+```shell
+[Service]
+Type=forking
+PIDFile=/usr/local/openresty/nginx/logs/nginx.pid   # systemd会将程序的pid写到这里
+ExecStart=/usr/local/openresty/nginx/sbin/nginx		# 用这个命令来启动程序
+ExecReload=/usr/local/openresty/nginx/sbin/nginx -s reload	# 用这个命令来重载(可以不写)
+ExecStop=/usr/local/openresty/nginx/sbin/nginx -s stop	# 用这个命令来关闭(可以不写)
+Restart=always	# 不管什么原因程序被关闭了，systemd都会重新启动这个程序(通过systemd stop这个程序除外)
+RestartSec=10s  # 程序死了之后，10s后再重启
+```
+
+Type=forking   对于守护进程
+
+Type=simple 对于普通的进程
+
+
+
 [Unit]
 After=network.target
 \#[Service]部分是服务的关键，是服务的一些具体运行参数的设置，这里Type=forking
@@ -728,6 +834,7 @@ systemctl daemon-reload
 1. 创建你的程序的.service文件
 2. 将.service文件放到`/etc/systemd/system/`或者`/lib/systemd/system/`(推荐)下
 3. 使用`systemctl start/stop/.. your_service_name.sevice `来启停程序
+4. systemctl daemo
 
 ## service文件路径
 
@@ -789,11 +896,11 @@ SIGHUP信号是什么鬼？当关闭某个终端时，这个终端会给自己�
 
 ## 2>&1
 
-任何命令后方加上2>&1，就会将此程序的stderr重定向到stdout
+任何命令后方加上2>&1，就会将此程序的stderr重定向到stdout。
 
-stderr重定向到stdout？我没听错吧？这什么意思？意思就是，stdout去哪里，stderr就去哪里，跟定你了！
+stderr重定向到stdout？我没听错吧？这什么意思？意思就是，stdout去哪里，stderr就去哪里。
 
-`command > 123.txt`这个命令只是将stdout重定向到123.txt了，stderr依然向终端输出东西，所以加上2>&1会将stderr也扔到123.txt，当然了，也可以直接使用2>123.txt，这样的话就需要打开两次123.txt,而且stdout与stderr的输出可能会相互覆盖
+`command > 123.txt`这个命令只是将stdout重定向到123.txt了，stderr依然向终端输出东西，所以加上2>&1会将stderr也扔到123.txt，当然了，也可以直接使用2>123.txt，这样的话就需要打开两次123.txt,而且stdout与stderr的输出可能会相互覆盖。
 
 # SSH登陆
 
@@ -927,6 +1034,19 @@ iptables -A INPUT -s 192.168.58.139 -p tcp -m multiport --dports 1 -j ACCEPT
 ## iptables
 
 ![image-20220106114518953](assets/image-20220106114518953.png)
+
+直接修改iptables的配置文件
+
+```shell
+# 将配置文件变为可写
+chattr -i /etc/sysconfig/iptables
+
+# 修改配置文件
+vim /etc/sysconfig/iptables
+
+# 将配置文件变为只读
+chattr +i /etc/sysconfig/iptables
+```
 
 # 资源占用情况(top)
 
@@ -1374,6 +1494,76 @@ StartProcess "uwsgi --ini /data/webserver/log_server/uwsgi/uwsgi.ini"
 1. 在vim的命令行执行`set paste`，使vim进入粘贴模式
 2. 进行你的粘贴操作（右键）
 3. 在vim的命令行执行`set nopaste`，还原第一步的设置
+
+
+
+# 进程最大打开文件数量
+
+查看当前用户的配置
+
+```
+root@VM-0-10-ubuntu:~# ulimit -a
+core file size          (blocks, -c) 0
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 7187
+max locked memory       (kbytes, -l) 65536
+max memory size         (kbytes, -m) unlimited
+open files                      (-n) 1300         // 当前的进程最大打开文件量为1300, 通过ulimit -n命令可临时修改
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) 8192
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 7187
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
+```
+
+永久生效
+
+```
+修改 /etc/security/limits.conf 这个文件, 添加如下内容
+root soft nofile 1300
+root hard nofile 1300
+
+root的意思是指, 设置root用户的ulimit
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

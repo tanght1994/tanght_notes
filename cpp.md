@@ -1,3 +1,18 @@
+# 简介
+
+- gcc：
+- g++：
+- MinGW：windows平台上的一个文件夹，这个文件夹中包含gcc.exe、g++.exe、等，用于在windows平台上使用gcc，但是你依然不能在windows中包含linux头文件（如：unistd.h）。
+- cl.exe：windows平台上的c语言编译器，类似于linux平台的gcc
+- Visual Studio：windows平台c、c++开发工具，按钮按一按就编译完成了，这个IDE内部拥有cl.exe等编译器
+- Xcode：苹果平台c、c++开发工具，按钮按一按就编译完成了，这个IDE内部拥有编译器
+
+
+
+open：linux平台上的c语言函数，c语言标准库中并没有这个函数。也就是说，这个函数只能在linux中用，在windows平台根本无法编译，因为windows平台可能并没有定义open这个函数，即便是定义了open函数，参数返回值等等都不一定一样。
+
+fopen：标准c语言函数。不分平台，不管你是windows还是linux还是mac，这些平台必须实现这个函数。
+
 # gcc/g++
 
 CPATH：gcc/g++搜索头文件的路径，以:分隔
@@ -780,6 +795,54 @@ target_link_libraries(库文件名称/可执行文件名称 链接的库文件�
 父CMakeLists.txt中定义的变量会传递到子CMakeLists.txt，子CMakeLists.txt可以覆盖父CMakeLists.txt中定义的变量，但是不影响父
 
 运行到add_subdirectory()时，立即去执行子CMakeLists.txt中的代码，注意先后顺序
+
+
+
+cmake -G generator_name
+
+https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
+
+#### [Makefile Generators](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#id11)
+
+- [Borland Makefiles](https://cmake.org/cmake/help/latest/generator/Borland Makefiles.html)
+- [MSYS Makefiles](https://cmake.org/cmake/help/latest/generator/MSYS Makefiles.html)
+- [MinGW Makefiles](https://cmake.org/cmake/help/latest/generator/MinGW Makefiles.html)
+- [NMake Makefiles](https://cmake.org/cmake/help/latest/generator/NMake Makefiles.html)
+- [NMake Makefiles JOM](https://cmake.org/cmake/help/latest/generator/NMake Makefiles JOM.html)
+- [Unix Makefiles](https://cmake.org/cmake/help/latest/generator/Unix Makefiles.html)
+- [Watcom WMake](https://cmake.org/cmake/help/latest/generator/Watcom WMake.html)
+
+
+
+#### [Ninja Generators](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#id12)
+
+- [Ninja](https://cmake.org/cmake/help/latest/generator/Ninja.html)
+- [Ninja Multi-Config](https://cmake.org/cmake/help/latest/generator/Ninja Multi-Config.html)
+
+
+
+### [IDE Build Tool Generators](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#id13)
+
+These generators support Integrated Development Environment (IDE) project files. Since the IDEs configure their own environment one may launch CMake from any environment.
+
+
+
+#### [Visual Studio Generators](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#id14)
+
+- [Visual Studio 6](https://cmake.org/cmake/help/latest/generator/Visual Studio 6.html)
+- [Visual Studio 7](https://cmake.org/cmake/help/latest/generator/Visual Studio 7.html)
+- [Visual Studio 7 .NET 2003](https://cmake.org/cmake/help/latest/generator/Visual Studio 7 .NET 2003.html)
+- [Visual Studio 8 2005](https://cmake.org/cmake/help/latest/generator/Visual Studio 8 2005.html)
+- [Visual Studio 9 2008](https://cmake.org/cmake/help/latest/generator/Visual Studio 9 2008.html)
+- [Visual Studio 10 2010](https://cmake.org/cmake/help/latest/generator/Visual Studio 10 2010.html)
+- [Visual Studio 11 2012](https://cmake.org/cmake/help/latest/generator/Visual Studio 11 2012.html)
+- [Visual Studio 12 2013](https://cmake.org/cmake/help/latest/generator/Visual Studio 12 2013.html)
+- [Visual Studio 14 2015](https://cmake.org/cmake/help/latest/generator/Visual Studio 14 2015.html)
+- [Visual Studio 15 2017](https://cmake.org/cmake/help/latest/generator/Visual Studio 15 2017.html)
+- [Visual Studio 16 2019](https://cmake.org/cmake/help/latest/generator/Visual Studio 16 2019.html)
+- [Visual Studio 17 2022
+
+
 
 
 

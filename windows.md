@@ -70,3 +70,4 @@ net start abc						# 启动abc服务
 net stop abc						# 停止abc服务
 ```
 
+使用nssm工具将普通的exe程序注册为widows服务
