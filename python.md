@@ -880,6 +880,13 @@ pip install --no-index --find-links=/haha/hehe pymysql
 sudo pip3 install redis -i https://pypi.tuna.tsinghua.edu.cn/simple --proxy=192.168.96.67:8888 --trusted-host pypi.tuna.tsinghua.edu.cn
 ```
 
+```
+# Windows机器使用违法的VPN, 哈哈
+pip install -r requirements.txt --proxy=127.0.01:7890
+```
+
+
+
 # 字符串拼接
 
 key：拼接，模板，插值，大括号

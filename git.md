@@ -40,7 +40,32 @@ git clone -b branch_name https://github.com/abc/abc.git
 # 本来克隆下来的时候项目的名字应该是abc
 # 现在给重命名成new_name了
 git clone https://github.com/abc/abc.git new_name
+
+# 不需要历史记录, 只要最新数据
+git clone https://github.com/abc/abc.git --depth 1
+
+# 克隆加速
+# 原地址
+git clone https://github.com/xxx/xxx
+# 新地址
+git clone https://gitclone.com/github.com/xxx/xxx
+
+# VPN对Git控制台不生效，所以我们需要告诉Git使用VPN
+# 方法一：在执行git命令的时候指定
+git clone https://github.com/xxx/xxx --config https.proxy=https://127.0.0.1:7890
+# 方法二：直接写到git的配置文件中
+git config --global http.proxy http://127.0.0.1:7890
+git config --global https.proxy http://127.0.0.1:7890
+git config --global http.proxy 'socks5://127.0.0.1:7891'
+git config --global https.proxy 'socks5://127.0.0.1:7891'
+# 方法二：取消代理
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+
+
 ```
+
+
 
 
 
@@ -488,3 +513,9 @@ git config --global credential.helper store
 # Windows切换GIT用户
 
 ![image-20220608195557720](assets/image-20220608195557720.png)
+
+# GitHub
+
+下载加速
+
+git clone https://gitclone.com/github.com/tendermint/tendermint.git
