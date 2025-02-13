@@ -1559,6 +1559,38 @@ npm i package_name -D
 npm i
 ```
 
+## npm配置文件
+
+npm config list  显示npm和node的相关信息
+
+```javascript
+; "builtin" config from C:\Users\tangh\AppData\Roaming\npm\node_modules\npm\npmrc  // 全局配置文件的路径
+
+prefix = "C:\\Users\\tangh\\AppData\\Roaming\\npm"  // 不知道什么作用
+
+; "user" config from C:\Users\tangh\.npmrc  // 用户配置文件的路径
+
+registry = "https://registry.npm.taobao.org/"  // 仓库路径
+
+; node bin location = C:\Program Files\nodejs\node.exe  // node可执行程序的路径
+; node version = v20.10.0  // node的版本
+; npm local prefix = C:\Users\tangh\Desktop\tht\vue\xxx  // 当前项目的路径
+; npm version = 10.2.5  // npm版本
+; cwd = C:\Users\tangh\Desktop\tht\vue\xxx
+; HOME = C:\Users\
+```
+
+
+
+```
+npm config set <key> <value> [--global] // 写配置字段, 写完之后的配置保存在配置文件中
+npm config get <key>
+npm config delete <key>
+npm config list
+```
+
+
+
 # JavaScript
 
 ## asm.js
