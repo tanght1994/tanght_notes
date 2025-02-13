@@ -1521,6 +1521,10 @@ module.exports = {
 
 # npm
 
+## 国内源
+
+npm config set registry http://mirrors.cloud.tencent.com/npm/
+
 ## 初始化项目
 
 在一个空文件夹中执行`init`命令，执行完之后会生成`package.json`文件
