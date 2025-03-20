@@ -1197,7 +1197,7 @@ location / {
 
 因为多级路由的时候path太长，可能是{path:a/b/c/d/e/f/g/h}
 
-此事使用name进行跳转会方便些
+此时使用name进行跳转会方便些
 
 ```typescript
 const router = createRouter({
@@ -1239,8 +1239,6 @@ params传值只能使用name跳转，不能用path跳转
 ![image-20240521000814024](./assets/image-20240521000814024.png)
 
 1.将路由收到的所有params参数作为props传递给路由组件
-
-![image-20240310003315698](./assets/image-20240310003315698.png)
 
 2.自己传任何值作为props传递给路由组件
 
