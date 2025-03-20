@@ -398,6 +398,9 @@ apt list mysql*
 apt list --installed
 # 列出可升级的软件
 apt list --upgradable
+
+# 查找可供安装的软件
+apt-cache search "正则"
 ```
 
 ### centos

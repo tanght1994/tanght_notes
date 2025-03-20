@@ -251,10 +251,12 @@ git add -A
 # 回退（reset）
 
 ```shell
+# 软回退，不会改变当前工作区的内容，但是你的commit记录会给你回退到你指定的commit-id上
+git reset --soft <commit-id>
 
+# 硬回退，直接将当前工作区的内容重置到commit-id处
+git reset --hard <commit-id>
 ```
-
-
 
 # 查看提交信息（log、show）
 

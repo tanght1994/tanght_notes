@@ -144,7 +144,29 @@ m = import_module('zhangsan.lisi.wangwu.haha')
 
 
 
-# Python虚拟环境
+# 虚拟环境
+
+python程序由两个exe文件组成：
+
+1. python.exe：python解释器
+2. pip.exe：这个python.exe的安装包助手，此pip.exe终身绑定此python，pip.exe编译的时候就硬编码绑定的，无法修改。pip --version命令可以查看此pip帮的python解释器是哪个。
+3. 进入到pip.exe的目录中执行pip install命令，这个命令安装的包裹是给对应的python使用的，多个版本的python不会混乱。
+4. python -m pip install，使用此python绑定的pip执行install命令。
+
+例子：
+
+windows电脑中存在两个python版本，且没有设置PATH环境变量，如下：
+
+- python3.7的python可执行文件位置 D:/python/python37/python.exe
+- python3.7的pip可执行文件位置 D:/python/python37/Scripts/pip.exe
+- python3.8的python可执行文件位置 D:/python/python38/python.exe
+- python3.8的pip可执行文件位置 D:/python/python38/Scripts/pip.exe
+
+在D:/python/python37/目录下执行python命令，这时会启动D:/python/python37/python.exe这个软件
+在D:/python/python37/Scripts/目录下执行pip install命令，这时会将包裹安装到D:/python/python37/下的某个目录中
+D:/python/python37/Scripts/pip.exe与D:/python/python37/python.exe是绑定的
+
+## venv
 
 ```shell
 # 在当前目录下创建python虚拟环境，命名为.venv
@@ -163,7 +185,69 @@ deactivate
 直接关闭cmd窗口就行了
 ```
 
+## pipenv
 
+```shell
+# 在当前目录创建指定python版本的虚拟环境
+pipenv --python "your_python_path/python.exe"
+
+# 根据当前目录下的 Pipfile 安装所有已声明的依赖包。如果没有虚拟环境，会自动创建
+# 相当于 npm install
+pipenv install
+
+# 安装指定的包，并自动添加到 Pipfile 的 [packages] 区块中
+pipenv install <包名>
+
+# 安装指定的包作为开发依赖，并记录到 Pipfile 的 [dev-packages] 区块中
+pipenv install --dev <包名>
+
+# 卸载指定包，并自动更新 Pipfile（移除该包的依赖声明）
+pipenv uninstall <包名>
+
+# 启动 pipenv 创建的虚拟环境，即进入该环境的交互式 shell
+pipenv shell
+
+# 显示当前虚拟环境中所有安装包以及它们之间的依赖关系图
+pipenv graph
+
+# 更新所有包到最新版本，并自动调整依赖版本锁定文件
+pipenv update
+
+# 更新指定包到最新版本，并自动调整依赖版本锁定文件
+pipenv update [<包名>]
+
+# 删除当前目录下的虚拟环境
+pipenv --rm
+```
+
+## uv
+
+可以代替pip，可以创建虚拟环境
+
+```shell
+# 显示当前已经安装的和可供安装的Python版本
+uv python list
+# 安装指定的Python版本（注意：安装的Python并非全局可用，在命令行工具中输入Python无反映）
+uv python install 3.10 3.11 3.12
+# 卸载指定的版本
+uv python uninstall 3.10
+
+
+# 初始化旧的项目
+cd example
+uv init
+# 创建新项目并初始化
+uv init new_example
+# 注意此时并不会创建环境（编辑器也不会识别到当前项目中的解释器版本），只有安装包时会自动创建环境或者直接用命令：
+uv venv
+# 默认使用最新的Python版本，也可为环境指定Python版本
+uv venv --python 3.11
+
+
+
+# 在当前环境中安装包flask
+uv add flask
+```
 
 
 
@@ -239,9 +323,7 @@ print(EnumColour.key_valued("Blue"))  	# True
 
 # with语法
 
-原理：
-
-定义了——enter——（）与——exit——（）函数的类，可以使用with语句，进入with作用域之前会执行——enter——（）函数，离开with作用于之时会调用——exit——（）函数，不管with代码块中用户写的代码出现什么异常，离开with代码块时，都会执行——exit——（）函数。
+定义了`__enter__()`与`__exit__()`函数的类，可以使用with语句，进入with作用域之前会执行`__enter__()`函数，离开with作用于之时会调用`__exit__()`函数，不管with代码块中用户写的代码出现什么异常，离开with代码块时，都会执行`__exit__()`函数。
 
 ```python
 with expression as var:
@@ -249,16 +331,11 @@ with expression as var:
 ```
 
 - 首先执行expression，且expression必须返回一个对象
-- expression返回的对象必须带有——enter——（）与——exit——（）方法
-- 执行expression返回的对象的——enter——（）方法
-- ——enter——（）方法返回的内容赋值给var
+- expression返回的对象必须带有`__exit__()`与`__exit__()`方法
+- 执行expression返回的对象的`__exit__()`方法
+- `__exit__()`方法返回的内容赋值给var
 - 执行with作用域中用户写的代码
-- 离开with作用域，并执行——exit——（）方法
-- 注：enter与exit是双下划线，我这个编辑器不能用双下划线，破折号代替了
-
-
-
-
+- 离开with作用域，并执行`__exit__()`方法
 
 ```python
 class Test:
@@ -550,10 +627,6 @@ group('name')按照组的名字来取内容
 
 group()返回这个字符串中，符合正则表达式的，那部分字符串
 
-
-
-
-
 ## 分割字符串
 
 在python进行字符串分割一般使用**str.split()**函数，比如将字符串**"abc:123:xyz"**以冒号进行分割，以列表的形式将分割后的结果返回给调用者**["abc", "123", "xyz"]**
@@ -597,8 +670,6 @@ result = re.split(',,|\.\.',s)
 # result：['qaz,wsx.edc', 'rfv', '.tgb']
 ```
 
-
-
 ## 正则表达式标志位
 
 | 标志位         | 作用                                                         |
@@ -609,10 +680,6 @@ result = re.split(',,|\.\.',s)
 | re.S           | 使 . 匹配包括换行在内的所有字符                              |
 | re.U           | 根据Unicode字符集解析字符。这个标志影响 \w, \W, \b, \B.      |
 | re.X           | 该标志通过给予你更灵活的格式以便你将正则表达式写得更易于理解 |
-
-
-
-
 
 ## 替换
 
@@ -643,10 +710,6 @@ s = r'abc123qaz321'
 # re.sub使用 '(?P<number>[\d]+)' 来对 s 进行扫描，每次成功匹配的时候就生成一个 re.Match 对象，传递给myfun的参数，然后运行myfun函数，使用myfun函数的返回值替换掉匹配成功的部分，继续向后扫描
 result = re.sub('(?P<number>[\d]+)', myfun, s)
 ```
-
-
-
-
 
 ## 匹配与提取
 
@@ -682,8 +745,6 @@ myfun(s1)	#匹配成功，并且打印出具体内容
 myfun(s2)	#匹配失败，因为第一个字符为b，而正则表达式要求第一个字符为a
 ```
 
-
-
 ### re.search
 
 ```python
@@ -704,10 +765,6 @@ re.search(pattern, string, flags=0)
 ```python
 pass
 ```
-
-
-
-
 
 ### re.findall
 
@@ -731,8 +788,6 @@ re.findall(pattern, string, flags=0)
 ```python
 pass
 ```
-
-
 
 # 调用c语言动态库
 
@@ -804,7 +859,16 @@ a = b'haha...' # 假装一共256个字符
 s1 = s.translate(a)
 ```
 
-# 编码解码
+# 字符串拼接
+
+key：拼接，模板，插值，大括号
+
+```python
+s1 = 'tanght'
+s2 = f'Hello {s1}'
+```
+
+# 字符串编码解码
 
 先了解一下python中如何表示字节流
 
@@ -885,14 +949,1070 @@ sudo pip3 install redis -i https://pypi.tuna.tsinghua.edu.cn/simple --proxy=192.
 pip install -r requirements.txt --proxy=127.0.01:7890
 ```
 
+# 浏览器自动化
 
+## Playwright
 
-# 字符串拼接
+浏览器自动化工具，类似以前爬虫时用的selenium，但是比selenium好用100倍。
 
-key：拼接，模板，插值，大括号
+它是一个没有页面的软件，可以用pip安装，也可以用npm安装，还可以用其它语言的包管理器安装。
+
+### 安装
+
+安装这个软件，安装之后是一个可执行文件，在python的软件包目录下
+
+pip install playwright
+
+playwright安装完之后，还需要让playwright自己下载各种浏览器的内核
+
+playwright install
+
+### 打开浏览器
+
+**1. 使用 connect_over_cdp 连接已经运行的 chrome 浏览器**
+
+相比直接使用 自己的浏览器，这种方法更像人类
 
 ```python
-s1 = 'tanght'
-s2 = f'Hello {s1}'
+# 1. 模拟鼠标双击，打开chrome浏览器，启动参数中输入--remote-debugging-port=9222
+# 这个启动参数会让chrome接受远程控制，否则的话无法用playwright来控制浏览器
+cmdarg = [self.config.chrome_instance_path, '--remote-debugging-port=9222']
+popenarg = {
+    stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL,
+}
+subprocess.Popen(cmdarg, **popenarg)
+sleep(100)
+playwright = await async_playwright().start()
+
+# 2. 使用 playwright 连接已经启动好了的浏览器
+playwright.chromium.connect_over_cdp(endpoint_url='http://localhost:9222', timeout=20000)
+
+# 3. 执行反反爬虫js脚本来设置一些浏览器参数，避免被反爬虫
 ```
+
+**2. 使用 playwright 自带的浏览器**
+
+playwright 安装完之后，playwright install 命令是让 playwright 安装自己的浏览器，所以即使用户没有安装 chrome 浏览器，playwright 也能使用
+
+```python
+```
+
+
+
+# 数据校验
+
+## pydantic
+
+### 基础
+
+继承BaseModel
+
+```python
+from pydantic import BaseModel
+
+# 优点, 继承BaseModel就不用写__init__方法了
+# 优点, 类型检查, 类型转换, 类型提示
+class User(BaseModel):
+    name: str
+    age: int
+    email: str
+    
+user1 = User(name="tht", age="30", email="xx@qq.com")  # pydantic自动将age转换为int, 能转尽量转, 转不了就抛出异常
+user2 = User(name="tht", age="a30", email="xx@qq.com")  # a30不能转为int, 所以会抛出异常
+```
+
+### 选填
+
+from typing import Optional
+
+```python
+from typing import Optional
+from pydantic import BaseModel, EmailStr
+
+class User(BaseModel):
+    name: str
+    age: int
+    email: EmailStr
+    phone: Optional[str] = None # Optional选填字段, 如果没填，则用默认值代替
+
+user1 = User(name="tht", age=30, email="xx@qq.com")  # name='tht' age=30 email='xx@qq.com' phone=None
+# user2 = User(name="tht", age=30, email="abcdefg")  # 无效的电子邮件，抛出异常
+
+```
+
+### 自定义验证
+
+使用field_validator装饰器
+
+```python
+from typing import Optional
+from pydantic import BaseModel, EmailStr, field_validator
+
+class User(BaseModel):
+    name: str
+    age: int
+    email: EmailStr
+    phone: Optional[str] = None
+
+    @field_validator("age") # 检查age字段
+    def check_age(cls, value):
+        if value < 18:
+            raise ValueError("用户年龄必须大于18岁")
+        return value
+    
+user1 = User(name="tht", age=17, email="xx@qq.com") # 错误
+
+```
+
+### Field
+
+附加信息和约束
+
+Field第一个参数为默认值，如果第一个参数为`...`则表示此字段没有默认值，用户必须手动填写
+
+```python
+from typing import Optional
+from pydantic import BaseModel, EmailStr, Field
+
+class User(BaseModel):
+    name: str
+    age: int = Field(..., description="用户年龄", gt=1, lt=100)
+    email: EmailStr
+    phone: Optional[str] = None
+
+    
+user1 = User(name="tht", age=100, email="xx@qq.com") # 错误
+print(user1)
+```
+
+- **默认值 / 必填标识：**Field("默认名称")或Field(...)
+- **description：**提供字段的描述信息，用于生成 API 文档等，`description="i am age"`
+- **title：**为字段指定标题，同样用于文档展示，`title="Age"`
+- **alias：**定义别名，在序列化或反序列化过程中使用别名，`alias="user_age"`
+- **约束条件：**gt、ge、lt、le、min_length、max_length、regex
+- **default_factory：**接收一个无参工厂函数，用于动态生成默认值，示例：`default_factory=list` 意味着默认值为一个空列表。
+- **const：**如果为 True，则要求传入的值必须与默认值一致，也可以不填写，那就用默认值。示例：`const=True`。
+- **exclude, include：**控制序列化时的输出，可以配置哪些字段在 dict 或 JSON 输出时被包含或排除。
+
+### ConfigDict
+
+ConfigDict可以控制整个数据的规则
+
+```python
+from pydantic import BaseModel, ConfigDict
+
+class MyModel(BaseModel):
+    # 整个class的规则
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, # 允许字段指定非 Pydantic 内置支持的任意类型（比如函数、第三方对象、或自定义类）
+        extra='forbid', # "allow"：保留所有额外字段。 "ignore"：忽略（不保存）额外字段。 "forbid"：如果输入额外字段则报错
+        populate_by_name=True, # 允许在模型实例化时，即使定义了别名，也可以使用原始字段名称赋值
+        alias_generator=lambda field_name: field_name.upper(),  # 定义一个函数，用于自动生成字段的别名
+        json_encoders={CustomType: lambda v: str(v)}, # 为自定义类型提供 JSON 序列化函数
+        validate_assignment=True, # 启用对模型实例中属性的赋值进行验证
+        frozen=True,
+        copy_on_model_validation=True,
+        from_attributes=True,
+        use_enum_values=True, # 在处理 Enum 类型字段时，使用枚举的值而非枚举对象本身
+        error_msg_templates={'value_error.missing': '字段 {loc} 是必填的'}, # 自定义验证错误的消息模板
+        json_schema_extra={"examples": [{"id": 1, "name": "example"}]},
+        json_dumps=lambda v, *, default: __import__('json').dumps(v, default=default),
+        json_loads=__import__('json').loads,
+        smart_union=True, # 在处理联合类型（Union）字段时，使用更智能的方式来匹配输入数据，从而减少不必要的验证错误
+    )
+    
+    # 各个字段的规则
+    id: int
+    name: str
+```
+
+# 函数参数
+
+python的函数规则简直是一坨屎，超级TMD混乱，python再发展几年，就得用毛笔在屏幕上画画了！垃圾、垃圾、垃圾！！！FUCK FUCK FUCK！
+
+我认为最好的语言就是---->完成一件事只有一种办法，这样所有人就TM统一了，不用猜别人的代码了！像他妈python这种语言竟然他妈的火了，简直是灾难！
+
+## 传参方式
+
+### 按位置传参
+
+这是最简单的方式，根据参数在定义时的位置依次传递。
+
+```python
+def add(x, y):
+    return x + y
+
+# 按位置传参
+result = add(1, 2)  # x=1, y=2
+```
+
+###  按关键字传参
+
+在调用时明确指定参数名，这样的好处是顺序可以不固定，并且代码可读性更高。
+
+```python
+result = add(x=1, y=2)
+result = add(y=2, x=1)
+```
+
+### 位置和关键字混用
+
+可以同时使用，但必须注意：**位置传参必须出现在关键字传参之前**。
+
+```python
+def greet(greeting, name):
+    print(f"{greeting}, {name}")
+
+greet("Hello", name="Alice")  # "Hello"作为第一个位置参数，name通过关键字传入
+```
+
+## 参数定义
+
+### *args
+
+收集额外的位置参数。
+
+前面一个星号（*）表示把传入的额外位置参数收集到一个元组中。
+
+```python
+def func_with_args(x, *args):
+    print(x)      # 第一个位置参数
+    print(args)   # 其余所有位置参数以元组形式保存
+
+func_with_args(10, 20, 30, 40)  
+# 输出：
+# 10
+# (20, 30, 40)
+```
+
+### **kwargs
+
+收集额外的关键字参数。
+
+两个星号（**）表示把传入的额外关键字参数收集到一个字典中。
+
+```python
+def func_with_kwargs(x, **kwargs):
+    print(x)
+    print(kwargs)  # 多余的关键字参数以字典形式保存
+
+func_with_kwargs(10, a=1, b=2)  
+# 输出：
+# 10
+# {'a': 1, 'b': 2}
+```
+
+### 单独的星号 *
+
+限制后续参数必须以关键字方式传递。
+
+在函数参数列表中只写一个单独的星号，后面的所有参数都将成为**关键字专用参数**。
+
+```python
+def func_keyword_only(a, b, *, option=True):
+    print(a, b, option)
+
+func_keyword_only(1, 2, option=False)  # 正确
+# func_keyword_only(1, 2, False)  -> 错误，因为 option 必须以关键字形式传递
+```
+
+### 位置分隔符/
+
+位置专用参数（Python 3.8+）。
+
+在参数列表中使用 `/` 分隔符，位于其左侧的参数只能通过位置传入。
+
+```python
+def func_positional_only(a, b, /, c, d):
+    print(a, b, c, d)
+
+func_positional_only(1, 2, c=3, d=4)  # a, b 必须为位置参数
+# func_positional_only(a=1, b=2, c=3, d=4)  -> 错误
+```
+
+## *和**解包
+
+### 用 `*` 解包序列
+
+把一个列表或元组的值依次传递给函数的对应位置参数。
+
+```python
+def multiply(a, b, c):
+    return a * b * c
+
+nums = [2, 3, 4]
+result = multiply(*nums)   # 相当于 multiply(2, 3, 4)
+```
+
+### 用 `**` 解包字典
+
+```python
+def introduce(name, age):
+    print(f"My name is {name} and I am {age} years old.")
+
+info = {'name': 'Alice', 'age': 30}
+introduce(**info)  # 相当于 introduce(name='Alice', age=30)
+```
+
+# 类型注解
+
+类型注解只用于编辑器的代码检查和智能提示，python运行时会忽略类型注解
+
+```python
+from typing import Callable, Dict, Type
+
+
+variable_name: Type = value
+```
+
+## 变量注解
+
+可以直接在变量声明时标注变量的类型。即使不赋初值，类型注解也能帮助 IDE 和静态检查工具了解变量的预期类型。
+
+```python
+x: int = 42         # x 应为整数，默认值 42
+name: str = "Alice" # name 应为字符串，默认值 "Alice"
+score: float        # score 预计为浮点型，但目前未赋值
+```
+
+## 函数参数与返回值注解
+
+在函数定义时，可以为每个参数指定类型，使得函数使用者明确知道传入参数的预期类型。
+
+```python
+def add(a: int, b: int) -> int:
+    return a + b
+```
+
+在上面的代码中：
+
+- 参数 `a` 和 `b` 被标注为整数（`int`）。
+- 箭头后的 `int` 表示返回值也必须是整数。
+
+## 容器类型注解（ `typing` 模块）
+
+指定容器内元素进行类型
+
+### List
+
+```python
+from typing import List
+
+numbers: List[int] = [1, 2, 3, 4]
+names: List[str] = ["Alice", "Bob", "Charlie"]
+```
+
+### Dict
+
+用于指定字典中键值的类型，比如键是字符串，值是整数。
+
+```python
+from typing import Dict
+
+user_ages: Dict[str, int] = {"Alice": 25, "Bob": 30}
+```
+
+### Tuple
+
+用于标注固定长度且各元素类型已定的元组。
+
+```python
+from typing import Tuple
+
+coordinate: Tuple[float, float] = (10.0, 20.5)
+```
+
+## Optional
+
+`Optional[T]` 表示类型 `T` 或 `None`，与 `Union[T, None]` 等价。常用于标识参数或返回值可能为空。
+
+```python
+from typing import Optional
+
+def find_user(user_id: int) -> Optional[str]:
+    # 如果未找到用户，返回 None
+    if user_id != 1:
+        return None
+    return "Alice"
+```
+
+也可用于变量声明：
+
+python
+
+```
+phone: Optional[str] = None  # 可能为字符串，也可能是 None
+```
+
+## Union
+
+`Union[A, B]` 用于指明变量或参数可能为 A 或 B 中的任一类型。
+
+```python
+from typing import Union
+
+def stringify(data: Union[int, float]) -> str:
+    return str(data)
+```
+
+在这个例子中，`data` 可以是整数或浮点数。
+
+## Any
+
+当你不希望进行类型限制或者类型不确定时，可以使用 `Any`。
+
+```python
+from typing import Any
+
+def process(item: Any) -> None:
+    print("Processing:", item)
+```
+
+## Callable
+
+用于标注可调用对象（例如函数）。
+
+```python
+from typing import Callable
+
+def operate(func: Callable[[int, int], int], a: int, b: int) -> int:
+    return func(a, b)
+
+# 示例函数
+def multiply(x: int, y: int) -> int:
+    return x * y
+
+result = operate(multiply, 3, 4)  # 返回 12
+```
+
+上面的例子中：
+
+- `Callable[[int, int], int]` 表示一个需要两个整数参数并返回一个整数的函数。
+
+## Type
+
+`Type[XXX]` 表示一个类型对象，这里的 `XXX` 是某个类型（通常为类），`Type[XXX]` 的含义是“**继承自 XXX 的类**”（包括 XXX 自身）。当你希望一个变量、参数或返回值接收的是一个类，**而不是该类的实例时**，就可以使用 `Type[XXX]`。
+
+```python
+from typing import Type
+
+class User(BaseModel):
+    name: str
+    age: int
+
+def print_schema(model: Type[BaseModel]) -> None:
+    # model 必须是 BaseModel 的子类，故可以调用其 .schema() 类方法
+    print(model.schema())
+
+print_schema(User) # User类，而不是User对象
+```
+
+在这个例子中：
+
+- 参数 `model` 的类型被注解为 `Type[BaseModel]`，表示传入的必须是一个继承自 `BaseModel` 的类（例如 `User`），而不是 `User` 的实例。
+- 这样确保可以直接调用传入类的类方法，比如 `.schema()`，而不用担心对象实例与类本身的区别。
+
+## 类型别名
+
+通过给复杂的类型签名创建一个别名，可以让代码更简洁易懂。
+
+```python
+from typing import List
+
+Vector = List[float]  # 定义一个别名，将表示浮点数列表
+
+def scale(vector: Vector, factor: float) -> Vector:
+    return [x * factor for x in vector]
+
+v: Vector = [1.0, 2.0, 3.0]
+scaled_v = scale(v, 2.0)
+```
+
+# 类属性，实例属性，类型注解
+
+## 类属与实例
+
+```python
+class People:
+    # 类属性
+    species = "Homo sapiens"
+
+    def __init__(self, name, age):
+        # 实例属性
+        self.name = name
+        self.age = age
+  
+    def speak(self):
+        print(f"{self.name} 说: 我 {self.age} 岁。")
+
+p1 = People("Alice", 30)
+p2 = People("Bob", 25)
+
+# 访问实例属性
+print(p1.name)  # 输出: Alice
+print(p2.age)   # 输出: 25
+
+# 访问类属性
+print(People.species)  # 输出: Homo sapiens
+print(p1.species)      # 输出: Homo sapiens
+
+# 修改类属性会影响所有实例
+People.species = "H. sapiens"
+print(p1.species)      # 输出: H. sapiens
+print(p2.species)      # 输出: H. sapiens
+
+# 修改实例属性仅影响当前实例
+p1.name = "Alice Smith"
+print(p1.name)         # 输出: Alice Smith
+print(p2.name)         # 输出: Bob
+```
+
+## 实例属性覆盖类属性
+
+可以在`__init__`函数中覆盖类属性
+
+尽管覆盖了类属性，也能通过Class.XXX来获取类属性
+
+```python
+class People:
+    # 类属性：所有People实例共享
+    species = "Homo sapiens"
+
+    def __init__(self, name, age):
+        # 实例属性：每个实例单独拥有
+        self.name = name
+        self.age = age
+  
+    def speak(self):
+        print(f"People {self.name} 说: 我 {self.age} 岁。")
+
+
+class Dog:
+    # 类属性：所有Dog实例初始共享（值为 "Homo sapiens"）
+    species = "Homo sapiens"
+
+    def __init__(self, name, age):
+        # 实例属性：覆盖了类属性
+        self.name = name
+        self.age = age
+        # 此处将实例属性 species 赋予一个不同的值，这会遮蔽类属性 Dog.species
+        self.species = "haha"
+  
+    def speak(self):
+        print(f"Dog {self.name} 说: 我 {self.age} 岁。")
+
+        
+# 测试对比代码
+# People类
+p1 = People("Alice", 30)
+p2 = People("Bob", 25)
+
+print("===== People 类 =====")
+# 访问实例属性，在People中，没有为species赋予实例属性，因此访问的是类属性
+print("p1.species:", p1.species)     # 输出: Homo sapiens
+print("p2.species:", p2.species)     # 输出: Homo sapiens
+print("People.species:", People.species)
+p1.speak()
+p2.speak()
+
+# Dog类
+d1 = Dog("Buddy", 5)
+d2 = Dog("Max", 3)
+
+print("\n===== Dog 类 =====")
+# 对于Dog，每个实例在初始化时覆盖了 species 属性，将其设置为 "haha"
+print("d1.species:", d1.species)     # 输出: haha
+print("d2.species:", d2.species)     # 输出: haha
+# 但类属性仍然保持原始值
+print("Dog.species:", Dog.species)
+d1.speak()
+d2.speak()
+
+# 补充说明：
+# 如果你删除一个Dog实例的实例属性 species，
+# 则它会回退到类属性的值。例如：
+del d1.species
+print("\n删除 d1 的实例属性 species 后:")
+print("d1.species:", d1.species)     # 输出: Dog.species 的值，即 "Homo sapiens"
+
+```
+
+## 类型注解
+
+类型注解与类属性定义差不多，容易混乱，注意区分哪些是**类型注解**哪些是**类属性**。
+
+```python
+class Example:
+    a: int       # 仅仅是类型注解，不赋初值（不会创建类属性），仅仅用于限制__init__中的a的类型
+    b: int = 5   # 类型注解和赋值同时出现（这既是类型注解，也是类属性）
+    c = "hello"  # 直接赋值（没有类型注解，仅仅是类属性）
+
+    def __init__(self, a):
+        # 在构造函数中，将类型注解中声明的属性实际创建为实例属性
+        self.a = a  # 这里创建了实例属性 a，跟上面的类型注解 a 衔接
+
+print(Example.__dict__) # 查看类属性、类方法、类的一些其它属性。注意这里与实例无关
+print(Example.__annotations__) # 查看类注解
+```
+
+**解释：**
+
+- `a: int`   这是一个“纯类型注解”项，存在于 `Example.__annotations__` 中，但不会出现在 `Example.__dict__` 中。   在实例化时，我们通常会在 `__init__` 里给 `self.a` 赋值，这样每个实例就会有自己独立的 `a` 属性。
+- `b: int = 5`   这是一个类属性：
+  - 它既有类型注解，也有默认值。
+  - 这会在 `Example.__dict__` 中创建一个 `b` 属性，所有实例在没有被覆盖的情况下，都共享这个值。
+- `c = "hello"`   没有显式的类型注解，但因为赋值动作，它也是类属性，同样被所有实例共享。
+
+# TYPE_CHECKING
+
+仅用于代码检查的代码
+
+```python
+# main.py
+from typing import TYPE_CHECKING
+
+# 仅用于类型检查时导入 X，避免在运行时导入，从而解决循环依赖和降低开销
+if TYPE_CHECKING:
+    from other_module import X
+
+# 在这里，我们使用字符串 "X" 作为前向引用，
+# 因为在运行时 main.py 内部不会直接导入 X，
+# 但类型检查工具能根据 TYPE_CHECKING 中的导入信息获取 X 的定义。
+class Y:
+    def __init__(self, x: "X") -> None:
+        self.x = x
+
+    def display(self) -> None:
+        print(f"Y 里持有的 x：{self.x}")
+
+def process(item: "X") -> None:
+    print(f"Processing item: {item}")
+
+if __name__ == "__main__":
+    # 在运行时，可以直接从 other_module 导入 X
+    from other_module import X
+
+    # 创建一个 X 的实例，并用它来初始化 Y
+    x_instance = X(42)
+    y_instance = Y(x_instance)
+    
+    # 调用方法
+    y_instance.display()
+    process(x_instance)
+
+```
+
+# 泛型
+
+需要使用Generic, TypeVar
+
+TypeVar相当于C++和Go中的[T]
+
+```python
+from typing import Generic, TypeVar, List
+
+T = TypeVar('T')
+
+class MyList1(Generic[T]):
+    def __init__(self) -> None:
+        self.items: List[T] = []
+
+    def add(self, item: T) -> None:
+        self.items.append(item)
+
+    def get_first(self) -> T:
+        return self.items[0]
+
+list1 = MyList1[int]()
+list1.add(1)
+list1.add("a") # !!!飘红, 因为list1是MyList1[int], 不能添加字符串
+print(list1.get_first())
+
+
+class MyList2():
+    def __init__(self) -> None:
+        self.items: List[T] = [] # !!!飘红, 无法使用泛型, 因为MyList2没有继承自泛型
+
+    def add(self, item: T) -> None:
+        self.items.append(item)
+
+    def get_first(self) -> T:
+        return self.items[0]
+
+list2 = MyList2[int]() # !!!飘红, 无法使用泛型, 因为MyList2没有继承自泛型
+list2.add(1)
+print(list2.get_first())
+```
+
+# 代码静态检查
+
+vscode中开启代码静态检查，否则即使你写了注解，vscode依然不会提示你
+
+![image-20250313211411003](./assets/image-20250313211411003.png)
+
+# 常用装饰器
+
+## @dataclass
+
+python3.7引入的功能，项目代码中常常要定义class，仅仅是为了将一些数据放在一起，并不带有其它逻辑。dataclass可以简化这一步骤。
+
+**不使用 @dataclass：**需要自己写class的`__init__`，`__eq__`，`__repr__`
+
+```python
+# 不使用 @dataclass，需要手动编写 __init__、__repr__ 和 __eq__
+class Person:
+    def __init__(self, name: str, age: int):
+        self.name = name
+        self.age = age
+
+    def __repr__(self) -> str:
+        # 手动定义了对象的字符串表示，便于调试
+        return f"Person(name={self.name!r}, age={self.age!r})"
+
+    def __eq__(self, other: object) -> bool:
+        # 手动实现对象相等性比较
+        if not isinstance(other, Person):
+            return False
+        return self.name == other.name and self.age == other.age
+
+    
+```
+
+**使用 @dataclass：**与上面的代码等价
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class PersonData:
+    name: str
+    age: int
+```
+
+## @staticmethod
+
+将class中指定的函数变为普通函数，与普通函数没有任何区别
+
+与这个class没有一点关系，仅仅是这个函数的位置写在了这个class里
+
+```python
+class Calculator:
+    @staticmethod
+    def add(a, b):
+        return a + b
+
+# 使用静态方法，无需创建 Calculator 的实例
+result = Calculator.add(10, 20)
+print("10 + 20 =", result)  # 输出：10 + 20 = 30
+```
+
+## @classmethod
+
+将class中指定的函数变为静态方法，此方法只跟这个class有关系，跟这个class的实例没有关系
+
+```python
+class Person:
+    # 类属性，用于保存当前已创建的人口数量
+    population = 0
+
+    def __init__(self, name):
+        self.name = name
+        Person.population += 1
+
+    @classmethod
+    def create_anonymous(cls):
+        """
+        作为工厂方法，用于创建匿名用户。
+        这里使用 cls 而不是直接指定 Person，这样子类调用时依然有效。
+        cls 就是 Person。
+        """
+        return cls("匿名")
+
+    @classmethod
+    def get_population(cls):
+        """
+        返回当前由此类创建的实例总数。
+        """
+        return cls.population
+
+# 使用普通构造方法创建实例
+person1 = Person("Alice")
+# 使用类方法作为辅助构造器创建匿名用户
+person2 = Person.create_anonymous()
+
+print("当前人口数量：", Person.get_population())  # 输出：当前人口数量： 2
+```
+
+## @property
+
+- property装饰器就是其它语言中的getter和setter函数。
+- 逼不得已不要使用这个属性，写个get函数并不会将你累死。
+- 如果你使用这个装饰器，会造成你不知道哪些属性是"真属性"，哪些属性是"假属性".
+- 你读取一个属性的时候，它TMD它会执行一堆逻辑，甚至会抛出异常。
+- 你调试的时候都不知道到底要F10还F11，这个属性简直是灾难。
+- 逼不得已的情况：旧代码获取这个属性是直接读取的，现在读取这个属性需要增加一些逻辑，这时候使用property将逻辑隐藏在这个属性的背后，可以做到兼容旧代码。
+
+```python
+class Temperature:
+    def __init__(self, celsius):
+        self._celsius = celsius
+
+    @property
+    def celsius(self):
+        """获取当前温度的摄氏值。"""
+        return self._celsius
+
+    @celsius.setter
+    def celsius(self, value):
+        """设置摄氏温度，温度不能低于绝对零度。"""
+        if value < -273.15:
+            raise ValueError("温度不能低于绝对零度 (-273.15°C)")
+        self._celsius = value
+
+    @property
+    def fahrenheit(self):
+        """通过摄氏温度计算华氏温度。"""
+        return self._celsius * 9 / 5 + 32
+
+    @fahrenheit.setter
+    def fahrenheit(self, value):
+        """通过华氏温度设置摄氏温度。"""
+        self.celsius = (value - 32) * 5 / 9
+
+# 使用示例
+temp = Temperature(25)  # 初始化时传入摄氏温度
+print("摄氏温度:", temp.celsius)        # 输出：25
+print("华氏温度:", temp.fahrenheit)       # 输出：77.0
+
+# 修改华氏温度，会自动更新摄氏温度
+temp.fahrenheit = 86
+print("修改后的摄氏温度:", temp.celsius)   # 输出：30.0
+
+# 修改摄氏温度，setter 内置校验功能
+try:
+    temp.celsius = -300  # 低于绝对零度，将引发异常
+except ValueError as e:
+    print("错误:", e)
+```
+
+## @functools.lru_cache
+
+缓存函数的结果，以后出现相同参数的调用时，直接返回缓存的结果，不必重新执行函数。
+
+通过参数 `maxsize`，可以灵活控制缓存大小，从而在内存使用和性能之间找到合适的平衡点。
+
+```python
+import time
+from functools import lru_cache
+
+@lru_cache(maxsize=128)
+def fibonacci(n):
+    """计算斐波那契数列的第 n 个数字"""
+    if n < 2:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+def measure_time(n):
+    start = time.perf_counter()
+    result = fibonacci(n)
+    end = time.perf_counter()
+    return result, end - start
+
+if __name__ == "__main__":
+    n = 35  # 选择一个比较大的数字，能看出性能差异
+    result, elapsed = measure_time(n)
+    print(f"fibonacci({n}) = {result}，耗时 {elapsed:.6f} 秒")
+    
+    # 第二次调用同样的参数会直接从缓存返回，极快
+    result, elapsed = measure_time(n)
+    print(f"重复调用：fibonacci({n}) = {result}，耗时 {elapsed:.6f} 秒")
+
+```
+
+## @functools.wraps
+
+自定义装饰器时，保留原函数的**元数据**，类似**函数名称**和**函数文档**这种。
+
+**不使用functools.wraps**
+
+```python
+def my_decorator(func):
+    def wrapper(*args, **kwargs):
+        print("【装饰器】调用了包装函数。")
+        return func(*args, **kwargs)
+    return wrapper
+
+@my_decorator
+def greet(name):
+    """向给定的名字问好。"""
+    print(f"Hello, {name}!")
+
+# 调用函数
+greet("Alice")
+
+# 查看函数元数据
+print("函数名称:", greet.__name__)  # 输出：wrapper
+print("函数文档:", greet.__doc__)    # 输出：None
+
+```
+
+**使用functools.wraps**
+
+```python
+import functools
+
+def my_decorator(func):
+    @functools.wraps(func)  # 使用 functools.wraps 复制元数据
+    def wrapper(*args, **kwargs):
+        print("【装饰器】调用了包装函数。")
+        return func(*args, **kwargs)
+    return wrapper
+
+@my_decorator
+def greet(name):
+    """向给定的名字问好。"""
+    print(f"Hello, {name}!")
+
+# 调用函数
+greet("Bob")
+
+# 查看函数元数据
+print("函数名称:", greet.__name__)  # 输出：greet
+print("函数文档:", greet.__doc__)    # 输出：向给定的名字问好。
+
+```
+
+## @abc.abstractmethod
+
+抽象基类，要求子类必须实现被设置为abstractmethod的函数，否则在实例化子类时报错。
+
+```python
+from abc import ABC, abstractmethod
+
+class Animal(ABC):
+    """
+    这是一个抽象基类，定义了动物必须具备的行为接口。
+    """
+
+    @abstractmethod
+    def make_sound(self):
+        """
+        抽象方法，所有动物都必须实现发出声音的行为。
+        """
+        pass
+
+    @abstractmethod
+    def move(self):
+        """
+        抽象方法，所有动物必须实现移动的行为。
+        """
+        pass
+
+# 若子类没有实现所有抽象方法，则这个子类也会被认为是抽象类，无法实例化
+# 例如，如果下面的 Cat 类注释掉某个方法实现，将无法创建 Cat 的实例。
+
+class Cat(Animal):
+    def make_sound(self):
+        return "Meow!"
+
+    def move(self):
+        return "Cat walks gracefully."
+
+if __name__ == "__main__":
+    # 尝试实例化 Animal 会报错：
+    try:
+        generic_animal = Animal()
+    except TypeError as e:
+        print("错误:", e)
+
+    # 正确实例化具体实现了所有抽象方法的子类 Cat
+    kitty = Cat()
+    print("Cat 发出的声音:", kitty.make_sound())
+    print("Cat 的移动方式:", kitty.move())
+```
+
+
+
+`@functools.wraps`   在编写自定义装饰器时使用，能够把被装饰函数的名称、文档字符串等元数据复制到新函数上，从而保持其可读性和调试信息。
+
+`@abc.abstractmethod`   来自 `abc` 模块，用于标记基类中的抽象方法，要求所有子类必须为该方法提供具体实现。
+
+`@dataclasses.dataclass`   来自 `dataclasses` 模块，可自动生成 `__init__`、`__repr__`、`__eq__` 等特殊方法，从而简化数据类的定义。
+
+`@contextlib.contextmanager`   将生成器函数转换为上下文管理器，使得定义 with 语句所需的资源管理逻辑更加简洁。
+
+`@functools.singledispatch`   使普通函数实现单分派泛函数，根据第一个参数的类型自动选择合适的函数实现，便于函数重载。
+
+`@functools.total_ordering`   只需在类中定义一种或几种比较方法，此装饰器可自动生成其它比较方法，减少重复代码。
+
+`@functools.cached_property`   （Python 3.8+）用于缓存属性值，即首次调用时计算结果并保存在对象上，后续直接返回缓存值，适用于开销较大的属性计算。
+
+`@typing.overload`   用于类型提示，引入多个函数签名以支持重载，在实际运行时不会对逻辑产生影响，但能帮助静态类型检查工具更好地理解函数接口。
+
+`@pytest.fixture`   在 pytest 测试框架中定义测试夹具，用于在测试前后设置和清理测试环境，非常实用。
+
+`@pytest.mark.parametrize`   也属于 pytest，用于参数化测试函数，使得一个测试可以用多个测试数据运行，提升测试覆盖率和代码清晰度。
+
+
+
+# 自定义装饰器
+
+只需要理解2个知识点
+
+**第一个：**语法糖拆解后如下
+
+```python
+@my_decorator
+def foo():
+    pass
+```
+
+等价于
+
+```python
+def foo():
+    pass
+foo = my_decorator(foo)
+```
+
+**第二个：**函数可以当作参数被传递到另一个函数，函数可以返回一个函数当作返回值
+
+```python
+def foo():
+    pass
+foo = my_decorator(foo)
+
+# my_decorator 函数接收一个参数，且这个参数是一个函数，就是这里的foo函数
+# my_decorator 函数返回值是一个函数
+# 所以现在 foo 函数变为了 my_decorator 函数的返回值了
+```
+
+**例子：**
+
+```python
+from typing import Any
+
+# 定义一个自定义装饰器
+def my_decorator(func: Any) -> Any:
+    def wrapper(*args: Any, **kwargs: Any):
+        print(f"在调用原函数之前执行一些代码")
+        result = func(*args, **kwargs) # 调用原函数
+        print(f"在调用原函数之后执行一些代码")
+        return result
+    return wrapper
+
+# 使用装饰器语法@my_decorator装饰函数
+@my_decorator
+def greet(name: str, greeting: str):
+    """向某人问好"""
+    print(f"{greeting}, {name}!")
+    return f"{greeting}, {name}!"
+
+# 调用 gree函数来验证装饰器的效果
+if __name__ == "__main__":
+    result = greet("Alice", greeting="Hi")
+```
+
+# Flusk
 
