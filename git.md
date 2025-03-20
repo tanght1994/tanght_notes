@@ -49,7 +49,17 @@ git clone https://github.com/abc/abc.git --depth 1
 git clone https://github.com/xxx/xxx
 # 新地址
 git clone https://gitclone.com/github.com/xxx/xxx
+```
 
+# 使用VPN
+
+中国无法使用git访问github，所以需要翻墙
+
+电脑中开启翻墙软件
+
+告诉git使用翻墙软件（将翻墙软件的ip和端口号设置到git的配置文件中）
+
+```shell
 # VPN对Git控制台不生效，所以我们需要告诉Git使用VPN
 # 方法一：在执行git命令的时候指定
 git clone https://github.com/xxx/xxx --config https.proxy=https://127.0.0.1:7890
@@ -61,13 +71,7 @@ git config --global https.proxy 'socks5://127.0.0.1:7891'
 # 方法二：取消代理
 git config --global --unset http.proxy
 git config --global --unset https.proxy
-
-
 ```
-
-
-
-
 
 # 远程仓库
 
@@ -75,8 +79,6 @@ git config --global --unset https.proxy
 # 查看所有远程名字的信息，比如origin对应的地址
 git remote -v
 ```
-
-
 
 # 分支（branch）
 

@@ -1327,6 +1327,20 @@ main.js中引入
 
 ![image-20240521002307834](./assets/image-20240521002307834.png)
 
+### 修改pinia中的数据
+
+![image-20250213233948996](./assets/image-20250213233948996.png)
+
+### action
+
+![image-20250213234346112](./assets/image-20250213234346112.png)
+
+### getters
+
+![image-20250213234755388](./assets/image-20250213234755388.png)
+
+getters中的函数也可以用this来替代state参数
+
 ### 从pinia的store对象中解构需要的字段，并且继续保持响应式
 
 ![image-20240521003135999](./assets/image-20240521003135999.png)
