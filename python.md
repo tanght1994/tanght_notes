@@ -12,8 +12,6 @@ work_dir = abspath[0: abspath.rfind('/')]
 os.chdir(work_dir)
 ```
 
-
-
 # pylint恶心的红色下划线
 
 **pylint忽略整个文件**
@@ -64,8 +62,6 @@ pylint your.py
 __init__.py中的__path__
 # 只有__init__.py文件中才有__path__变量，__path__[0]为这个包的绝对路径
 ```
-
-
 
 # 动态导入函数(或者类)
 
@@ -120,8 +116,6 @@ classModel = getattr(mymodel, s)
 test = classModel()
 ```
 
-
-
 # import_module
 
 ```python
@@ -136,15 +130,9 @@ m = import_module('tanght')
 m = import_module('zhangsan.lisi.wangwu.haha')
 ```
 
+# pip与虚拟环境
 
-
-
-
-
-
-
-
-# 虚拟环境
+## pip与python的关系
 
 python程序由两个exe文件组成：
 
@@ -165,6 +153,20 @@ windows电脑中存在两个python版本，且没有设置PATH环境变量，如
 在D:/python/python37/目录下执行python命令，这时会启动D:/python/python37/python.exe这个软件
 在D:/python/python37/Scripts/目录下执行pip install命令，这时会将包裹安装到D:/python/python37/下的某个目录中
 D:/python/python37/Scripts/pip.exe与D:/python/python37/python.exe是绑定的
+
+## xxx
+
+pip：安装python包
+
+pipx：安装python命令行工具
+
+uv：python虚拟环境管理器
+
+uvx
+
+venv：python自带的虚拟环境管理器
+
+pipenv：pip作者开发的虚拟化经管理器
 
 ## venv
 
@@ -249,8 +251,6 @@ uv venv --python 3.11
 uv add flask
 ```
 
-
-
 # 模块搜索路径
 
 ```python
@@ -272,8 +272,6 @@ sys.path.append('/home/tanght/haha')
 # 有时候sys.path中带有'.'(点，当前目录)，意思就是当前程序的工作目录
 ```
 
-
-
 # 自定义字典
 
 ```python
@@ -286,8 +284,6 @@ a in b
 # __getitem__(self, key, value)           a['key'] = 10
 # __delitem__(self, key)                  del a['key']
 ```
-
-
 
 # 枚举
 
@@ -319,8 +315,6 @@ print(EnumColour.value_valued(2))  		# True
 print(EnumColour.key_valued("Blue"))  	# True
 ```
 
-
-
 # with语法
 
 定义了`__enter__()`与`__exit__()`函数的类，可以使用with语句，进入with作用域之前会执行`__enter__()`函数，离开with作用于之时会调用`__exit__()`函数，不管with代码块中用户写的代码出现什么异常，离开with代码块时，都会执行`__exit__()`函数。
@@ -331,9 +325,9 @@ with expression as var:
 ```
 
 - 首先执行expression，且expression必须返回一个对象
-- expression返回的对象必须带有`__exit__()`与`__exit__()`方法
-- 执行expression返回的对象的`__exit__()`方法
-- `__exit__()`方法返回的内容赋值给var
+- expression返回的对象必须带有`__enter__()`与`__exit__()`方法
+- 执行expression返回的对象的`__enter__()`方法
+- `__enter__()`方法返回的内容赋值给var，返回值可以有多个，那么as就要用多个变量进行接收
 - 执行with作用域中用户写的代码
 - 离开with作用域，并执行`__exit__()`方法
 
@@ -372,12 +366,6 @@ if __name__ =='__main__':
 # 执行__exit__
 ```
 
-
-
-
-
-
-
 作用域
 
 ```python
@@ -388,15 +376,204 @@ print(a)		# ok! with并没有为变量a创建新的作用域，with缩进之外�
 f.write('456')	# 不ok！ f只在with缩进范围内生效。缩进范围外已经关闭了（执行了__exit__()）
 ```
 
+## 例子
+
+```python
+# demo 1 普通with
+class Demo1:
+    def __init__(self, resource):
+        self.resource = resource
+
+    def __enter__(self):
+        print("进入上下文")
+        # 返回值会给到 with ... as xxx
+        return self.resource
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        # 即使with作用域内发生异常，这里也会被调用
+        print("退出上下文，进行资源清理")
+
+# 使用示例：with 块内部获得 __enter__ 返回的值
+with Demo1("A") as res:
+    print("with中得到资源:", res)
+
+print("aaa")
 
 
+# demo 2 普通with 装饰器
+from contextlib import contextmanager
+
+@contextmanager
+def demo2():
+    print("进入上下文")
+    resource = "我的资源"
+    try:
+        # yield 语句前的代码相当于 __enter__ 的实现
+        yield resource
+    finally:
+        # yield 后的代码在退出时执行，相当于 __exit__
+        # 必须用要 try/finally 来确保资源清理
+        # 否则 with 语句块内发生异常时，资源不会被清理
+        print("退出上下文")
 
 
+with demo2() as res:
+    print("正在使用资源:", res)
+print("aaa")
 
+
+# demo 3 异步with
+import anyio
+
+class Demo3:
+    async def __aenter__(self):
+        print("异步进入上下文")
+        await anyio.sleep(0.1)  # 模拟异步初始化
+        return "异步资源"
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        print("异步退出上下文")
+        await anyio.sleep(0.1)  # 模拟异步清理
+
+async def demo3_run():
+    async with Demo3() as res:
+        print("异步使用资源:", res)
+    print('aaa')
+
+anyio.run(demo3_run)
+
+
+# demo 4 异步with 装饰器
+import anyio
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def demo4():
+    print("异步进入上下文")
+    resource = "异步资源"
+    try:
+        yield resource
+    finally:
+        print("异步退出上下文")
+
+async def demo4_run():
+    async with demo4() as res:
+        print("异步使用资源:", res)
+
+anyio.run(demo4_run)
+```
+
+重要：使用装饰器时，必须用try/finally包裹yield，否则无法捕获到with代码块内的用户异常
+
+## with嵌套
+
+demo01 与 demo02 功能相同
+
+```python
+# demo01
+with func1() as a:
+    with func2() as b:
+        with func3() as c:
+            # 假装在这里使用a b c
+            pass
+
+# demo02
+with func1() as a, func2() as b, with func3() as c:
+    # 假装在这里使用a b c
+    pass
+```
+
+异步with
+
+demo01 与 demo03 功能相同
+
+```python
+# demo01
+async with func1() as a:
+    async with func2() as b:
+        async with func3() as c:
+            # 假装在这里使用a b c
+            pass
+
+# demo02 错误, 没有这个语法
+async with func1() as a, async with func2() as b, async with func3() as c:
+    # 假装在这里使用a b c
+    pass
+
+# demo03 异步with需要用 AsyncExitStack 来解决嵌套问题
+async with AsyncExitStack() as stack:
+    a = await stack.enter_async_context(func1())
+    b = await stack.enter_async_context(func2())
+    c = await stack.enter_async_context(func3())
+    # 假装在这里使用a b c
+    pass
+```
+
+## 例子
+
+```python
+import asyncio
+from contextlib import AsyncExitStack
+
+# 数据库资源 可用async with语句管理
+class DatabaseConnection:
+    async def __aenter__(self):
+        print(">>> 获取数据库连接")
+        return self  # 返回连接对象
+
+    async def __aexit__(self, *args):
+        print("<<< 关闭数据库连接")
+
+# 文件资源 可用async with语句管理
+class FileHandler:
+    async def __aenter__(self):
+        print(">>> 打开文件准备写入")
+        return self  # 返回文件对象
+
+    async def __aexit__(self, *args):
+        print("<<< 关闭文件")
+
+async def main1():
+    # 创建异步退出栈（像收纳盒一样管理多个资源）
+    async with AsyncExitStack() as stack:
+        # 把数据库连接加入管理（类似 with... 的效果）
+        db = await stack.enter_async_context(DatabaseConnection())
+        # 把文件操作加入管理
+        file = await stack.enter_async_context(FileHandler())
+
+        # 假装进行一些操作（比如用db查数据，写入file）
+        print("*** 正在用数据库查询数据...")
+        print("*** 正在把数据写入文件...")
+        
+    # 退出async with时，栈会自动按相反顺序关闭所有资源！
+
+async def main2():
+    # 手动管理多个资源（需要嵌套async with）
+    async with DatabaseConnection() as db:
+        async with FileHandler() as file:
+            # 假装进行一些操作（比如用db查数据，写入file）
+            print("*** 正在用数据库查询数据...")
+            print("*** 正在把数据写入文件...")
+
+
+asyncio.run(main1())  # 运行异步程序
+
+# 解释: main1 与 main2 完成的功能是一样的，如果 with 嵌套层次太多时，使用 AsyncExitStack 可以让代码更简洁。
+```
+
+# match
+
+```python
+case (RequestResponder(request=types.ClientRequest(root=req)) as responder)
+1. RequestResponder(request
+xxx是不是RequestResponder类型的对象, 如果是则提取xxx对象的request属性
+2. types.ClientRequest(root
+request是不是types.ClientRequest类型的对象, 如果是则提取request对象的root属性
+3. 将root赋值给req
+4. 将match对象赋值给responder
+```
 
 # metaclass与`__new__`
-
-
 
 ```python
 class mymetaclass(type):
@@ -438,8 +615,6 @@ t = test()
 # mymetaclass的__new__()和__init__()创建<class test>
 # <class test>()创建t
 ```
-
-
 
 # PIP
 
@@ -559,8 +734,6 @@ turtle.isvisible()		# 返回小乌龟是否可见
 turtle.shape("turtle")	# 设置笔刷形状
 
 ```
-
-
 
 # 正则
 
@@ -910,13 +1083,9 @@ except Exception:
     pass
 ```
 
-
-
 a.encode('utf-8')将字符串a的utf-8格式的字节流返回给我
 
 b.decode('utf-8')将字节流b按照utf-8规则解释成字符串
-
-
 
 ```python
 class PostCleaner(DictField):
@@ -998,28 +1167,34 @@ playwright 安装完之后，playwright install 命令是让 playwright 安装�
 ```python
 ```
 
+## Airtest
 
+网易出品的自动化测试工具
 
 # 数据校验
 
 ## pydantic
 
-### 基础
+### BaseModel
 
 继承BaseModel
 
 ```python
 from pydantic import BaseModel
 
-# 优点, 继承BaseModel就不用写__init__方法了
+# 优点, 继承 BaseModel 就不用写__init__方法了
 # 优点, 类型检查, 类型转换, 类型提示
 class User(BaseModel):
     name: str
     age: int
     email: str
-    
-user1 = User(name="tht", age="30", email="xx@qq.com")  # pydantic自动将age转换为int, 能转尽量转, 转不了就抛出异常
-user2 = User(name="tht", age="a30", email="xx@qq.com")  # a30不能转为int, 所以会抛出异常
+
+# pydantic自动将age转换为int, 能转尽量转, 转不了就抛出异常
+# 但是编辑器中依然会有错误提示，类型错误的提示
+user1 = User(name="tht", age="30", email="xx@qq.com")
+# a30不能转为int, 所以会抛出异常
+# 编辑器中有错误提示，如果不予理会，则在运行到这个代码时会抛出异常
+user2 = User(name="tht", age="a30", email="xx@qq.com")
 ```
 
 ### 选填
@@ -1127,9 +1302,110 @@ class MyModel(BaseModel):
     name: str
 ```
 
+### RootModel
+
+我只想定义一个int类型，怎么办？
+
+BaseModel 的用法为，定义一个 class 继承 BaseModel，然后用一些注解来限制 class 中各个字段的类型。
+
+如果我只想定义一个int类型，怎么办？没有办法，只能是限制 class 中的某一字段的类型为 int。
+
+使用 RootModel 可以简化这个问题。
+
+```python
+from pydantic import BaseModel, RootModel
+
+#  方式 1，使用 BaseModel
+class MyInt1(BaseModel):
+    data: int
+
+x = MyInt1(data=5) # 如果 data 不是 int 类型，运行时会抛出 ValidationError 异常
+print(x.data)
+
+#  方式 2，使用 RootModel
+class MyInt2(RootModel[int]):
+    pass
+
+x = MyInt2(5)  # 如果 参数不是 int 类型，运行时会抛出 ValidationError 异常
+print(x.root)
+```
+
+或（|）
+
+```python
+from pydantic import RootModel
+
+# MyType 可以是 int、str 或 list[int] 类型
+class MyType(RootModel[int | str | list[int]]):
+    pass
+
+x = MyType(5)
+print(x.root)
+
+x = MyType('a')
+print(x.root)
+
+x = MyType([1, 2, 3])
+print(x.root)
+
+x = MyType([1, 2, 'a']) # 运行时会报错
+print(x.root)
+```
+
+### 常用api
+
+```python
+# model_validate
+# 将一个 Python 对象（如 dict、list、嵌套结构）校验并转换成当前模型实例。
+data = {"name": "Alice", "age": "30"}
+user = User.model_validate(data)  # age 会被转换为 int
+
+# model_validate_json
+# 将 JSON 字符串转换为模型实例并校验
+raw = '{"method":"sum","params":{"x":1,"y":2}}'
+req = Request.model_validate_json(raw)
+
+# model_dump
+# 将模型实例转为 Python 对象
+user = User(name="Bob", age=25)
+payload = user.model_dump(exclude_none=True)
+
+# model_dump_json
+# 将模型实例转为 JSON 字符串
+data = user.model_dump_json(by_alias=True
+```
+
+xxx
+
+```python
+from pydantic import RootModel, BaseModel
+
+class A(BaseModel):
+    a1: str
+    a2: int | None = None # 第一个None是类型, 第二个None是默认值(当输入数据没有这个字段时, 将此字段设置为默认值)
+
+class B(BaseModel):
+    a1: str
+    a2: int | None = None
+
+class C(
+    RootModel[A | B]
+):
+    pass
+
+data = """
+{"a1": "abc"}
+"""
+
+# pydantic 会按照 [A | B] 的顺序进行匹配
+# 返回第一个匹配的类型, 所以这里 x 是 A
+x = C.model_validate_json(data)
+print(x)
+```
+
 # 函数参数
 
-python的函数规则简直是一坨屎，超级TMD混乱，python再发展几年，就得用毛笔在屏幕上画画了！垃圾、垃圾、垃圾！！！FUCK FUCK FUCK！
+python的函数规则简直是一坨屎，超级TMD混乱，如果python再发展几年，语法肯定就该开花了，到时候写python就得用画笔直接在屏幕上画画了！操他妈的，傻逼！垃圾、垃圾、垃圾！！！FUCK FUCK FUCK！
 
 我认为最好的语言就是---->完成一件事只有一种办法，这样所有人就TM统一了，不用猜别人的代码了！像他妈python这种语言竟然他妈的火了，简直是灾难！
 
@@ -1261,7 +1537,6 @@ introduce(**info)  # 相当于 introduce(name='Alice', age=30)
 
 ```python
 from typing import Callable, Dict, Type
-
 
 variable_name: Type = value
 ```
@@ -1934,12 +2209,6 @@ if __name__ == "__main__":
 
 
 
-`@functools.wraps`   在编写自定义装饰器时使用，能够把被装饰函数的名称、文档字符串等元数据复制到新函数上，从而保持其可读性和调试信息。
-
-`@abc.abstractmethod`   来自 `abc` 模块，用于标记基类中的抽象方法，要求所有子类必须为该方法提供具体实现。
-
-`@dataclasses.dataclass`   来自 `dataclasses` 模块，可自动生成 `__init__`、`__repr__`、`__eq__` 等特殊方法，从而简化数据类的定义。
-
 `@contextlib.contextmanager`   将生成器函数转换为上下文管理器，使得定义 with 语句所需的资源管理逻辑更加简洁。
 
 `@functools.singledispatch`   使普通函数实现单分派泛函数，根据第一个参数的类型自动选择合适的函数实现，便于函数重载。
@@ -1949,10 +2218,6 @@ if __name__ == "__main__":
 `@functools.cached_property`   （Python 3.8+）用于缓存属性值，即首次调用时计算结果并保存在对象上，后续直接返回缓存值，适用于开销较大的属性计算。
 
 `@typing.overload`   用于类型提示，引入多个函数签名以支持重载，在实际运行时不会对逻辑产生影响，但能帮助静态类型检查工具更好地理解函数接口。
-
-`@pytest.fixture`   在 pytest 测试框架中定义测试夹具，用于在测试前后设置和清理测试环境，非常实用。
-
-`@pytest.mark.parametrize`   也属于 pytest，用于参数化测试函数，使得一个测试可以用多个测试数据运行，提升测试覆盖率和代码清晰度。
 
 
 
@@ -2014,5 +2279,460 @@ if __name__ == "__main__":
     result = greet("Alice", greeting="Hi")
 ```
 
-# Flusk
+# web后端
+
+**Nginx：**一个用C语言编写的高性能软件，主要用于路由用户的请求，比如如果用户访问服务器中的静态文件，那么nginx则直接将文件交给用户，如果用户访问api接口则根据配置将用户的请求交给隐藏在后面的程序。
+
+**WSGI：**是协议，不是代码，不是软件，不是包。nginx与uWSGI之间的通讯格式就符合WSGI协议。
+
+**uWSGI：**是一个软件，实现了WSGI协议的软件，所以nginx可以与uWSGI进行交互，因为nginx与uWSGI都支持UWGI协议。
+
+**Django：**同步的web后端开发框架，是一个第三方包，程序员使用这个包来编写api代码，实现主要的后端功能。程序员写完的代码（一整个项目目录）会交给uWSGI使用，uWSGI运行时会使用python来运行这个项目目录。Django中的代码都是同步的，也就是说不能使用async await等协程特性。
+
+**Flusk：**与Django类似，是一个同步的web后端开发框架。
+
+**ASGI：**是一个协议，类似WSGI，只不过这个协议是给异步web后端框架制定的。
+
+**Uvicorn：**Uvicorn 实现了ASGI协议。它能很好地处理异步请求，让你的 web 程序运行得又快又高效。
+
+uvloop：uvloop 是 Python 默认事件循环的一个替代品，由C语言编写，它基于高性能的 libuv（Node.js 背后的同一个库）。使用 uvloop 可以让异步代码运行得更快、更高效。通常在 Uvicorn 启动时可以配置使用 uvloop，从而提升整体表现。
+
+httptools：httptools 是一个专门用来解析 HTTP 请求和响应的库，由C语言编写，所以它能给快速且高效地处理 HTTP 协议中的数据，使得接收和处理请求的速度更快。Uvicorn 在内部就会使用 httptools 来进行 HTTP 数据的解析，确保高性能的通信。
+
+**FastAPI：**异步的web后端开发框架，是一个第三方包，程序员使用这个包来编写api代码，实现主要的后端功能。FastAPI是对Starlette的包装，添加了一些常用的功能。
+
+Starlette：Starlette 是一个功能轻量的 ASGI 框架，它提供了请求路由、中间件和其他构建 web 应用的基础组件。FastAPI 就是基于 Starlette 开发的，也就是说，Starlette 提供了大部分底层功能，而 FastAPI 在此之上加上了自动文档、数据验证等扩展功能，让开发者能更专注于业务逻辑。
+
+**sse：**Server-Sent Events (SSE)，是一个服务器向客户端推送技术，单向的，只能服务器向客户端推送消息。ChatGPT带火了这个古老的技术。Chrome中F12可以在EventStream中查看到通信的原始数据。各个后端框架都支持sse。sse与http，websocket是同一层级，都是一种通信协议。
+
+## 路由反向解析
+
+```python
+routes=[
+    Route("/index", home_page, name="home"),  # 给 /index 这个 url 起个名字, 名字为 home
+    Route("/user/me", profile_page, name="profile") # 给 /user/me 这个 url 起个名字, 名字为 profile
+]
+```
+
+- 正向解析：通过 url 找到 处理函数
+- 反向解析：通过 name 找到 url
+
+各个框架中反向解析的api大概是request.url_for()
+
+## Django
+
+xxx
+
+## Flusk
+
+xxx
+
+## FastAPI
+
+跟Starlette类似，fastapi封装了Starlette，添加了一些常用的功能。
+
+## Starlette
+
+```python
+import json
+from starlette.applications import Starlette
+from starlette.responses import PlainTextResponse, JSONResponse, FileResponse, StreamingResponse
+from starlette.routing import Route, Mount
+from starlette.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+import time
+import anyio
+import uvicorn
+
+async def helloworld(req):
+    return PlainTextResponse("Hello World!")
+
+async def async_operation():
+    await anyio.sleep(1)  # 模拟数据库查询
+    return "Data fetched"
+
+async def about(req):
+    data = await async_operation()
+    return JSONResponse({"status": "OK", "data": data})
+
+# 获取 query 参数
+async def api01(req: Request):
+    x = req.query_params.get("name", "xxx")
+    return PlainTextResponse(f"Hello {x}!")
+
+# 获取 path 参数
+async def api02(req: Request):
+    x = req.path_params.get("name", "xxx")
+    return PlainTextResponse(f"Hello {x}!")
+
+# 获取 POST body
+async def api03(req: Request):
+    body = await req.body()
+    return PlainTextResponse(f"Hello {body.decode('utf-8')}!")
+
+# 获取 POST 表单
+async def api04(req: Request):
+    form = await req.form()
+    x = form.get("name", "xxx")
+    return JSONResponse({"status": "OK", "content": f'Hello {x}'})
+
+# 获取 POST json
+async def api05(req: Request):
+    reqdata = await req.json()
+    x = reqdata.get("name", "xxx")
+    return JSONResponse({"status": "OK", "content": f'Hello {x}'})
+
+# 根路由
+async def index(request: Request):
+    # 反向路由, 根据路由的名称获取路由的路径
+    url = request.url_for('mystatic', path='index.html') # url.path = /static/index.html
+    # return FileResponse("static/index.html") # 如果 routes 有变化, 那么这里的 static 也许要修改
+    return FileResponse(url.path[1:]) # 即使 routes 有修改, 这里也不用修改, 因为 url 会跟随 routes 的变动而变动
+
+# sse 服务端推送
+async def generate_data():
+    count = 0
+    while True:
+        data = {
+            "message": f"Message {count}",
+            "timestamp": time.time()
+        }
+        yield f"data: {json.dumps(data)}\n\n" # sse格式 data: xxxxxxxxxxxxx\n\n
+        count += 1
+        await anyio.sleep(1)
+
+# sse 服务端推送
+async def stream(request):
+    return StreamingResponse(generate_data(), media_type='text/event-stream')
+
+routes = [
+    Route("/helloworld", helloworld), # 不指定method，默认是GET
+    Route("/about", about),
+
+    Route("/api01", api01),
+    Route("/api02/{name}", api02),
+    Route("/api03", api03, methods=["POST"]),
+    Route("/api04", api04, methods=["POST"]),
+    Route("/api05", api05, methods=["POST"]),
+
+    Route("/", index), # 如果访问根目录，则执行 index 函数, 返回 index.html
+    Mount('/static', StaticFiles(directory='yourdir'), name='mystatic'), # 静态文件
+
+    Route('/stream', stream), # sse 服务端推送
+]
+
+class TimingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        print("------ TimingMiddleware 1")
+        start_time = time.time()
+        response = await call_next(request)
+        process_time = time.time() - start_time
+        response.headers["X-Process-Time"] = str(process_time)
+        print("------ TimingMiddleware 2")
+        return response
+
+class AuthMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if request.url.path == "/stream":
+            return await call_next(request)
+        if request.url.path == "/":
+            return await call_next(request)
+        if request.url.path.startswith("/static"):
+            return await call_next(request)
+        # 其他路由都需要验证
+        print("------ AuthMiddleware 1")
+        pwd = request.headers.get("pwd", "")
+        if pwd == "":
+            return JSONResponse({}, status_code=401)
+        response = await call_next(request)
+        print("------ AuthMiddleware 2")
+        return response
+
+app = Starlette(
+    routes=routes,
+)
+app.add_middleware(AuthMiddleware) # 先注册的后执行
+app.add_middleware(TimingMiddleware)
+
+if __name__ == '__main__':
+    uvicorn.run(app)
+```
+
+# pandas
+
+重要的结构体是DataFrame，DataFrame 是一个二维数据结构，是一个由行/列组成的表格，类似 excel 表或 mysql 表，用于数据统计分析，常见操作如下：
+
+- 获取这个表格的第5行至第8行
+- 获取这个表格的第5列至第8列
+- 获取这个表格的第5行至第8行中的第5列至第8列
+- 第x列的最大值
+- 第x列的平均值
+- 第x列的方差
+- 第x列的值有几种
+- 用group by进行统计
+- 等等
+
+index 为行索引，类似mysql中的主键，唯一标识一行数据，但是在 DataFrame 中 index 不一定是唯一的。
+
+# anyio
+
+asyncio：python官方的异步库，历史包袱重，api设计的不友好。
+
+Trio：优化了asyncio，创新设计但生态孤立，无法复用 asyncio 生态资源。
+
+anyio：比前两个厉害一些的异步库。
+
+```python
+import sys
+import anyio
+from io import TextIOWrapper
+
+async def read_stdin():
+    # TextIOWrapper 将 sys.stdin.buffer（二进制流）按照 UTF-8格式 解析为文本流
+    # wrap_file 将一个类file对象包装成一个异步文件对象, 使你可以使用异步方法来读取文件
+    # 如果不用 wrap_file，直接使用 sys.stdin.buffer.read()，会导致阻塞
+    async_stdin = anyio.wrap_file(TextIOWrapper(sys.stdin.buffer, encoding="utf-8"))
+    
+    print("请输入文字，然后回车：")
+    # 异步读取每一行
+    async for line in async_stdin:
+        print(f"你输入了: {line.strip()}")
+
+async def something():
+    i = 0
+    while True:
+        i += 1
+        print(f"Doing something {i}")
+        await anyio.sleep(1)
+
+
+# 读取标准输入和执行其他任务同时运行
+# 如果不用anyio，要如何实现这个功能？
+async def run():
+    async with anyio.create_task_group() as tg:
+        tg.start_soon(read_stdin) # 读取标准输入
+        tg.start_soon(something) # 执行其他任务
+    print("任务组已完成")
+
+
+anyio.run(run)
+```
+
+
+
+
+
+```python
+import anyio
+import time # 只是为了演示效果，可以去掉
+
+# 导入内存流相关的类，明确类型提示会让代码更清晰
+from anyio.streams.memory import MemoryObjectSendStream, MemoryObjectReceiveStream
+
+async def producer(send_stream: MemoryObjectSendStream[int]):
+    """
+    生产者任务：负责发送数据
+    注意参数类型提示 MemoryObjectSendStream[int] 表示这个流发送的是整数
+    """
+    print("生产者: 开始发送数据...")
+    async with send_stream: # 使用 async with 可以在退出时自动关闭流
+        for i in range(5):
+            message = i * 10
+            print(f"生产者: 准备发送 -> {message}")
+            await send_stream.send(message)
+            print(f"生产者: 已发送 -> {message}")
+            await anyio.sleep(0.1) # 稍微等一下，模拟生产耗时
+
+    print("生产者: 数据发送完毕，关闭发送流。")
+    # async with 会在代码块结束时自动调用 send_stream.aclose()
+
+
+async def consumer(receive_stream: MemoryObjectReceiveStream[int]):
+    """
+    消费者任务：负责接收数据
+    注意参数类型提示 MemoryObjectReceiveStream[int] 表示这个流接收的是整数
+    """
+    print("消费者: 等待接收数据...")
+    # 使用 async for 循环来接收数据，这是最常用的方式
+    # 当发送端关闭且缓冲区为空时，循环会自动结束
+    async with receive_stream: # 使用 async with 可以在退出时自动关闭流
+        async for item in receive_stream:
+            print(f"消费者: <<<< 收到了数据: {item}")
+            await anyio.sleep(0.3) # 稍微等一下，模拟处理耗时比生产长
+
+    print("消费者: 接收流结束（因为发送端已关闭且数据已取完）。")
+    # async with 会在代码块结束时自动调用 receive_stream.aclose()
+
+
+async def main():
+    """
+    主函数：创建流、启动任务并管理它们
+    """
+    print("主程序: 开始运行...")
+
+    # 1. 创建内存对象流（管道）
+    # max_buffer_size=1 表示管道里最多只能缓存1个未被接收的数据
+    # 如果生产者发送太快，而消费者处理慢，生产者会被阻塞
+    send_stream, receive_stream = anyio.create_memory_object_stream[int](max_buffer_size=1)
+    print("主程序: 内存对象流已创建 (缓冲区大小=1)")
+
+    # 2. 使用 TaskGroup 来并发运行生产者和消费者任务
+    async with anyio.create_task_group() as tg:
+        print("主程序: 启动生产者任务...")
+        # 将发送流传递给生产者
+        tg.start_soon(producer, send_stream)
+
+        print("主程序: 启动消费者任务...")
+        # 将接收流传递给消费者
+        tg.start_soon(consumer, receive_stream)
+
+        print("主程序: 生产者和消费者任务已启动，等待它们完成...")
+    # TaskGroup 会等待所有被 start_soon 启动的任务都结束后才退出
+
+    print("主程序: 所有任务已完成，程序结束。")
+
+# 运行主异步函数
+if __name__ == "__main__":
+    anyio.run(main)
+```
+
+
+
+## 一：初识 AnyIO (为何需要它？)
+
+* **背景介绍：** Python 异步编程的演进（`asyncio` 的诞生）。
+* **面临的问题：** 存在多个异步库（如 `asyncio`, `trio`）及其生态，导致库开发者和使用者面临选择和兼容性难题。
+* **AnyIO 的定位：** 一个异步编程的 *抽象层* 或 *兼容层*。目标是让你编写的异步代码可以无缝运行在不同的异步后端（如 `asyncio` 或 `trio`）之上。
+* **核心优势：**
+    * **代码可移植性：** 编写一次，可在 `asyncio` 或 `trio` 上运行。
+    * **统一 API：** 提供一致的 API 来处理常见的异步操作（任务、同步、流等）。
+    * **结构化并发：** 借鉴并推广 `trio` 的优秀理念——任务组（Task Groups）。
+* **基本概念：**
+    * **后端 (Backend)：** 底层实际执行异步操作的库（`asyncio` 或 `trio`）。AnyIO 会自动检测或允许你指定。
+    * **异步函数 (`async def`)：** 定义协程的基础。
+    * **`await` 关键字：** 用于暂停协程执行，等待异步操作完成。
+
+## 二：运行第一个 AnyIO 程序 (入口与基础)
+
+* **最简结构：** 如何定义一个简单的异步函数。
+* **核心入口：`anyio.run()`**
+    * 作用：启动 AnyIO 的事件循环，并执行指定的异步函数。这是所有 AnyIO 应用的起点。
+    * 基本用法：`anyio.run(async_function, *args)`。
+    * 演示：运行一个打印 "Hello, AnyIO!" 的简单异步函数。
+* **简单的异步操作：`anyio.sleep()`**
+    * 作用：异步地暂停当前任务指定的时间（秒）。期间事件循环可以处理其他任务。
+    * 对比：与 `time.sleep()` 的区别（`time.sleep` 会阻塞整个线程）。
+    * 演示：在 `anyio.run` 中调用 `anyio.sleep()`。
+
+## 三：并发执行：任务组 (结构化并发的核心)
+
+* **并发的需求：** 同时执行多个独立的异步操作，而不是按顺序等待。
+* **传统 `asyncio` 的方式 (对比)：** `asyncio.create_task()` 和 `asyncio.gather()`（引出管理复杂性的问题）。
+* **AnyIO 的解决方案：任务组 (`TaskGroup`)**
+    * **理念：** 结构化并发。确保在一个代码块内启动的所有任务，在该代码块结束前要么全部成功完成，要么在出错时能被妥善取消和处理。
+    * **创建任务组：`async with anyio.create_task_group() as tg:`**
+        * 使用 `async with` 确保任务组资源的正确管理。
+    * **启动任务：`tg.start_soon(async_function, *args)`**
+        * 在任务组中启动一个新的后台任务，不会阻塞当前任务。
+        * 函数签名要求：第一个参数是异步函数，后续是传递给该异步函数的参数。
+    * **等待所有任务完成：** `async with` 块结束时，会自动等待该组内所有 `start_soon` 启动的任务完成。
+    * **错误处理：** 如果组内任何任务抛出未处理的异常，任务组会取消所有其他正在运行的任务，然后将异常（可能是 `MultiError`）重新抛出到 `async with` 语句之外。
+* **演示：**
+    * Demo 1: 使用任务组并发运行多个 `anyio.sleep()` 任务。
+    * Demo 2: 演示任务组的错误处理机制（一个任务失败导致其他任务被取消）。
+
+## 四：任务间的同步与协调 (锁、事件、信号量)
+
+* **为何需要同步：** 当多个并发任务需要访问共享资源或需要相互协调执行顺序时，避免竞态条件和保证数据一致性。
+* **AnyIO 提供的同步原语 (Primitives)：**
+    * **锁 (`anyio.Lock`)**
+        * 概念：一次只允许一个任务获取锁，用于保护临界区代码。
+        * API：`lock = anyio.Lock()`, `async with lock: ...`
+        * 演示：多个任务尝试修改共享变量，使用锁来保证操作的原子性。
+    * **事件 (`anyio.Event`)**
+        * 概念：一个任务可以等待某个事件发生（由另一个任务触发）。
+        * API：`event = anyio.Event()`, `await event.wait()`, `event.set()`
+        * 演示：一个任务等待另一个任务完成某个计算或初始化后才继续执行。
+    * **信号量 (`anyio.Semaphore`)**
+        * 概念：允许多个任务（达到指定数量上限）同时访问某个资源或代码段。
+        * API：`semaphore = anyio.Semaphore(value)`, `async with semaphore: ...`
+        * 演示：限制同时执行某个资源密集型操作的任务数量（例如，并发的网络请求数量）。
+    * **(可选) 条件变量 (`anyio.Condition`)**
+        * 概念：更复杂的同步机制，允许任务等待某个特定条件变为真，通常与锁配合使用。
+        * API：`condition = anyio.Condition()`, `async with condition: await condition.wait()`, `async with condition: condition.notify() / condition.notify_all()`
+
+## 五：超时与取消 (控制执行时间与中断)
+
+* **重要性：** 防止任务无限期等待，以及在不再需要时能够主动停止任务。
+* **AnyIO 的取消机制：取消作用域 (`CancelScope`)**
+    * 概念：控制一组异步操作的取消。可以设置超时，超时后自动取消作用域内的操作。
+    * **超时控制：**
+        * `anyio.move_on_after(seconds)`：创建一个取消作用域，在指定时间后自动取消。即使超时，`async with` 块也会正常退出（不抛异常，但 `scope.cancel_called` 会是 `True`）。
+        * `anyio.fail_after(seconds)`：类似 `move_on_after`，但在超时后会抛出 `TimeoutError`。
+        * API：`async with anyio.move_on_after(5) as scope: ...`, `if scope.cancel_called: ...`
+        * API：`async with anyio.fail_after(5): ...`
+    * **手动取消：**
+        * `anyio.CancelScope()`：创建普通取消作用域。
+        * `scope.cancel()`：手动触发作用域的取消。
+        * API：`with anyio.CancelScope() as scope: ... scope.cancel()`
+    * **屏蔽取消 (`shield=True`)**
+        * 概念：在 `move_on_after` 或 `fail_after` 中设置 `shield=True`，可以保护该代码块不受外部取消作用域的影响（但自身的超时仍然有效）。
+        * API：`async with anyio.move_on_after(10, shield=True): ...`
+* **演示：**
+    * Demo 1: 使用 `move_on_after` 给一个可能长时间运行的操作设置超时。
+    * Demo 2: 使用 `fail_after` 在超时后捕获 `TimeoutError`。
+    * Demo 3: 嵌套的取消作用域，演示手动取消和屏蔽效果。
+
+## 六：异步 I/O：流 (Streams)
+
+* **概念：** AnyIO 提供统一的流 API 来处理各种 I/O 操作（网络、文件等），隐藏了不同后端的具体实现差异。
+* **TCP 网络编程：**
+    * **连接到服务器 (`anyio.connect_tcp`)**
+        * API：`async with await anyio.connect_tcp(host, port) as client_stream:`
+    * **创建服务器 (`anyio.create_tcp_listener`)**
+        * API：`async with await anyio.create_tcp_listener(local_port) as listener:`
+        * API：`await listener.accept()` 返回 `(client_stream, remote_address)`
+    * **流操作 (通用 API)：**
+        * `await stream.send_all(data)`：发送字节数据。
+        * `await stream.receive(max_bytes)`：接收字节数据。
+        * `await stream.aclose()`：异步关闭流（通常由 `async with` 自动处理）。
+* **演示：**
+    * Demo 1: 简单的 TCP 客户端，连接到现有服务并收发数据。
+    * Demo 2: 简单的 TCP 回显服务器 (Echo Server)。
+* **异步文件 I/O (`anyio.open_file`)**
+    * API：`async with await anyio.open_file(path, mode) as f:`
+    * 流操作：`await f.read()`, `await f.write()`, `await f.seek()`, `await f.tell()`
+    * 演示：异步读取或写入本地文件。
+
+## 七：任务间通信：内存对象流 (Memory Object Streams)
+
+* **需求：** 在同一进程的不同异步任务之间安全地传递 Python 对象。
+* **AnyIO 的方案：内存对象流**
+    * 概念：类似队列，但提供了流的接口，用于在生产者和消费者任务之间传递对象。支持背压（当流满时发送者会阻塞）。
+    * **创建流：`anyio.create_memory_object_stream(max_buffer_size)`**
+        * 返回一对 `(SendStream, ReceiveStream)`。
+        * `max_buffer_size`: 缓冲区大小，控制背压。0 表示无限制，1 表示每次只能放一个对象。
+    * **发送端 (`SendStream`)**
+        * API：`await send_stream.send(object)`
+        * API：`await send_stream.aclose()` (通知接收端发送完成)
+    * **接收端 (`ReceiveStream`)**
+        * API：`await receive_stream.receive()`
+        * API：`async for object in receive_stream:` (常用，直到发送端关闭)
+        * API：`await receive_stream.aclose()`
+* **演示：** 创建一个生产者任务不断生成数据并通过内存流发送，一个消费者任务接收并处理数据。
+
+## 八：与同步代码交互 (桥接阻塞操作)
+
+* **挑战：** 在异步代码中调用阻塞的同步函数（如某些库的函数、CPU密集型计算）会阻塞整个事件循环。
+* **AnyIO 的解决方案：在工作线程中运行同步代码**
+    * **`anyio.to_thread.run_sync(sync_function, *args, cancellable=False, limiter=None)`**
+        * 作用：将同步函数 `sync_function` 及其参数 `args` 交给一个独立的线程执行，并异步等待其结果。
+        * `cancellable=True`：允许该操作响应 AnyIO 的取消请求（可能需要同步函数内部配合）。
+        * `limiter`：一个 `anyio.CapacityLimiter` 对象，用于限制并发运行的线程数量。
+    * **(可选) 从工作线程调用异步代码 (`anyio.from_thread.run`)**
+        * 作用：允许在由 `run_sync` 启动的工作线程中，反过来调用主事件循环中的异步函数。
+* **演示：**
+    * Demo 1: 在异步函数中使用 `run_sync` 调用一个耗时的同步函数（如 `time.sleep` 或一个计算密集函数），同时运行其他异步任务以展示事件循环未被阻塞。
+    * Demo 2: (可选) 使用 `CapacityLimiter` 限制同时运行的同步任务线程数。
 

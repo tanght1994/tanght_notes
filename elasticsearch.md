@@ -306,6 +306,26 @@ POST /nginxlog/_doc/?pipeline=filebeat_nginx
 
 
 
+# 权限管理
+
+es添加用户
+
+```shell
+# 创建一个新用户 -p指定密码, 密码不能全是数字
+/bin/elasticsearch-users useradd xxxname -p a123456
+# 给用户添加超级管理
+/bin/elasticsearch-users roles -a superuser xxxname
+# 给用户添加kibana，此用户可以通过kibana连接es
+/bin/elasticsearch-users roles -a kibana_system xxxname
+```
+
+
+
+# Kibana
+
+```shell
+docker run -d --name kibana --network docker_ragflow -p 5601:5601 -e "ELASTICSEARCH_HOSTS=http://es01:9200" -e "ELASTICSEARCH_USERNAME=tht1" -e "ELASTICSEARCH_PASSWORD=a123456" kibana:8.11.3
+```
 
 
 
@@ -313,6 +333,75 @@ POST /nginxlog/_doc/?pipeline=filebeat_nginx
 
 
 
+# 安装
+
+```shell
+# 1. 创建网络环境
+docker network create elastic
+
+# 2. 运行es
+docker run --name elastic-es01 --net elastic -p 9200:9200 -it -m 1GB elasticsearch:8.17.4
+
+# 3. 从屏幕信息中找到 Password 和 enrollment token
+# 屏幕中将出现下列日志，从日志中找到 Password 和 enrollment token
+# 将 enrollment token 填写到 kibana 页面上
+# 然后使用 用户名:elastic 密码: xxx 进行登录
+# ✅ Elasticsearch security features have been automatically configured!
+# ✅ Authentication is enabled and cluster connections are encrypted.
+
+# ℹ️  Password for the elastic user (reset with `bin/elasticsearch-reset-password -u elastic`):
+#   +4ArfA3WhuFc9+sPQx5d
+
+# ℹ️  HTTP CA certificate SHA-256 fingerprint:
+#   531d30a58ca0b748a5a4f0366f91e2a302ced28ade2f1145af52842164d6f565
+
+# ℹ️  Configure Kibana to use this cluster:
+# • Run Kibana and click the configuration link in the terminal when Kibana starts.
+# • Copy the following enrollment token and paste it into Kibana in your browser (valid for the next 30 minutes):
+#   eyJ2ZXIiOiI4LjE0LjAiLCJhZHIiOlsiMTcyLjE5LjAuMjo5MjAwIl0sImZnciI6IjUzMWQzMGE1OGNhMGI3NDhhNWE0ZjAzNjZmOTFlMmEzMDJjZWQyOGFkZTJmMTE0NWFmNTI4NDIxNjRkNmY1NjUiLCJrZXkiOiJwVnEyQ1pZQjlHZkk1TjJxc2RLajpwMHE3MlRWVFNXYVEyTVdLdnJpRld3In0=
+
+# ℹ️ Configure other nodes to join this cluster:
+# • Copy the following enrollment token and start new Elasticsearch nodes with `bin/elasticsearch --enrollment-token <token>` (valid for the next 30 minutes):
+#   eyJ2ZXIiOiI4LjE0LjAiLCJhZHIiOlsiMTcyLjE5LjAuMjo5MjAwIl0sImZnciI6IjUzMWQzMGE1OGNhMGI3NDhhNWE0ZjAzNjZmOTFlMmEzMDJjZWQyOGFkZTJmMTE0NWFmNTI4NDIxNjRkNmY1NjUiLCJrZXkiOiJwMXEyQ1pZQjlHZkk1TjJxc2RLajp3RGdocWRhQ1FyeUlyTHNqMERqSjR3In0=
+
+#   If you're running in Docker, copy the enrollment token and run:
+#   `docker run -e "ENROLLMENT_TOKEN=<token>" docker.elastic.co/elasticsearch/elasticsearch:8.17.4`
+
+# 4. 启动 Kibana
+docker run --name elastic-kib01 --net elastic -p 5601:5601 kibana:8.17.4
+
+# 5. 屏幕出现如下信息，使用浏览器 Go to http://0.0.0.0:5601/?code=347626
+# Kibana is currently running with legacy OpenSSL providers enabled! For details and instructions on how to disable see https://www.elastic.co/guide/en/kibana/8.17/production.html#openssl-legacy-provider
+# {"log.level":"info","@timestamp":"2025-04-06T06:46:06.486Z","log.logger":"elastic-apm-node","ecs.version":"8.10.0","agentVersion":"4.10.0","env":{"pid":7,"proctitle":"/usr/share/kibana/bin/../node/glibc-217/bin/node","os":"linux 5.15.167.4-microsoft-standard-WSL2","arch":"x64","host":"c0c254481b25","timezone":"UTC+00","runtime":"Node.js v20.18.2"},"config":{"active":{"source":"start","value":true},"breakdownMetrics":{"source":"start","value":false},"captureBody":{"source":"start","value":"off","commonName":"capture_body"},"captureHeaders":{"source":"start","value":false},"centralConfig":{"source":"start","value":false},"contextPropagationOnly":{"source":"start","value":true},"environment":{"source":"start","value":"production"},"globalLabels":{"source":"start","value":[["git_rev","57a32881bd4c7055491b10f3c957e7dcef2f1bf0"]],"sourceValue":{"git_rev":"57a32881bd4c7055491b10f3c957e7dcef2f1bf0"}},"logLevel":{"source":"default","value":"info","commonName":"log_level"},"metricsInterval":{"source":"start","value":120,"sourceValue":"120s"},"serverUrl":{"source":"start","value":"https://kibana-cloud-apm.apm.us-east-1.aws.found.io/","commonName":"server_url"},"transactionSampleRate":{"source":"start","value":0.1,"commonName":"transaction_sample_rate"},"captureSpanStackTraces":{"source":"start","sourceValue":false},"secretToken":{"source":"start","value":"[REDACTED]","commonName":"secret_token"},"serviceName":{"source":"start","value":"kibana","commonName":"service_name"},"serviceVersion":{"source":"start","value":"8.17.4","commonName":"service_version"}},"activationMethod":"require","message":"Elastic APM Node.js Agent v4.10.0"}
+# Native global console methods have been overridden in production environment.
+# [2025-04-06T06:46:08.318+00:00][INFO ][root] Kibana is starting
+# [2025-04-06T06:46:08.368+00:00][INFO ][node] Kibana process configured with roles: [background_tasks, ui]
+# [2025-04-06T06:46:17.907+00:00][INFO ][plugins-service] The following plugins are disabled: "cloudChat,cloudExperiments,cloudFullStory,dataUsage,investigateApp,investigate,profilingDataAccess,profiling,searchHomepage,searchIndices,securitySolutionServerless,serverless,serverlessObservability,serverlessSearch".
+# [2025-04-06T06:46:17.980+00:00][INFO ][http.server.Preboot] http server running at http://0.0.0.0:5601
+# [2025-04-06T06:46:18.106+00:00][INFO ][plugins-system.preboot] Setting up [1] plugins: [interactiveSetup]
+# [2025-04-06T06:46:18.123+00:00][INFO ][preboot] "interactiveSetup" plugin is holding setup: Validating Elasticsearch connection configuration…
+# [2025-04-06T06:46:18.149+00:00][INFO ][root] Holding setup until preboot stage is completed.
 
 
+# i Kibana has not been configured.
+
+# Go to http://0.0.0.0:5601/?code=347626 to get started.
+
+# 6. 在页面中输入 enrollment token
+
+# 7. 在页面中输入 用户名+密码
+
+```
+
+
+
+如果启动es的时候在屏幕日志中找不到password和enrollment token，可以通过下列方法重新生成
+
+```shell
+# 重新创建 password
+docker exec -it elastic-es01 /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic
+
+# 重新创建 enrollment token
+docker exec -it elastic-es01 /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana
+```
 

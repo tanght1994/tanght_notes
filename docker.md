@@ -96,7 +96,7 @@ docker pull nginx:1.0.0 # 拉取1.0.0版本的nginx
 ## 运行容器
 
 ```shell
-# 根据imageID这个镜像，创建一个新容器，并运行容器
+# 根据 imageID 这个镜像，创建一个新容器，并运行容器
 # -it提供交互终端
 # -p 8000:80  将主机的8000端口映射到容器的80端口
 docker run --name haha -p 8000:80 -it imageID command
@@ -105,6 +105,9 @@ docker run --name haha -p 8000:80 -it imageID command
 # -p 8080:80    将主机的8080端口映射到本容器的80端口（主机的8080端口与容器的80端口绑定到一起了，成为一体了）
 # -d 容器以后台程序运行，不提供交互终端
 docker run --name tht_nginx -p 8080:80 -d f35646e83998
+
+# xxx --
+docker run -d ubuntu sleep infinity
 ```
 
 ## 退出容器
@@ -179,9 +182,24 @@ docker top
 
 # Dockerfile
 
-官方文档https://docs.docker.com/engine/reference/builder/
+构建镜像的命令为：`docker build -t xxx:v1 .`
 
-Dockerfile文件的名字必须是Dockerfile，格式如下
+构建 docker 镜像有两种方式：
+
+1. **非dockerfile**
+   1. run一个基础镜像
+   2. 在这个容器中用 linux 命令来配置这个容器中的环境，比如 apt install 等等
+   3. 将这个容器导出为镜像
+   4. 然后就可以run这个新镜像了
+
+2. **使用dockerfile**
+
+   1. 将配置环境的 linux 命令写在dockerfile中
+
+   2. 使用 `docker build -t xxx:v1 .` 生成镜像
+   3. 然后就可以run这个新镜像了
+
+Dockerfile文件的名字必须是Dockerfile，格式如下：
 
 ```dockerfile
 # 指明构建的新镜像是来自于 centos:7 基础镜像
@@ -222,11 +240,6 @@ ENV JAVA_HOME /usr/local/java/jdk-11.0.6/
 ENV PATH $PATH:$JAVA_HOME/bin
 
 # 设置默认启动命令
-# docker run imageid your_cmd 如果docker run时用户指定了命令，则dockerfile不需要ENTRYPOINT或者CMD
-# docker run imageid 如果启动容器时用户没有指定特定的命令，则容器会运行ENTRYPOINT或CMD中设置的命令
-# 如果docker run的时候用户没指定命令，且dockerfile中没写ENTRYPOINT或CMD，则容器启动失败
-# 如果docker run时指定了命令，则以docker run时指定的命令为准
-# ENTRYPOINT 不会被覆盖
 ENTRYPOINT ["/bin/bash", "-c", "echo 'hello world'"]
 ```
 
@@ -250,11 +263,40 @@ CMD
 
 容器的默认启动命令，会被docker run的指定命令覆盖
 
-## CMD与ENTRYPOINT两种格式
+## ENTRYPOINT与CMD
+
+- ENTRYPOINT是主命令
+- CMD是ENTRYPOINT的默认参数，可以没有CMD，这就意味着ENTRYPOINT不需要参数
+- docker run时传递的参数会覆盖CMD然后追加到ENTRYPOINT的参数中
+
+```dockerfile
+# dockerfile
+FROM ubuntu
+# 设置默认的入口点命令
+# 主命令，无法被覆盖，谁来了都不能把他覆盖
+ENTRYPOINT ["echo"]
+# 设置默认参数
+CMD ["Hello, World!"]
+```
+
+`docker run dockername`：容器的启动命令为`echo "Hello, World!"`
+
+`docker run dockername Hi`：容器的启动命令为`echo Hi`
+
+总结：
+
+- 正经的容器都是首先设置ENTRYPOINT，然后用CMD给ENTRYPOINT传递默认参数。
+- 如果用户在docker run的时候没有传递参数（没有覆盖cmd），则ENTRYPOINT使用dockerfile中cmd设置的参数。
+- 如果用户不满意默认的cmd参数，在docker run的时候传递了参数，则会优先使用用户传递的参数给ENTRYPOINT。
+- 如果用户在docker run的时候不满意ENTRYPOINT，则可通过----entrypoint来修改ENTRYPOINT（强烈不建议）
+
+## 命令的两种格式
 
 加不加[]（中括号）的区别
 
 ### shell格式（无[]）
+
+与在linux的cmd中执行命令是一样的，主进程是/bin/sh，由/bin/sh的子进程去执行用户的命令
 
 ```dockerfile
 CMD ping www.baidu.com
@@ -269,6 +311,8 @@ CMD ping www.baidu.com
 3. 然后`sh`程序fork一个子进程来执行`ping www.baidu.com`
 
 ### exec格式（有[]）
+
+直接执行可执行程序，不需要借助/bin/sh
 
 ```dockerfile
 CMD ["/bin/ping", "www.baidu.com"]
@@ -287,12 +331,35 @@ exec格式要优于shell格式，因为exec格式的依赖比较少，即使容�
 
 请永远使用exec格式，shell格式会出现你意想不到的结果
 
-## CMD与ENTRYPOINT的区别
+## 构建时mount
 
-- 正经的容器都是首先设置ENTRYPOINT，然后用CMD给ENTRYPOINT传递默认参数。
-- 如果用户在docker run的时候没有传递参数（没有覆盖cmd），则ENTRYPOINT使用dockerfile中cmd设置的参数。
-- 如果用户不满意默认的cmd参数，在docker run的时候传递了参数，则会优先使用用户传递的参数给ENTRYPOINT。
-- 如果用户在docker run的时候不满意ENTRYPOINT，则可通过----entrypoint来修改ENTRYPOINT（强烈不建议）
+mount可以在构建过程中将宿主机的目录（甚至是远程的某个镜像中的目录）挂载到当前正在构建的docker中，构建结束后，解除挂载。
+
+下面的代码的作用是：先将远程镜像（from=infiniflow/ragflow_deps:latest）的（source=/huggingface.co）这个目录挂载到当前docker的（target=/huggingface.co）这个目录下，然后将（/huggingface.co/InfiniFlow/huqie/huqie.txt.trie）这个文件复制到当前容器的（/ragflow/rag/res/）目录下。
+
+```dockerfile
+RUN --mount=type=bind,from=infiniflow/ragflow_deps:latest,source=/huggingface.co,target=/huggingface.co
+RUN cp /huggingface.co/InfiniFlow/huqie/huqie.txt.trie /ragflow/rag/res/
+```
+
+## 继承基础镜像
+
+```dockerfile
+# 继承基础镜像
+FROM centos:latest
+
+# 一些自定义的操作...
+
+# 覆盖基础镜像的启动命令, 如果想使用基础镜像的 ENTRYPOINT, 那这里就不要定义 ENTRYPOINT
+ENTRYPOINT ["/bin/bash", "-c", "echo 'hello world'"]
+```
+
+## 查看镜像的ENTRYPOINT
+
+```shell
+# 这个命令会显示镜像的很多信息，ENTRYPOINT就在其中
+docker inspect 镜像名称或ID
+```
 
 # 容器导入/导出
 
@@ -479,17 +546,123 @@ sudo docker run --name test-nginx -d -p 9876:80 nginx:latest
 
 # docker-compose
 
+同一台物理机上运行多个docker，使用docker-compose来进行管理会非常方便
+
+多个物理机上运行多个docker，使用k8s
+
+- docker服务名：用于同一个docker网络中，不同docker间的通信
+- docker容器名：用于操作docker
+
+## 例子
+
+```yaml
+services:
+  es01: # docker服务名称，用于同一个docker网络中，不同docker间的通信，http://es01:8080就能访问这个docker的8080端口
+    container_name: ragflow-es-01 # docker容器名
+    profiles: # 给容器添加标签，docker-compose --profile x up, 只启动拥有x标签的容器
+      - elasticsearch
+    image: elasticsearch:1.0.0
+    volumes:
+      - esdata01:/usr/share/elasticsearch/data # 将宿主机目录与容器内目录进行绑定
+    ports:
+      - 9200:9200 # 将宿主机端口与容器内端口进行绑定
+    env_file: .env # 环境变量 优先级低于 environment
+    environment: # 环境变量 优先级高于 env_file
+      - node.name=es01
+      - ELASTIC_PASSWORD=xxxxx
+      - bootstrap.memory_lock=false
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - cluster.routing.allocation.disk.watermark.low=5gb
+      - cluster.routing.allocation.disk.watermark.high=3gb
+      - cluster.routing.allocation.disk.watermark.flood_stage=2gb
+      - TZ=xxx
+    mem_limit: 100000000 # 容器能使用的最大内存
+    ulimits: # linux的ulimit配置
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck: # 健康检查，docker管理程序通过这个命令来判断此容器是否健康，不健康就重启
+      test: ["CMD-SHELL", "curl http://localhost:9200"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    networks:
+      - ragflow # 使用名字为ragflow的网络
+    restart: on-failure
+
+  mysql:
+    image: mysql:8.0.39
+    container_name: ragflow-mysql
+    env_file: .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=xxxx
+      - TZ=xxxx
+    command: # 覆盖默认的CMD
+      --max_connections=1000
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+      --tls_version="TLSv1.2,TLSv1.3"
+      --init-file /data/application/init.sql
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/data/application/init.sql
+    networks:
+      - ragflow
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-uroot", "-p${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    restart: on-failure
+
+  redis:
+    image: valkey/valkey:8
+    container_name: ragflow-redis
+    command: redis-server --requirepass xxx --maxmemory 128mb --maxmemory-policy allkeys-lru
+    env_file: .env
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    networks:
+      - ragflow
+    restart: on-failure
+
+volumes:
+  esdata01:
+    driver: local
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  ragflow: # 定义一个网络，同一个网络中的docker容器可以相互访问
+    driver: bridge
+```
+
+## 命令
+
 ```shell
 # -f 用于指定配置文件 不指定的话 默认是当前目录下的docker-compose.yml
 # -d 让 docker-compose 后台运行，否则 docker-compose 会占用当前终端
 # -p 设置项目名, 默认是当前文件夹的名字为项目名
-docker-compose -f xxx.yml -d -p abc up
+docker-compose -f xxx.yml -p abc up -d
 
 # 停止并清理被此配置文件所管理的资源(停止容器、删除容器、删除网络等)
 docker-compose -f xxx.yml down
 
 # 进入容器中（也可以直接用docker命令进入）
 docker-compose -f xxx.yml exec nginx bash
+
+# 重启docker-compose.yml中包含的所有docker
+docker-compose restart
 ```
 
 
@@ -654,5 +827,17 @@ services:
     ports:
       - 3000:3000
 
+```
+
+# Windows端口占用
+
+使用管理员cmd执行下列命令
+
+winnat与docker有时候有冲突
+
+```shell
+net stop winnat
+启动你的容器
+net start winnat
 ```
 
