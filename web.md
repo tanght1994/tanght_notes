@@ -92,6 +92,14 @@ openssl x509 -req -in ser.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out ser.
 
 let's encrypt
 
+let's encrypt是一个公益组织，免费给大家发送HTTPS证书，但是手动操作起来有些复杂，所以这个组织开发了一个软件来自动化生成证书，这个软件叫做certbot，安装certbot然后运行它，会进入一个交互页面（当然是Linux的命令行交互页面，不是可视化页面），然后跟着提示输入一些必要的信息即可
+
+交互流程
+
+![image-20231207012451725](./assets/image-20231207012451725.png)
+
+安装
+
 ```shell
 # 切换到root用户
 su
@@ -705,37 +713,9 @@ vacuum = true
 py-autoreload = 1
 ```
 
-# Django
 
-## 自定义异常处理
-
-django异常时(404，权限，用户view函数异常等)，默认返回一个html页面，但是与前端商量好了，不管任何情况，服务端永远返回JSON，这时候怎么办呢？
-
-通过中间件process_exception来处理嘛？对不起，只能处理views异常，(404，权限等异常依然解决不了)，这时候我们就要用绝招了，直接修改django源码，别修改源文件，而是import之后重写几个函数而已。
-
-在`django/core/handlers/exception.py`中存在几个函数，这几个函数控制着django的异常处理：
-
-- convert_exception_to_response：django加载中间件的时候，用这个函数包装了所有中间件函数
-- response_for_exception：处理一些细节，没什么卵用
-- get_exception_response：通过错误码，找到对应的异常处理函数，并调用，异常处理函数是那些呢？在django/views/defaults.py中有一些，也可以自己写一些
-- handle_uncaught_exception：没找到错误处理函数的时候，进入这个函数 
-
-狠一点的话，直接重写response_for_exception，将exception塞进json中返回就可以了
-
-温柔一点的话，仿照get_exception_response，分类处理就好了
-
-# Vue2
-
-不知道
 
 # Vue3
-
-## 创建项目
-
-```shell
-npm create vite@latest
-npm install element-plus
-```
 
 ## setup
 

@@ -165,7 +165,7 @@ files.exclude更狠，vscode不仅不监控，连显示都不显示了，直接�
 | ctrl + shift + U | 单词大写                      |
 | ctrl + shift +L  | 单词小写                      |
 | ctrl + r         | 打开历史项目                  |
-|                  |                               |
+| alt + z          | 自动换行(开/关)               |
 
 # 代码格式化
 
@@ -475,4 +475,8 @@ firefox：用于在 Firefox 浏览器中调试 JavaScript 代码
 }
 
 ```
+
+
+
+# 插件开发
 

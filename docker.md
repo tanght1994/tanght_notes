@@ -656,7 +656,7 @@ networks:
 docker-compose -f xxx.yml -p abc up -d
 
 # 停止并清理被此配置文件所管理的资源(停止容器、删除容器、删除网络等)
-docker-compose -f xxx.yml down
+docker-compose -f xxx.yml -p abc down
 
 # 进入容器中（也可以直接用docker命令进入）
 docker-compose -f xxx.yml exec nginx bash
@@ -839,5 +839,34 @@ winnat与docker有时候有冲突
 net stop winnat
 启动你的容器
 net start winnat
+```
+
+# K8S
+
+帮助文档explain
+
+```shell
+查看Pod的yaml文件可以配哪些字段
+kubectl explain pods
+```
+
+详细信息describe
+
+```shell
+如果pod启动失败，使用describe查询详细信息
+kubectl describe pods pod_name -n dev
+```
+
+监控内容变换-w
+
+```shell
+在任何命令后面加上-w
+kubectl get pods -n dev -w
+```
+
+查看信息
+
+```shell
+kubectl get deploy,rs,pod -n dev
 ```
 

@@ -179,11 +179,9 @@ cat /etc/redhat-release
 
 ```shell
 arch
-# x86
+# x86 与 amd 是相同的
 # arm
 ```
-
-
 
 ## source(执行脚本)
 
@@ -348,8 +346,6 @@ sz filename
 ```shell
 rz
 ```
-
-
 
 # 软件安装与仓库
 
@@ -953,8 +949,6 @@ CPLUS_INCLUDE_PATH影响g++
 
 C_INCLUDE_PATH影响gcc
 
-
-
 # 网络
 
 host文件的作用：解析域名（主机名）。在去DNS解析域名之前，先查询本机的hosts文件，如果本机设置了此域名对应的IP地址，就不用费劲巴拉的去DNS查询了。
@@ -976,13 +970,9 @@ ping sb  # 相当于ping 182.61.200.6
 curl http://sb:8888/haha  # 相当于 curl http://182.61.200.6:8888/haha
 ```
 
-
-
 centos重启网络`/etc/init.d/network restart`
 
 ubuntu重启网络`/etc/init.d/networking restart`
-
-
 
 # 防火墙
 
@@ -998,7 +988,7 @@ systemctl status/start/stop firewalld
 service iptables status/start/stop
 ```
 
-
+aaa
 
 ```shell
 # 开放防火墙
@@ -1421,8 +1411,6 @@ case "abc$THT" in
 esac
 ```
 
-
-
 if判断命令执行成功还是失败
 
 ```shell
@@ -1497,8 +1485,6 @@ StartProcess "uwsgi --ini /data/webserver/log_server/uwsgi/uwsgi.ini"
 1. 在vim的命令行执行`set paste`，使vim进入粘贴模式
 2. 进行你的粘贴操作（右键）
 3. 在vim的命令行执行`set nopaste`，还原第一步的设置
-
-
 
 # 进程最大打开文件数量
 

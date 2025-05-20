@@ -7,6 +7,113 @@
 
 
 
+```base
+你是一名专业的教师，擅长设计教学大纲，你擅长将复杂的知识拆分成简单易懂的小知识点，帮助学生更好地理解和掌握知识。
+相关联的知识点要放在同一个章节，且知识点要由浅入深，循序渐进。
+你的输出格式为json，格式如下：
+{
+  "book": [
+    {
+      "chapter_name": "此章节的名字",
+      "knowledges": [本章节需要包含的知识点、api、class、函数、概念等等，只需列举出来，不需要解释]
+    },
+    ...
+  ]
+}
+请你设计一个从基础的css逐步过渡到Tailwind CSS的学习大纲。
+
+
+你是一名专业的教师，请按照教学大纲，完成"CSS 预处理器基础"这个章节的编写，要尽量使用简单易懂的demo来演示。
+同时解释为什么需要CSS 预处理器，什么是预处理器，预处理器的好处是什么？如果没有预处理器，CSS会有什么问题？
+完成"Tailwind CSS 入门"这个章节的编写，一定要尽量详细，因为我没有任何基础。多用简单易懂的demo来演示。
+教学大纲开始
+{
+  "book": [
+    {
+      "chapter_name": "CSS 基础入门",
+      "knowledges": [
+        "CSS 语法与选择器",
+        "盒模型（margin, padding, border）",
+        "常用单位（px, em, rem, %）",
+        "文本样式（font-size, color, line-height）",
+        "基础布局（display, position）",
+        "浮动与清除浮动",
+        "Flexbox 基础"
+      ]
+    },
+    {
+      "chapter_name": "响应式设计与布局进阶",
+      "knowledges": [
+        "媒体查询（media queries）",
+        "视口单位（vw, vh）",
+        "Grid 布局基础",
+        "Flexbox 进阶",
+        "响应式图片处理",
+        "移动优先原则"
+      ]
+    },
+    {
+      "chapter_name": "CSS 预处理器基础",
+      "knowledges": [
+        "变量（variables）",
+        "嵌套语法",
+        "Mixin 与函数",
+        "模块化组织",
+        "编译流程"
+      ]
+    },
+    {
+      "chapter_name": "Tailwind CSS 入门",
+      "knowledges": [
+        "实用类（Utility Classes）概念",
+        "安装与配置（PostCSS 集成）",
+        "核心配置文件（tailwind.config.js）",
+        "响应式断点（sm, md, lg）",
+        "状态变体（hover, focus）",
+        "颜色系统与间距系统"
+      ]
+    },
+    {
+      "chapter_name": "Tailwind 样式系统",
+      "knowledges": [
+        "排版系统（font-size, line-height）",
+        "盒模型工具（margin, padding）",
+        "Flexbox 与 Grid 工具类",
+        "定位与层叠上下文",
+        "背景与渐变",
+        "过渡与动画"
+      ]
+    },
+    {
+      "chapter_name": "Tailwind 高级特性",
+      "knowledges": [
+        "自定义主题配置",
+        "插件开发",
+        "@apply 指令",
+        "Dark Mode 实现",
+        "JIT 模式原理",
+        "PurgeCSS 优化"
+      ]
+    },
+    {
+      "chapter_name": "项目实战与最佳实践",
+      "knowledges": [
+        "设计系统构建",
+        "组件化开发模式",
+        "响应式开发流程",
+        "性能优化策略",
+        "与框架集成（React/Vue）",
+        "调试技巧与常见问题"
+      ]
+    }
+  ]
+}
+教学大纲结束
+
+```
+
+
+
 
 
 
@@ -54,7 +161,7 @@ vec = embedding("一些文本，可长可短，随意")。
 
 vec = [0.00123, 0.21321, 0.1111, ...]
 
-## FunctionCall
+## Function Call
 
 ChatGPT指定的格式，用于LLM调用程序员提供的外部工具。
 
