@@ -230,21 +230,22 @@ pipenv --rm
 # 显示当前已经安装的和可供安装的Python版本
 uv python list
 # 安装指定的Python版本（注意：安装的Python并非全局可用，在命令行工具中输入Python无反映）
-uv python install 3.10 3.11 3.12
+uv python install 3.10
 # 卸载指定的版本
 uv python uninstall 3.10
 
 
-# 初始化旧的项目
+# 初始化已经创建的项目（你已经写了很多python代码了，但是没有使用uv进行管理）
 cd example
-uv init
-# 创建新项目并初始化
-uv init new_example
-# 注意此时并不会创建环境（编辑器也不会识别到当前项目中的解释器版本），只有安装包时会自动创建环境或者直接用命令：
-uv venv
-# 默认使用最新的Python版本，也可为环境指定Python版本
-uv venv --python 3.11
+uv init --python 3.10
 
+# 创建新项目并初始化 同时指定 python 版本
+# 注意此时并不会创建环境（编辑器也不会识别到当前项目中的解释器版本），uv sync 之后才会创建虚拟环境
+uv init new_example --python 3.10
+
+
+# 在当前目录下创建指定版本的虚拟环境 .venv
+uv venv --python 3.11
 
 
 # 在当前环境中安装包flask
