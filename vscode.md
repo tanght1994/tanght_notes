@@ -476,7 +476,5 @@ firefox：用于在 Firefox 浏览器中调试 JavaScript 代码
 
 ```
 
-
-
 # 插件开发
 

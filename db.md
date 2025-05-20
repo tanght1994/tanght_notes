@@ -588,6 +588,54 @@ config set requirepass 123456设置密码为123456
 
 解决：即使查询不存在的key，也要将NULL缓存起来
 
+
+
+## 持久化
+
+AOF：
+
+RDB：
+
+## 大KEY
+
+危害：如果不小心读取了这个KEY，那么会非常耗时（CPU和宽带），同时阻塞住redis服务的其它操作。如果是集群架构，甚至可能造成故障切换。
+
+解决：拆分大KEY，比如按照userid % 1024将大KEY拆分成1024个小KEY
+
+## 热KEY
+
+123
+
+## 过期删除策略
+
+- 惰性删除 + 定期删除，定期删除的时间间隔通过配置项 hz 来设置
+- 惰性删除：数据被访问时（读写），查看此数据是否已经过期，如果过期了就删除
+- 定期删除：redis 会定期遍历过期字典，每次随机挑选一部分数据进行过期检测，如果数据已过期，就会被删除掉。将 hz 设置为10，代表每秒执行10次扫描
+- 过期数据时保存在 redisDb 这个全局 struct 中的 map 字段中（redisDb.map称为过期字典）
+
+## 过期回调
+
+1. 配置项 notify-keyspace-events 来开启过期回调
+2. 订阅 redis 自带的频道，接收过期事件
+3. redis仅保证发送通知，不保证客户端有没有接收到
+
+## 内存满了删除策略
+
+配置项maxmemory设置满内存删除策略
+
+- noeviction：插入数据时直接返回错误，不淘汰任何已经存在的redis键
+- volatile-ttl：删除快过期的redis键
+- allkeys-random：随机删除redis键
+- volatile-random：随机删除有过期时间的redis键
+- allkeys-lru：所有的键使用lru算法进行淘汰
+- volatile-lru：有过期时间的使用lru算法进行淘汰
+- volatile-lfu：根据lfu算法从有过期时间的键删除
+- allkeys-lfu：根据lfu算法从所有键删除
+
+LRU：优先淘汰最旧的数据（关键是最旧）（map+双向链表）
+
+LFU：优先淘汰最少使用的数据（关键是使用次数）（map+最小堆）
+
 # MongoDB
 
 mongodb无需创建数据库，也无需创建表，插入数据的时候如果数据库或表不存在，则自动创建。

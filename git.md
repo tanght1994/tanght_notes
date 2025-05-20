@@ -1,4 +1,4 @@
-
+# X
 
 ```shell
 git remote add origin https://github.com/***/***.git
@@ -15,8 +15,6 @@ git push #将当前分支推送到远端相联系的分支
 git pull <远程主机> <远程分支> <本地分支> #拉取远程分支到本地分支
 git clone -b 分支名 远程仓库地址 # 克隆指定分支
 ```
-
-
 
 # 登陆
 
@@ -142,8 +140,6 @@ git branch -D test
 git push origin --delete your_branch
 ```
 
-
-
 # 远程分支
 
 ```shell
@@ -164,8 +160,6 @@ git remote show origin
 git remote prune origin
 ```
 
-
-
 # 将其它人的分支获取到本地
 
 ```shell
@@ -181,8 +175,6 @@ git branch -a
 git checkout -b test origin/zhangsan
 ```
 
-
-
 # 推送（push）
 
 ```shell
@@ -197,16 +189,12 @@ git push
 git push origin branch1
 ```
 
-
-
 # 拉取（pull）
 
 ```shell
 # 将origin branch1的代码fetch下来，并与当前所在分支merge
 git pull origin branch1
 ```
-
-
 
 # 合并（merge）
 
@@ -226,8 +214,6 @@ git merge branch1
 # 放弃merge：当前分支回到未merge时的状态，前提是git处于冲突待解决状态
 git merge --abort
 ```
-
-
 
 # 暂存（add）
 
@@ -303,8 +289,6 @@ git show commitID filename
 git show
 ```
 
-
-
 # 对比（diff）
 
 ```shell
@@ -332,15 +316,11 @@ git diff commitid
 git diff branch_name
 ```
 
-
-
 # 刚刚的commit错了想要修改
 
 ```shell
 git commit --amend
 ```
-
-
 
 # 放弃修改
 
@@ -389,15 +369,11 @@ git clean -f
 git clean -f -- E:\test\2.txt
 ```
 
-
-
 # git status文件夹展开
 
 ```shell
 git status -u
 ```
-
-
 
 # 修改commit信息
 
@@ -406,16 +382,12 @@ git rebase -i HEAD~5
 将准备修改的commit前改为r
 ```
 
-
-
 # 合并多次commit
 
 ```bash
 git rebase -i HEAD~5
 前缀改为s
 ```
-
-
 
 # 第一次推送至github(远程空仓库)
 
@@ -427,8 +399,6 @@ git branch -M main		# 修改当前分支名为main
 git remote add origin https://github.com/tanght1994/fishwebsdk.git # 添加远程仓库地址
 git push -u origin main	# 推送到远程仓库
 ```
-
-
 
 # 查看远程仓库信息
 
@@ -443,8 +413,6 @@ git remote show origin  # 查看origin详细信息
 git remote add origin https://github.com/tanght1994/fishwebsdk.git # 添加远程仓库地址,起别名为origin
 git remote remove origin	# 删除别名为origin的远程仓库
 ```
-
-
 
 # .gitignore文件
 
@@ -465,10 +433,6 @@ git remote remove origin	# 删除别名为origin的远程仓库
 /test.test # 忽略当前目录(本.gitignore文件所在的目录)下的test.test(文件或者目录都可以),其它目录或子目录并不会忽略test.test
 test.test  # 忽略所有目录下的test.test
 ```
-
-
-
-
 
 # GIT配置文件
 

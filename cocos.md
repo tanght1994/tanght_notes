@@ -1,7 +1,5 @@
 代码创建Mesh
 
-
-
 ```typescript
 let mesh = cc.utils.MeshUtils.createMesh({
 　　positions: [0, 10, 0, 0, 0, 0, 10, 0, 0, 10, 0, 0, 10, 10, 0, 0, 10, 0],
@@ -9,8 +7,6 @@ let mesh = cc.utils.MeshUtils.createMesh({
 　　uvs: [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
 });
 ```
-
-
 
 # 属性检查器可见性
 
@@ -54,8 +50,6 @@ myvar: string = ''
 myvar: string = ''
 ```
 
-
-
 # 资源管理
 
 resources与assetManager在使用上的区别
@@ -73,9 +67,7 @@ assetManager需要先加载ab包，再从ab包中加载资源
 2. ab.load(资源)
 ```
 
-
-
-
+x
 
 ```typescript
 // 从resources中加载资源
@@ -122,13 +114,9 @@ cocos build之后的目录
 
 
 
-
-
 # 旋转正负
 
 ![image-20240602232408598](./assets/image-20240602232408598.png)
-
-
 
 # 鼠标位置
 
@@ -152,8 +140,6 @@ cocos build之后的目录
 getLocation：获取鼠标的屏幕坐标位置，右下角为(0, 0)，左上角为(屏幕分辨率宽, 屏幕分辨率高)
 
 getUILocation：获取鼠标的屏幕坐标位置，右下角为(0, 0)，左上角为(设计尺寸宽, 设计尺寸高)
-
-
 
 # 物体质量2D
 
