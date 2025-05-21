@@ -657,6 +657,35 @@ key1 = "{user:123}.profile"
 key2 = "{user:123}.settings"
 ```
 
+## 慢查询
+
+使用redis命令可以查看慢日志
+
+相关命令如下：
+
+```shell
+# 查看最近 50 条慢命令
+SLOWLOG GET 50
+
+# 清空慢查询日志
+SLOWLOG RESET
+
+```
+
+配置如下：
+
+在redis的配置文件使用如下字段控制慢日志
+
+```shell
+# 大于 100000 微秒的算作慢查询
+slowlog-log-slower-than 100000
+
+# 慢日志最多记录 128 条，超过后丢弃旧日志
+slowlog-max-len 128
+```
+
+
+
 # MongoDB
 
 mongodb无需创建数据库，也无需创建表，插入数据的时候如果数据库或表不存在，则自动创建。
@@ -763,8 +792,6 @@ roles为root的用户就是超级管理员。
 ```shell
 db.xxx.createIndex({ phone: 1 }, { unique: true, partialFilterExpression: { phone: { $gt: "" } } })
 ```
-
-
 
 ## update修改
 
@@ -1256,6 +1283,8 @@ docker exec -it elastic-es01 /usr/share/elasticsearch/bin/elasticsearch-create-e
 
 # Consul
 
+
+
 # ZooKeeper
 
 # nacos
@@ -1266,23 +1295,208 @@ docker exec -it elastic-es01 /usr/share/elasticsearch/bin/elasticsearch-create-e
 
 Go消息队列
 
+# RocketMQ
 
+- 生产者和消费者通过同一个topic进行通信
+- 消费者消费时，要自己维护offset（也就是从哪里开始消费）
+- mq会将生产者生产的消息保存一段时间（72小时/可配置）
+- mq会把消息写入本地磁盘的 commitLog文件中，默认是同步刷盘（也可配置为异步），这样即使 Broker 宕机，消息也不会丢失（取决于刷盘策略）
 
+## 核心概念
 
+- NameServer：服务发现组件，类似于注册中心，它接收 Broker 上报的 Topic 路由信息、存储和提供 Broker 的路由信息（即哪些 Broker 存在哪些 Topic 和队列），他不保存生产者的消息，也不向消费者提供消息，它只向生产者和消费者提供 Broker 信息，然后生产者/消费者主动去连接 Broker
+- Broker：消息的核心存储和转发组件，负责消息的接收、存储、投递和消费进度管理，处理生产者发来的消息写入磁盘，并响应消费者拉取消息请求
+- Producer：生产者，负责将消息发布到指定的 Topic。它首先向 NameServer 查询 Topic 的路由信息，然后将消息发送给对应的 Broker
+- Consumer：消费者，订阅某个Topic的消息，是消息的接收方，负责从 Broker 拉取消息并进行业务处理。它订阅一个或多个 Topic，并通过消费组管理消费进度和负载均衡
+- ConsumerGroup：消费者组，是一组共享同一组名的消费者集合。它用于管理消费进度，并决定消息如何在组内消费者之间分配（集群模式）或广播（广播模式）。消费者必须指定自己所属的消费者组，即使这个组里只有一个消费者
+- Topic：消息的分类标识（大颗粒，区别于TAG），相当于消息的主题。Producer 将消息发送到某个 Topic，Consumer 订阅相同的 Topic 以消费消息。一个 Topic 下可以有多个消息队列（MessageQueue）实现并行处理
+- MessageQueue：Topic 下的一个逻辑分区，用于存储消息的队列。每条消息落在某个具体的 MessageQueue 内，保证该队列内消息顺序。多个 MessageQueue 可以实现 Topic 的消息并发消费和负载均衡
 
+## 消息从 Producer 到 Consumer 的流程
 
+- Producer 发消息 → NameServer 查找路由 → Broker 存储消息 → Consumer 拉消息。
 
+## Topic、Queue、Message 的关系
 
+- 一个 Topic 有多个 Queue（队列），每条消息落入一个 Queue；消息存放在队列中
 
+## Topic + Queue
 
+同一个 Queue 中的消息才保证顺序，如果你想要顺序消费，请保证获取同一个Queue
 
+- 一个Topic对应多个Queue，为了提升mq的性能，并发写入，并发读取，如果底层只对应一个文件的话，就会频繁的加解锁
+- 一个 Queue 对应一个 ConsumeQueue 文件，而多个 Queue 的消息共用同一个 CommitLog 文件
 
+**顺序消费demo如下**
 
+生产者
 
+生产者通过指定queue，将逻辑上相同种类（比如同一个userid）的消息发送到用一个的queue
 
+```go
+selector := func(queues []*primitive.MessageQueue, msg *primitive.Message, arg interface{}) (*primitive.MessageQueue, error) {
+    // arg 可以是订单ID、用户ID等，用于保证相同的业务发到同一个队列
+    key := arg.(int)
+    index := key % len(queues)
+    return queues[index], nil
+}
 
+msg := &primitive.Message{
+    Topic: "OrderTopic",
+    Body:  []byte("Order created"),
+}
 
+// 同一个用户的消息会被发往同一个Queue
+_, err := producer.SendSync(
+    context.Background(),
+    msg,
+    primitive.WithMessageQueueSelector(selector, 订单ID),
+)
+```
 
+消费者
+
+消费者通过 WithConsumeMessageOrderly(true) 开启顺序消费，mq保证同一个Queue中的消息是有序的，不同Queue的消息可能无序，但是不重要，因为同一个userid的数据肯定在同一个Queue中
+
+```go
+consumer, _ := rocketmq.NewPushConsumer(
+    consumer.WithGroupName("order-consumer-group"),
+    consumer.WithNameServer([]string{"127.0.0.1:9876"}),
+    consumer.WithConsumerModel(consumer.Clustering),
+)
+
+err := consumer.Subscribe("OrderTopic", consumer.MessageSelector{}, func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
+    for _, msg := range msgs {
+        fmt.Printf("Received orderly message: %s\n", string(msg.Body))
+    }
+    return consumer.ConsumeSuccess, nil
+},
+    consumer.WithConsumeMessageOrderly(true), // 开启顺序消费
+)
+
+_ = consumer.Start()
+
+```
+
+## 广播模式/集群模式
+
+消费者组，消费消息时的，两种册罗
+
+- 广播模式：每个消费者都会**收到全部消息副本**
+- 集群模式：一个消费组内的多个消费者**分摊消费消息**
+
+```go
+consumer, err := rocketmq.NewPushConsumer(
+    consumer.WithGroupName("xxx"),
+    consumer.WithNameServer([]string{"127.0.0.1:9876"}),
+    consumer.WithConsumerModel(consumer.Clustering), // 集群模式，默认
+)
+
+consumer, err := rocketmq.NewPushConsumer(
+    consumer.WithGroupName("xxx"),
+    consumer.WithNameServer([]string{"127.0.0.1:9876"}),
+    consumer.WithConsumerModel(consumer.BroadCasting), // 广播模式
+)
+```
+
+## TAG
+
+- Topic 是用来区分消息的（大颗粒度），比如 user Topic
+- TAG 也是用来区分消息的（小颗粒度），比如 user-create，user-del，user-change
+- 用二级结构来分类，是世界通用标准，GRPC的路由也是二级结构，二级结构完全够用
+
+```go
+// 生产者发送消息，给消息设置Tag
+msg := primitive.NewMessage("OrderTopic", []byte("Hello"))
+msg.WithTag("TagA") // 设置消息标签
+
+// 消费者只关注 TagA || TagB 的消息，忽略其它消息
+consumer.Subscribe("OrderTopic", consumer.MessageSelector{
+    Type:       consumer.TAG,
+    Expression: "TagA || TagB", // 只消费 Tag 为 TagA 或 TagB 的消息
+}, callback)
+
+```
+
+## Offset
+
+- RocketMQ 自动维护 offset，各消费者的 offset 保存在 broker 中，无需程序员自己维护
+- 消费进度标识：<ConsumerGroup, Topic, Queue>，所以同一个消费者组，同一个Topic，同一个Queue，broker会知道你消费到了哪里，即使消费者重启了也没问题
+
+## 延迟队列
+
+使用内置的定时等级（如 1s、5s、10s）实现延迟消息
+
+生产者发送消息时设置消息的延迟等级，消费者不用关心消息是不是延迟消息
+
+```go
+msg := &primitive.Message{
+    Topic: "DelayTopic",
+    Body:  []byte("hello delayed message"),
+}
+
+// 设置延迟等级，比如 level 3（10秒）
+msg.WithDelayTimeLevel(3)
+
+res, err := producer.SendSync(context.Background(), msg)
+if err != nil {
+    fmt.Printf("send error: %s\n", err)
+} else {
+    fmt.Printf("send success: result=%s\n", res.String())
+}
+```
+
+修改默认的延迟等级
+
+broker.conf文件
+
+```
+messageDelayLevel=1s 5s 10s 30s 1m 2m 3m 4m 5m 6m 7m 8m 9m 10m 20m 30m 1h 2h
+```
+
+## 消费者幂等性
+
+单数据库幂等性
+
+- 需要一张表保存messageid，表名为okmessage，这张表里的messageid代表此消息已经被成功处理完毕，不要重复处理此消息
+- 消费messageid时先从okmessage中查看此messageid是否已经处理完毕了，如果已经处理完毕则不再处理
+
+跨库幂等性
+
+- 只能保证最终一致性
+
+## 事务消息
+
+## 消费失败重试
+
+消息会被重新投递（默认最多重试 16 次），重试失败后转到 DLQ（死信队列）
+
+```go
+consumer.Subscribe("TopicName", consumer.MessageSelector{}, func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
+    for _, msg := range msgs {
+        err := doSomething(msg.Body)
+        if err != nil {
+            return consumer.ConsumeRetryLater, nil  // 消费失败，触发重试
+        }
+    }
+    return consumer.ConsumeSuccess, nil  // 消费成功
+})
+```
+
+触发重试时，如果此Queue是顺序模式，则阻塞此Queue下的所有消费者。如果不是顺序模式，则不阻塞。
+
+## 消息确认
+
+消息确认机制的目的是保证消息可靠投递、避免丢失，防止重复。
+
+需要消费者通知Broker此条消息是否被成功处理，如果没成功，则Broker会延迟一会再次发送此消息。
+
+```go
+consumer.Subscribe("TopicName", consumer.MessageSelector{}, func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
+    // 这个回调函数的返回值控制此消息是 成功 还是 失败
+    return consumer.ConsumeSuccess, nil
+})
+```
 
 
 
