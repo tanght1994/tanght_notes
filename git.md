@@ -487,3 +487,19 @@ git config --global credential.helper store
 下载加速
 
 git clone https://gitclone.com/github.com/tendermint/tendermint.git
+
+# GIT子模块
+
+clone主模块时同时clone子模块
+
+```shell
+git clone --recursive <repository-url>
+```
+
+主模块已经clone完了，还未clone子模块
+
+```shell
+# 更新子模块（下载内容）
+git submodule update
+```
+

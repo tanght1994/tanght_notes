@@ -1,4 +1,4 @@
-# 想固定当前工作目录？
+# 固定当前工作目录
 
 将以下代码放在main文件代码最前面，一定要最前面。这样不管在何处运行此程序，程序的cwd都会是main文件的所在目录。
 
@@ -12,7 +12,7 @@ work_dir = abspath[0: abspath.rfind('/')]
 os.chdir(work_dir)
 ```
 
-# pylint恶心的红色下划线
+# pylint红色下划线
 
 **pylint忽略整个文件**
 
@@ -315,6 +315,13 @@ print(2 == EnumColour.Green)  			# True
 print(EnumColour.value_valued(2))  		# True
 print(EnumColour.key_valued("Blue"))  	# True
 ```
+
+# 全局锁GIL
+
+- 在任何时刻，只允许一个线程执行 Python 字节码，也就是说，即使在 Python 程序中创建了多个线程，**在执行 Python 代码的层面，这些线程是不能同时运行的**，它们会串行地执行 Python 字节码
+- 多进程可以并行执行，每个进程有自己的 GIL
+- 所以对于 CPU 密集型的任务，多线程并不能带来性能的提升，因为所有线程都要等 GIL（你已经是 CPU 密集型任务了，一个线程就能将 CPU 跑满，为什么还要多线程呢？是吧）
+- 对于 IO 密集行的任务，多线程可以提升 CPU 利用率，因为某个线程阻塞时，会将 CPU 使用权给到其它线程，所以能将 CPU 跑的尽量高，否则的话大量 IO 阻塞，CPU 利用率也就 10%（10%是比喻，仅表达意思）
 
 # with语法
 

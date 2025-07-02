@@ -2213,7 +2213,11 @@ Go中的协程是如何管理的？
 当哈希表快满了的时候，会进行2倍扩容，然后进行渐进式迁移，将元素逐步的搬迁到新hash中
 
 - Go 不会一次性把所有桶搬完，而是“惰性”地、每次访问 map 时搬一两个桶
-- 访问时碰到还没搬的桶，就 扫描该旧桶，把其中所有元素按上述规则插入新桶，然后标记该旧桶为"已搬"
+- 访问时碰到还没搬的桶，就扫描该旧桶，把其中所有元素按上述规则插入新桶，然后标记该旧桶为"已搬"
+
+# Go锁
+
+
 
 # VSCODE泛型报错
 
@@ -2329,3 +2333,174 @@ go get -u -v github.com/swaggo/gin-swagger
 go get -u -v github.com/swaggo/files
 go get -u -v github.com/alecthomas/template
 ```
+
+# TCP连接池
+
+先看下面的测试数据再设计连接池
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"net"
+	"sync/atomic"
+	"time"
+)
+
+const PORT = ":19000"
+
+var (
+	msgcnt int64 // 统计消息数量
+	msgbyt int64 // 新增消息字节数
+)
+
+func main() {
+	go server()
+	time.Sleep(1 * time.Second) // 等待服务端启动
+	for range 5 {
+		go client()
+	}
+	go showQPS()
+	select {}
+}
+
+// 服务端 读取客户端数据并丢弃
+func server() {
+	ln, err := net.Listen("tcp", PORT)
+	if err != nil {
+		fmt.Println("Listen error:", err)
+		return
+	}
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			fmt.Println("Accept error:", err)
+			continue
+		}
+		go func(c net.Conn) {
+			defer c.Close()
+			buf := make([]byte, 1024)
+			for {
+				n, err := c.Read(buf)
+				if n > 0 {
+					atomic.AddInt64(&msgcnt, 1)
+					atomic.AddInt64(&msgbyt, int64(n)) // 统计字节数
+				}
+				if err != nil {
+					return
+				}
+			}
+		}(conn)
+	}
+}
+
+// 客户端 发送数据
+func client() {
+	randstr := makeRandStr()
+	for {
+		conn, err := net.Dial("tcp", "127.0.0.1"+PORT)
+		if err != nil {
+			time.Sleep(1 * time.Second)
+			continue
+		}
+		for {
+			// 随机选择一个字符串
+			msg := randstr[rand.Intn(len(randstr))]
+			_, err := conn.Write([]byte(msg))
+			if err != nil {
+				conn.Close()
+				break
+			}
+		}
+	}
+}
+
+// makeRandStr 返回100个随机字符串, 每个字符串长度为 0.5k-4.5k
+func makeRandStr() []string {
+	strs := make([]string, 100)
+	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	for i := range 100 {
+		length := rand.Intn(4096) + 500
+		runes := make([]rune, length)
+		for j := range runes {
+			runes[j] = letters[rand.Intn(len(letters))]
+		}
+		strs[i] = string(runes)
+	}
+	return strs
+}
+
+func showQPS() {
+	lastCnt := atomic.LoadInt64(&msgcnt)
+	lastByt := atomic.LoadInt64(&msgbyt)
+	for {
+		// 计算增量
+		curCnt := atomic.LoadInt64(&msgcnt)
+		curByt := atomic.LoadInt64(&msgbyt)
+		incCnt := float64(curCnt-lastCnt) / float64(10000)
+		incByt := float64(curByt-lastByt) / (1024 * 1024)
+		fmt.Printf("%.2f w, %.2f MB/s\n", incCnt, incByt)
+		lastCnt = curCnt
+		lastByt = curByt
+		time.Sleep(1 * time.Second)
+	}
+}
+
+/*
+测试结果(普通笔记本电脑):
+1个tcp连接:  23.1 w,  200 MB/s  CPU使用率 37%
+2个tcp连接:  41.9 w,  364 MB/s  CPU使用率 50%
+3个tcp连接:  55.9 w,  470 MB/s  CPU使用率 69%
+4个tcp连接:  51.5 w,  457 MB/s  CPU使用率 77%
+5个tcp连接:  54.1 w,  480 MB/s  CPU使用率 92%
+
+分析:
+网络环境很好的情况下, tcp连接数不需要很多
+极限情况，假如你的网络情况跟你的内存条一样快
+那么一根TCP连接就可以将CPU跑满
+因为你的CPU刚将数据复制到TCP缓冲区, 你的缓冲区就被发送走了
+CPU要马上继续给你搬运数据，根本没有空闲时间
+
+网络情况不好时，tcp连接多不多都没意义，因为即使tcp很多
+大部分也发不出去，因为宽带限制了
+
+所以只有在网络情况很好，且CPU跑不满的情况时，才应该增大tcp连接数
+*/
+
+```
+
+# chan发送切片
+
+chan只是将切片的元数据发走了，底层数组还是被共享的！
+
+```go
+func main() {
+	ch := make(chan []byte)
+
+	// 协程 1
+	go func() {
+		a := []byte("tanght")
+		ch <- a
+		time.Sleep(1 * time.Second)
+		a[0] = 'T' // 将字节数组发送出去之后，修改它的内容
+	}()
+
+	// 协程 2
+	go func() {
+		b := <-ch
+		time.Sleep(2 * time.Second)
+		fmt.Println(string(b)) // 这里会打印出 "Tanght"
+	}()
+
+	select {}
+}
+```
+
+# 有趣的
+
+## 锁
+
+go中锁Lock的时候，先自旋，自旋几次之后仍然无法获取锁，才会调用操作系统的锁进入阻塞状态
+

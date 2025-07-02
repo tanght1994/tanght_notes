@@ -83,3 +83,19 @@ MCP 和 OpenAPI 是目前两种有前途的方式。
 ## Anthropic
 
 OpenAI 离职员工创办的公司，产品是**Claude**， 对标ChatGPT
+
+# 产品
+
+FLUX：使用自然语言进行修图
+
+https://playground.bfl.ai/image/generate
+
+https://dashboard.bfl.ai/
+
+即梦：使用自然语言进行修图
+
+
+
+react native：使用react创建APP
+
+expo：

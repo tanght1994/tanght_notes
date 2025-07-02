@@ -1124,67 +1124,34 @@ POST /tanght/_doc/
 GET /tanght/_search
 ```
 
-## FileBeat
+## 查询语法套路
 
-```yaml
-filebeat.inputs:
-  - type: filestream
-    id: log-a
-    enabled: true
-    paths:
-      - /root/aaa/a*.log
-    fields:
-      log_type: "nginx"
-    tags: ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
-    fields_under_root: true
+"查询"与"过滤"：
 
-  - type: filestream
-    id: log-b
-    enabled: true
-    paths:
-      - /root/aaa/b*.log
-    tags: ["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"]
+- **查询（query）**：用来打分和排序（全文检索、相似度、短语、范围查询带评分等）
+- **过滤（filter）**：只做布尔判断，不参与打分（`term`、`terms`、`range`、`exists`、`geo` 等）
 
-processors:
-  - drop_fields:
-      fields: ["input", "host", "agent", "ecs", "log"]
-      ignore_missing: true
+套路：
 
+- 所有"绝对条件"（比如某字段必须等于某值、数值范围、是否存在）都放到 filter 块里
+- 需要"打分"或"高亮"的条件，放到 must / should 里
 
-output.console:
-  pretty: true
-  enable: true
-
-
-# output.elasticsearch:
-#   enable: true
-#   hosts: ["https://192.168.9.63:9200"]
-#   username: "elastic"
-#   password: "a*_+krCmmMKf*LR-dcbt"
-#   ssl.certificate_authorities:
-#     - C:\Users\tanght\Desktop\http_ca.crt
-#   allow_older_versions: true
-#   indices:
-#     - index: "abc"
-#       when.contains:
-#         tags: "log-a"
-#     - index: "deg"
-#       when.contains:
-#         tags: "log-a"
-
-
-# # setup.template.enable: false
-# setup.template.name: "template_name_tht2"
-# setup.template.pattern: "template_name_tht2*"
-
-```
-
-使用
-
-```
-POST /nginxlog/_doc/?pipeline=filebeat_nginx
+```json
 {
-  "message": "[27/Oct/2022:23:03:29 +0700] 1666970785.520 10.251.1.60 [POST /v1//background/msg_data/ HTTP/1.0] 18 19 20 21 22 23"
+  "query": {
+    "bool": {
+      "filter": [
+        { "term":  { "status": "active" } },
+        { "range": { "created_at": { "gte": "2000-01-01" } } }
+      ],
+      "must": [
+        { "match": { "title": "搜索关键字" } }
+      ],
+      "should": [
+        { "match": { "tags": "热点" } }
+      ]
+    }
+  }
 }
 ```
 
@@ -1283,7 +1250,29 @@ docker exec -it elastic-es01 /usr/share/elasticsearch/bin/elasticsearch-create-e
 
 # Consul
 
+Consul 的核心功能是什么
+服务发现、健康检查、KV 存储、多数据中心支持、安全机制、服务网格
 
+Consul 与 ZooKeeper、Etcd 的区别是什么？
+对比功能定位、一致性模型、适用场景
+
+Consul 的架构中有哪些关键组件？
+Agent、Server、Client、Raft 协议、Gossip 协议
+
+Consul 如何实现服务发现？
+服务注册、健康检查、DNS/HTTP 接口查询
+
+如何通过 Consul 实现动态配置管理？
+KV 存储的读写、长轮询或 Watch 机制监听配置变更
+
+Consul 的健康检查有哪些类型？如何配置？
+HTTP/TCP 检查、脚本检查、TTL 检查，Agent 配置示例
+
+Consul 的多数据中心如何工作？
+WAN Gossip 协议、跨数据中心服务发现
+
+Consul 的 ACL（访问控制列表）是如何设计的？
+Token、策略、权限绑定
 
 # ZooKeeper
 

@@ -1587,7 +1587,29 @@ npm config delete <key>
 npm config list
 ```
 
+# React Native Expo
 
+Expo：对React Native的代码进行打包，变为APP
+
+React Native：使用web前端的技术编写APP
+
+```shell
+# 创建 expo 项目
+npx create-expo-app MyFirstApp
+cd MyFirstApp
+# 运行
+npx expo start
+```
+
+# Supabase
+
+登录
+
+数据库
+
+边缘函数
+
+云储存
 
 # JavaScript
 
